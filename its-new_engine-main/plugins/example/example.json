@@ -1,0 +1,17 @@
+{
+    "name":"example插件",
+    "file":"sub_dir/example.py",
+    "control":{
+        "pv":{
+            "call":"ProduceVeh",
+            "frequency":0,
+            "enable":true
+        },
+        "cf":{
+            "call":"CarFollowing",
+            "frequency":0,
+            "enable":true
+        }
+    },
+    "enable_main":true
+}

@@ -1,0 +1,9 @@
+<application>
+  <component name="FileTypeManager" version="17">
+    <extensionMap>
+      <mapping pattern="vehicle_1" type="PLAIN_TEXT" />
+      <mapping pattern="24dafff2-0c73-4b91-b" type="PLAIN_TEXT" />
+      <mapping pattern="curve" type="PLAIN_TEXT" />
+    </extensionMap>
+  </component>
+</application>

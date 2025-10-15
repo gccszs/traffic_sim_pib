@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+
+    <link  rel="stylesheet" type="text/css" href="demo.css">
+    <script type="text/javascript" src="demo.js"></script>
+    <script type="text/javascript">
+        function reset(){
+            document.getElementById('username').value=''
+            document.getElementById('userpassword').value=''
+        }
+        function login(){
+            var name=document.getElementById('username').value
+            var pword=document.getElementById('userpassword').value
+            if(name.length==0){
+                window.alert('用户名不能为空！')
+            }
+            else if(pword.length==0){
+                window.alert('密码不能为空！')
+            }
+            else{
+                post('http://192.168.0.86:8080/login',{'userName':name,'password':pword},function(data){
+                    alert(data);
+                })
+            }
+        }
+    </script>
+</head>
+<body>
+<div class="login">
+    <h1>登录</h1>
+    <p class="box">昵称：<input id='username',type='text' placeholder="请输入用户名">
+    </p >
+    <p class="box">密码：<input id='userpassword',type='password' placeholder="请输入密码">
+    </p >
+    <p class="box">
+        <button onclick="login()">登录</button>
+        <button onclick="reset()">重置</button>
+    </p >
+    <p class="box">< a href=" ">没有账号？立即注册</ a></p >
+</div>
+</body>
+</html>

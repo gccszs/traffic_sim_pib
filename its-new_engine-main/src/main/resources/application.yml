@@ -1,0 +1,58 @@
+server:
+  port: 3822
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  web:
+    resources:
+      static-locations: classpath:/static/,file:frontend/
+  mvc:
+    static-path-pattern: /**
+  main:
+    allow-circular-references: true
+
+# 自定义配置
+simeng:
+  #python虚拟环境所在的目录
+  python:
+    pyenv-path: ./pyenv  # pyenv相对路径（相对于项目根目录）
+    python-version: py3.11.0  # 使用的Python版本
+
+  use-engin-logs: true #true为开启，false为关闭 用于保证引擎输出是否重定向。关闭后将并且不在终端额外启动cmd窗口
+  # 缓存目录
+  cache-dir: cache
+  # 插件目录
+  plugin-dir: plugins
+  # 仿真引擎目录
+  simeng-dir: SimEngPI
+  # Python脚本路径
+  python-scripts:
+    mapmaker: map_convert/mapmaker.py
+    mapmaker-new: map_convert/mapmaker_new.py
+    osmtrans: map_convert/osmtrans.py
+  # 允许的前端源
+  cors:
+    allowed-origins:
+      - http://127.0.0.1:7142
+      - http://localhost:7142
+    allowed-methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+
+logging:
+  level:
+    com.simeng: DEBUG
+    org.springframework.web.socket: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+frontend:
+  ip: "http://localhost:3822/"

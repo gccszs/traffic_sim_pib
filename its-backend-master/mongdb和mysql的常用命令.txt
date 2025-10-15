@@ -1,0 +1,19 @@
+mongod --dbpath "C:\Program Files\MongoDB\Server\4.0\data\db"
+
+
+备份：mongodump -h 127.0.0.1:27017 -d backend -o C:\backend
+恢复：mongorestore.exe -d backend "C:\backend\backend\mapInfo.bson"
+恢复：mongorestore.exe -d backend "C:\backend\backend\paramInfo.bson"
+
+
+db.createUser({user: "root", pwd: "root", roles: [{role: "root", db: "admin"}]})
+
+use backend
+
+db.createUser({user: "iscssl", pwd: "ts#19Cssl", roles: [{role: "readWrite", db: "backend" }]})
+db.auth("iscssl","ts#19Cssl")
+
+
+mysql创建用户：
+create user 'cssl'@'localhost' identified by 'ts#19Cssl';
+grant all privileges on its.* to cssl@localhost;
