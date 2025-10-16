@@ -1,0 +1,46 @@
+Config Path(WebParam): ef25844b-eefd-4b0c-9347-27e29966680c\od.xml
+G_MarginalPoint_Number:10
+G_BaseLine_Number:17
+G_Cross_Number:6
+G_Link_Number:34
+G_Lane_Number:68
+imEngPI[0m
+[2025-10-09 22:23:12|0x00001864][info]	[34m[+] Set SimID test Over![0m
+[2025-10-09 22:23:12|0x00001864][info]	[34m[+] Set SimFiles Path: ef25844b-eefd-4b0c-9347-27e29966680c Over![0m
+[2025-10-09 22:23:12|0x00001864][info]	[34m[+] Use RoadNetwork File: ef25844b-eefd-4b0c-9347-27e29966680c\XC4.xml[0m
+[2025-10-09 22:23:12|0x00001864][info]	[34m[+] Use OD File: ef25844b-eefd-4b0c-9347-27e29966680c\od.xml[0m
+[2025-10-09 22:23:12|0x00001864][info]	[34m[-] Launch as no plug-in![0m
+[2025-10-09 22:23:12|0x00001864][info]	[34m[+] Base Initialization Complete![0m
+[2025-10-09 22:23:12|0x00001864][debug]	[32m[#] Connected to 127.0.0.1:3822/ws/exe/ef25844b-eefd-4b0c-9347-27e29966680c[0m
+[2025-10-09 22:23:12|0x00001864][info]	[34m[+] Connect websocket to backend ok...[0m
+[2025-10-09 22:23:12|0x00001864][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"hi","time":1760019792535}[0m
+[2025-10-09 22:23:12|0x00001864][info]	[34m[+] Init backend manager ok![0m
+[2025-10-09 22:23:15|0x00001864][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"setdelay","time":1760019795953,"data":{"Delay":40}}[0m
+[2025-10-09 22:23:15|0x00001864][info]	[34m[*] Set New Delay: 40[0m
+[2025-10-09 22:23:15|0x00001864][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1760019795953, "data":{"result": "setdelay_ok"}}[0m
+[2025-10-09 22:23:20|0x00001864][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"setmaxstep","time":1760019800043,"data":{"Step":23}}[0m
+[2025-10-09 22:23:20|0x00001864][info]	[34m[+] Set Max Sim Step: 23[0m
+[2025-10-09 22:23:20|0x00001864][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1760019800043, "data":{"result": "setmaxstep_ok"}}[0m
+[2025-10-09 22:23:21|0x00001864][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"start","time":1760019801427}[0m
+[2025-10-09 22:23:21|0x00001864][info]	[34m[*] Start(Resume) Sim[0m
+[2025-10-09 22:23:21|0x00001864][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1760019801437, "data":{"result": "start_ok"}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801491, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":0, "link_id":3, "lane_id":1, "cell_id":0, "x":581, "y":781, "speed":14, "router":"3 18 31 8"}]}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801537, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":1, "link_id":4, "lane_id":0, "cell_id":0, "x":431.805, "y":614.88, "speed":14, "router":"4 18 21"}]}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801583, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":2, "link_id":9, "lane_id":0, "cell_id":0, "x":889, "y":228, "speed":14, "router":"9 12 16"}]}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801630, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":3, "link_id":10, "lane_id":0, "cell_id":0, "x":561.996, "y":233.457, "speed":14, "router":"10 0 2"}]}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801676, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":4, "link_id":15, "lane_id":1, "cell_id":0, "x":1138, "y":225, "speed":14, "router":"15 13 30 21"}]}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801723, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":5, "link_id":17, "lane_id":1, "cell_id":0, "x":1373, "y":355, "speed":14, "router":"17 13 30 21"}]}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801770, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":6, "link_id":20, "lane_id":1, "cell_id":0, "x":798.654, "y":836.242, "speed":14, "router":"20 21"}]}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801816, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":7, "link_id":25, "lane_id":0, "cell_id":0, "x":1252.29, "y":677.983, "speed":14, "router":"25 33 21"}]}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801862, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":8, "link_id":27, "lane_id":0, "cell_id":0, "x":1097.01, "y":787.379, "speed":14, "router":"27 33 19 5"}]}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801909, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":9, "link_id":28, "lane_id":0, "cell_id":0, "x":428, "y":375, "speed":14, "router":"28 0 18 21"}]}}[0m
+[2025-10-09 22:23:21|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019801956, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":14, "x":581, "y":767, "cur_spd":14, "last_spd":14}}}[0m
+[2025-10-09 22:23:22|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019802001, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":4, "lane_id":0, "cell_id":14, "x":445.073, "y":619.541, "cur_spd":14, "last_spd":14}}}[0m
+[2025-10-09 22:23:22|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019802049, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":14, "x":889, "y":242, "cur_spd":14, "last_spd":14}}}[0m
+[2025-10-09 22:23:22|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019802096, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":10, "lane_id":0, "cell_id":14, "x":561.876, "y":247.463, "cur_spd":14, "last_spd":14}}}[0m
+[2025-10-09 22:23:22|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019802142, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":15, "lane_id":1, "cell_id":14, "x":1138, "y":239, "cur_spd":14, "last_spd":14}}}[0m
+[2025-10-09 22:23:22|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019802190, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":17, "lane_id":1, "cell_id":14, "x":1359, "y":355, "cur_spd":14, "last_spd":14}}}[0m
+[2025-10-09 22:23:22|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019802237, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":20, "lane_id":1, "cell_id":14, "x":802.145, "y":822.627, "cur_spd":14, "last_spd":14}}}[0m
+[2025-10-09 22:23:22|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019802282, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":25, "lane_id":0, "cell_id":14, "x":1238.37, "y":675.781, "cur_spd":14, "last_spd":14}}}[0m
+[2025-10-09 22:23:22|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019802329, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":27, "lane_id":0, "cell_id":14, "x":1099.48, "y":773.501, "cur_spd":14, "last_spd":14}}}[0m
+[2025-10-09 22:23:22|0x00007268][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1760019802376, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":9, "in_network":true, "in_cross":false, "link_id":28, "lane_id":0, "cell_id":14, "x":442, "y":375, "cur_spd":14, "last_spd":14}}}[0m

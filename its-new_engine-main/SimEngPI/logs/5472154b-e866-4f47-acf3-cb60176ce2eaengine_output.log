@@ -1,0 +1,20 @@
+Config Path(WebParam): 5472154b-e866-4f47-acf3-cb60176ce2ea\od.xml
+1332CSimuFun::Get_XML_SimConfig: Fault, result is NULL
+Dir: D:\traffic_pj\java_bk_pib\SimEngPIB-main\SimEngPI[0m
+[2025-09-13 18:56:20|0x00004410][info]	[34m[+] Set SimID test Over![0m
+[2025-09-13 18:56:20|0x00004410][info]	[34m[+] Set SimFiles Path: 5472154b-e866-4f47-acf3-cb60176ce2ea Over![0m
+[2025-09-13 18:56:20|0x00004410][info]	[34m[+] Use RoadNetwork File: 5472154b-e866-4f47-acf3-cb60176ce2ea\D:\traffic_pj\java_bk_pib\SimEngPIB-main\cache\5472154b-e866-4f47-acf3-cb60176ce2ea\map2.xml[0m
+[2025-09-13 18:56:20|0x00004410][info]	[34m[+] Use OD File: 5472154b-e866-4f47-acf3-cb60176ce2ea\od.xml[0m
+[2025-09-13 18:56:20|0x00004410][info]	[34m[-] Launch as no plug-in![0m
+[2025-09-13 18:56:20|0x00004410][info]	[34m[+] Base Initialization Complete![0m
+[2025-09-13 18:56:20|0x00004410][debug]	[32m[#] Connected to 127.0.0.1:3822/ws/exe/5472154b-e866-4f47-acf3-cb60176ce2ea[0m
+[2025-09-13 18:56:20|0x00004410][info]	[34m[+] Connect websocket to backend ok...[0m
+[2025-09-13 18:56:20|0x00004410][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"hi","time":1757760980509}[0m
+[2025-09-13 18:56:20|0x00004410][info]	[34m[+] Init backend manager ok![0m
+[2025-09-13 18:56:26|0x00004410][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"setdelay","time":1757760986084,"data":{"Delay":75}}[0m
+[2025-09-13 18:56:26|0x00004410][info]	[34m[*] Set New Delay: 75[0m
+[2025-09-13 18:56:26|0x00004410][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1757760986085, "data":{"result": "setdelay_ok"}}[0m
+[2025-09-13 18:56:28|0x00004410][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"setmaxstep","time":1757760988024,"data":{"Step":100}}[0m
+[2025-09-13 18:56:28|0x00004410][info]	[34m[+] Set Max Sim Step: 100[0m
+[2025-09-13 18:56:28|0x00004410][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1757760988024, "data":{"result": "setmaxstep_ok"}}[0m
+[2025-09-13 18:56:28|0x00004410][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"start","time":1757760988663}[0m
