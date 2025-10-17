@@ -12,7 +12,7 @@
     
     <!-- 子模块声明 -->
     <modules>
-
+        <module>its-new_engine-main</module>
         <!-- its-new_engine-main 不需要重构，保持原样 -->
     </modules>
     

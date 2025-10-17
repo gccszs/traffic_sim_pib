@@ -1,6 +1,7 @@
 package com.simeng.pib;
 
-import com.simeng.pib.config.PythonEnvConfig;
+import com.simeng.pib.feign.PythonFeignClient;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,19 +13,16 @@ import java.util.*;
  * @author ChonghaoGao
  * @date 2025/9/12 10:25)
  */
+@Slf4j
 @SpringBootTest
 public class PythonTest {
 
+    @Autowired
+    PythonFeignClient pythonFeignClient;
 
-    /**
-     * 检查pyenv环境是否可用
-     */
     @Test
-    public void isPyenvAvailable() {
-
-
-
-    }
-   
+    public void testFeign(){
+      log.info("接收到python那边{}",pythonFeignClient.TestPyCon());
+   }
 
 }
