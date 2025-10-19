@@ -25,7 +25,7 @@ simeng:
   # Python远程服务配置
   python-service:
     enabled: true # 是否启用远程Python服务（true为通过Feign调用，false为本地脚本）
-    url: http://210.41.100.253:8000 # Python服务地址
+    url: http://210.41.102.17:8000 # Python服务地址
     timeout: 300000 # 超时时间（毫秒），默认5分钟
 
   use-engin-logs: true #true为开启，false为关闭 用于保证引擎输出是否重定向。关闭后将并且不在终端额外启动cmd窗口

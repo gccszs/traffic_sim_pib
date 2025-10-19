@@ -3,11 +3,12 @@ package com.simeng.pib.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.simeng.pib.model.SimInfo;
 import com.simeng.pib.model.dto.ApiResponse;
+import com.simeng.pib.pojo.ConversionResult;
 import com.simeng.pib.service.MapConversionService;
 import com.simeng.pib.service.impl.SessionServiceImpl;
 import com.simeng.pib.util.XmlJsonConverter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,12 +28,16 @@ import java.util.Map;
  */
 @Slf4j
 @RestController
-@RequiredArgsConstructor
 public class MapController {
 
-    private final SessionServiceImpl sessionServiceImpl;
-    private final MapConversionService mapConversionService;
-    private final XmlJsonConverter xmlJsonConverter;
+    @Autowired
+    private SessionServiceImpl sessionServiceImpl;
+
+    @Autowired
+    private MapConversionService mapConversionService;
+
+    @Autowired
+    private XmlJsonConverter xmlJsonConverter;
 
     @Value("${simeng.cache-dir}")
     private String cacheDir;
@@ -89,7 +94,8 @@ public class MapController {
 
             // 转换文件格式
             String xmlFilePath = filePath.toString().replaceAll("\\.(txt|osm)$", ".xml");
-            MapConversionService.ConversionResult result = mapConversionService.convertMapFile(
+
+            ConversionResult result = mapConversionService.convertMapFile(
                 filePath.toString(), xmlFilePath);
 
             if (!result.isSuccess()) {
@@ -99,7 +105,7 @@ public class MapController {
 
             // 更新会话信息
             SimInfo simInfo = sessionServiceImpl.getSessionInfo(id);
-            simInfo.setMap_xml_path(xmlFilePath);
+            simInfo.setXml_path(xmlFilePath);
             sessionServiceImpl.updateSessionInfo(id, simInfo);
 
             String method = result.getMethod() != null ? result.getMethod() : "old";
@@ -130,7 +136,7 @@ public class MapController {
         }
 
         SimInfo simInfo = sessionServiceImpl.getSessionInfo(id);
-        String xmlFilePath = simInfo.getMap_xml_path();
+        String xmlFilePath = simInfo.getXml_path();
 
         if (xmlFilePath == null || xmlFilePath.isEmpty()) {
             return ResponseEntity.badRequest()

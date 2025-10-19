@@ -1,10 +1,13 @@
 package com.simeng.pib.service.impl;
 
+import com.simeng.pib.feign.PythonFeignClient;
+import com.simeng.pib.pojo.CreateSimengRequest;
 import com.simeng.pib.util.OdUtils;
 import com.simeng.pib.model.SimInfo;
 import com.simeng.pib.service.SimulationService;
 import com.simeng.pib.util.XmlJsonConverter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -25,9 +28,17 @@ import java.util.Map;
 @Service
 public class SimulationServiceImpl implements SimulationService {
 
+    @Autowired
+    private PythonFeignClient pythonFeignClient;
+
+    public void initSimengByFeign(Map<String, Object> simengInfo, List<Map<String, Object>> controlViews, String id) {
+        CreateSimengRequest request = new CreateSimengRequest(simengInfo, controlViews, id);
+        log.info(pythonFeignClient.createSimeng(request).toString());
+    }
+
     public void copyRoadNetFile(SimInfo simInfo, Path simFilesDir) throws IOException {
-        if (simInfo.getMap_xml_path() != null && !simInfo.getMap_xml_path().isEmpty()) {
-            Path roadXmlFile = Paths.get(simInfo.getMap_xml_path());
+        if (simInfo.getXml_path() != null && !simInfo.getXml_path().isEmpty()) {
+            Path roadXmlFile = Paths.get(simInfo.getXml_path());
             if (Files.exists(roadXmlFile)) {
                 Path targetRoadFile = simFilesDir.resolve(roadXmlFile.getFileName());
                 Files.copy(roadXmlFile, targetRoadFile);

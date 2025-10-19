@@ -1,5 +1,7 @@
 package com.simeng.pib.feign;
 
+import com.simeng.pib.model.dto.ApiResponse;
+import com.simeng.pib.pojo.CreateSimengRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -8,13 +10,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Python服务远程调用客户端
+ *
  * @author ChonghaoGao
  * @date 2025/10/16 19:32
  */
 @FeignClient(
-    name = "python-web-tools",
-    url = "${simeng.python-service.url:http://210.41.100.253:8000}",
-    configuration = FeignClientConfig.class
+        name = "python-web-tools",
+        url = "${simeng.python-service.url:http://210.41.100.253:8000}",
+        configuration = FeignClientConfig.class
 )
 public interface PythonFeignClient {
 
@@ -32,5 +35,8 @@ public interface PythonFeignClient {
      * @return XML文件的字节数组
      */
     @PostMapping(value = "/fileupload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<byte[]> uploadAndConvertFile(@RequestPart("upload_file") MultipartFile txtFile,@RequestParam("user_id")String user_id);
+    ResponseEntity<byte[]> uploadAndConvertFile(@RequestPart("upload_file") MultipartFile txtFile, @RequestParam("user_id") String user_id);
+
+    @PostMapping(value = "/init_simeng")
+    ResponseEntity<ApiResponse<String>> createSimeng(@RequestBody CreateSimengRequest request);
 }

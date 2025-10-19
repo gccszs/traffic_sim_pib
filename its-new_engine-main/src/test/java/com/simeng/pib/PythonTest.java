@@ -1,6 +1,7 @@
 package com.simeng.pib;
 
 import com.simeng.pib.feign.PythonFeignClient;
+import com.simeng.pib.model.dto.ApiResponse;
 import com.simeng.pib.service.MapConversionService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
@@ -71,6 +72,11 @@ public class PythonTest {
         } else {
             log.error("Map conversion via Feign failed, status: {}", response.getStatusCode());
         }
+    }
+    @Test
+    public void createSimeng1() throws Exception {
+
+//        ResponseEntity<ApiResponse<String>> response = pythonFeignClient.createSimeng();
     }
 
     @BeforeEach
