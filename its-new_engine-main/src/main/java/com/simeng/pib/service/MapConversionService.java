@@ -42,7 +42,7 @@ public class MapConversionService {
             MultipartFile multipartFile = createMultipartFile(inputPath);
 
             // 调用Python服务进行转换，返回XML文件内容（字节数组）
-            ResponseEntity<byte[]> response = pythonFeignClient.uploadAndConvertFile(multipartFile);
+            ResponseEntity<byte[]> response = pythonFeignClient.uploadAndConvertFile(multipartFile,"");
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 // 将返回的XML字节数组写入目标文件
@@ -66,7 +66,7 @@ public class MapConversionService {
     private MultipartFile createMultipartFile(Path filePath) throws IOException {
         File file = filePath.toFile();
         byte[] fileContent = Files.readAllBytes(filePath);
-        
+
         return new MultipartFile() {
             @Override
             public String getName() {
