@@ -32,5 +32,5 @@ public interface PythonFeignClient {
      * @return XML文件的字节数组
      */
     @PostMapping(value = "/fileupload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<byte[]> uploadAndConvertFile(@RequestPart("upload_file") MultipartFile txtFile);
+    ResponseEntity<byte[]> uploadAndConvertFile(@RequestPart("upload_file") MultipartFile txtFile,@RequestParam("user_id")String user_id);
 }

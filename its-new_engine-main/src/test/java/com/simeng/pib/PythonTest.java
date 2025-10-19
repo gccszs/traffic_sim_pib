@@ -61,7 +61,7 @@ public class PythonTest {
                 L,0
                 G,540,608
                 """.getBytes());
-        ResponseEntity<byte[]> response = pythonFeignClient.uploadAndConvertFile(txtFile);
+        ResponseEntity<byte[]> response = pythonFeignClient.uploadAndConvertFile(txtFile, UUID.randomUUID().toString());
         log.info("文件响应体：{}", response.getBody());
 
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
