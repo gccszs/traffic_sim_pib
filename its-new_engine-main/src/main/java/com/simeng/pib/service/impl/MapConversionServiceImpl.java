@@ -36,7 +36,7 @@ public class MapConversionServiceImpl implements MapConversionService {
      * 通过Feign调用Python服务转换文件
      * Python服务接收TXT/OSM文件，返回转换后的XML文件
      */
-    public ConversionResult convertViaFeign(String inputFilePath, String outputXmlPath) {
+    public ConversionResult convertViaFeign(String inputFilePath, String outputXmlPath,String id) {
         try {
             log.info("Calling Python service to convert map file: {}", inputFilePath);
 
@@ -45,7 +45,7 @@ public class MapConversionServiceImpl implements MapConversionService {
             MultipartFile multipartFile = createMultipartFile(inputPath);
 
             // 调用Python服务进行转换，返回XML文件内容（字节数组）
-            ResponseEntity<byte[]> response = pythonFeignClient.uploadAndConvertFile(multipartFile, UUID.randomUUID().toString());
+            ResponseEntity<byte[]> response = pythonFeignClient.uploadAndConvertFile(multipartFile, id);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 // 将返回的XML字节数组写入目标文件
@@ -124,7 +124,7 @@ public class MapConversionServiceImpl implements MapConversionService {
      * 1. 如果是XML文件，直接保存，不调用OpenFeign
      * 2. 如果是TXT/OSM文件，调用OpenFeign的fileupload接口转换
      */
-    public ConversionResult convertMapFile(String inputFilePath, String outputXmlPath) {
+    public ConversionResult convertMapFile(String inputFilePath, String outputXmlPath,String id) {
         Path inputPath = Paths.get(inputFilePath);
         String extension = getFileExtension(inputPath.getFileName().toString());
 
@@ -139,7 +139,7 @@ public class MapConversionServiceImpl implements MapConversionService {
             // 如果是TXT或OSM格式，调用OpenFeign转换
             if (useFeignClient) {
                 log.info("File needs conversion, calling OpenFeign: {} -> {}", inputFilePath, outputXmlPath);
-                return convertViaFeign(inputFilePath, outputXmlPath);
+                return convertViaFeign(inputFilePath, outputXmlPath,id);
             } else {
                 return new ConversionResult(false, "Python service is disabled in configuration");
             }

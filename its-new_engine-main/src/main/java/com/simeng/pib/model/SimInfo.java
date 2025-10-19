@@ -24,9 +24,14 @@ public class SimInfo {
     private String name = "test";
 
     /**
-     * 路网地图内部路径
+     * 路网地图内部路径（完整路径）
      */
     private String xml_path = "";
+
+    /**
+     * 路网地图XML文件名（仅文件名）
+     */
+    private String map_xml_name = "";
 
     /**
      * 仿真文件目录

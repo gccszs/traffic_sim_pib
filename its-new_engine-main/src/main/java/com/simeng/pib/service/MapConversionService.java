@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public interface MapConversionService {
-    ConversionResult convertViaFeign(String inputFilePath, String outputXmlPath);
+    ConversionResult convertViaFeign(String inputFilePath, String outputXmlPath,String id);
 
     MultipartFile createMultipartFile(Path filePath) throws IOException;
 
-    ConversionResult convertMapFile(String inputFilePath, String outputXmlPath);
+    ConversionResult convertMapFile(String inputFilePath, String outputXmlPath,String id);
 }

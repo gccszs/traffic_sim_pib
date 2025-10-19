@@ -96,7 +96,7 @@ public class MapController {
             String xmlFilePath = filePath.toString().replaceAll("\\.(txt|osm)$", ".xml");
 
             ConversionResult result = mapConversionService.convertMapFile(
-                filePath.toString(), xmlFilePath);
+                filePath.toString(), xmlFilePath,id);
 
             if (!result.isSuccess()) {
                 return ResponseEntity.internalServerError()
@@ -106,6 +106,9 @@ public class MapController {
             // 更新会话信息
             SimInfo simInfo = sessionServiceImpl.getSessionInfo(id);
             simInfo.setXml_path(xmlFilePath);
+            // 设置XML文件名（用于Python服务）
+            String xmlFileName = Paths.get(xmlFilePath).getFileName().toString();
+            simInfo.setMap_xml_name(xmlFileName);
             sessionServiceImpl.updateSessionInfo(id, simInfo);
 
             String method = result.getMethod() != null ? result.getMethod() : "old";

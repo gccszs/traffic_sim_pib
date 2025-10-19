@@ -74,6 +74,20 @@ public class SimulationController {
             simInfo.setName(simName != null ? simName : "test");
             simInfo.setSim_info(simInfoData);
             simInfo.setControl_views(controlViews);
+            
+            // 将map_xml_name和map_xml_path添加到simInfoData中，以便Python服务可以访问
+            if (simInfo.getMap_xml_name() != null && !simInfo.getMap_xml_name().isEmpty()) {
+                simInfoData.put("map_xml_name", simInfo.getMap_xml_name());
+            } else {
+                log.warn("map_xml_name is not set for session: {}", id);
+            }
+            
+            if (simInfo.getXml_path() != null && !simInfo.getXml_path().isEmpty()) {
+                simInfoData.put("map_xml_path", simInfo.getXml_path());
+            } else {
+                log.warn("xml_path is not set for session: {}", id);
+            }
+            
             simulationService.initSimengByFeign(simInfoData,controlViews,id);
 //
 //            // 创建仿真插件目录
