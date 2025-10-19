@@ -17,9 +17,9 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
-    
+
     private final SessionServiceImpl sessionServiceImpl;
-    
+
     /**
      * 创建Cookie ID用于身份识别
      */
@@ -38,12 +38,13 @@ public class AuthController {
 
         // 添加Cookie到响应头
         response.setHeader("Set-Cookie", cookie.toString());
-        
+
         log.info("Created new session ID: {}", sessionId);
-        
+
+
         return ResponseEntity.ok(ApiResponse.success("create_cookie_id", sessionId));
     }
-    
+
     /**
      * 删除会话信息
      */
@@ -53,12 +54,12 @@ public class AuthController {
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error("ERR_AUTH", "unable to get cookie"));
         }
-        
+
         if (!sessionServiceImpl.sessionExists(id)) {
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error("ERR_INVALID", "not find id in id_infos"));
         }
-        
+
         boolean deleted = sessionServiceImpl.deleteSession(id);
         if (deleted) {
             log.debug("Deleted session: {}", id);

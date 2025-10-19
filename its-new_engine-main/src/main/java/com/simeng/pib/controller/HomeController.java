@@ -19,7 +19,7 @@ import java.nio.file.Paths;
 @Slf4j
 @Controller
 public class HomeController {
-    
+
     /**
      * 首页
      */
@@ -28,6 +28,7 @@ public class HomeController {
         try {
             // 尝试读取前端构建的index.html
             Path frontendIndex = Paths.get("frontend", "index.html");
+            log.info(frontendIndex.toString());
             if (Files.exists(frontendIndex)) {
                 String content = Files.readString(frontendIndex);
                 return ResponseEntity.ok()
@@ -46,7 +47,7 @@ public class HomeController {
                 .body("<html><body><h1>SimEngPIB Backend</h1><p>Frontend not found</p></body></html>");
         }
     }
-    
+
     /**
      * Favicon
      */

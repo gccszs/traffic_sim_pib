@@ -18,8 +18,15 @@ spring:
 simeng:
   #python虚拟环境所在的目录
   python:
-    pyenv-path: ./pyenv  # pyenv相对路径（相对于项目根目录）
-    python-version: py3.11.0  # 使用的Python版本
+    pyenv-path: ./pyenv # pyenv相对路径（相对于项目根目录）
+    python-version: py3.11.0 # 使用的Python版本
+
+
+  # Python远程服务配置
+  python-service:
+    enabled: true # 是否启用远程Python服务（true为通过Feign调用，false为本地脚本）
+    url: http://210.41.100.253:8000 # Python服务地址
+    timeout: 300000 # 超时时间（毫秒），默认5分钟
 
   use-engin-logs: true #true为开启，false为关闭 用于保证引擎输出是否重定向。关闭后将并且不在终端额外启动cmd窗口
   # 缓存目录
@@ -28,7 +35,7 @@ simeng:
   plugin-dir: plugins
   # 仿真引擎目录
   simeng-dir: SimEngPI
-  # Python脚本路径
+  # Python脚本路径（已废弃，保留用于兼容）
   python-scripts:
     mapmaker: map_convert/mapmaker.py
     mapmaker-new: map_convert/mapmaker_new.py
