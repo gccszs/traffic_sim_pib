@@ -89,8 +89,8 @@ public class MapController {
             
             // 转换文件格式
             String xmlFilePath = filePath.toString().replaceAll("\\.(txt|osm)$", ".xml");
-            MapConversionService.ConversionResult result = mapConversionService.convertMapFile(
-                filePath.toString(), xmlFilePath);
+            MapConversionService.ConversionResult result = mapConversionService.convertMapFile(filePath.toString()
+                    , xmlFilePath);
             
             if (!result.isSuccess()) {
                 return ResponseEntity.internalServerError()

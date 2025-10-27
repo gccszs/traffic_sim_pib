@@ -23,6 +23,10 @@ public class PythonTest {
     PythonFeignClient pythonFeignClient;
 
     @Test
+    public void test(){
+
+    }
+//    @Test
     public void testFeign(){
       log.info("接收到python那边{}",pythonFeignClient.TestPyCon());
       MultipartFile txtFile = new MockMultipartFile("测试文件.txt","原始文件名称.txt",

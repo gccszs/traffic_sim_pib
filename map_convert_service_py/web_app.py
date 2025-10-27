@@ -23,5 +23,10 @@ async def map_file_upload(txtFile:UploadFile):
             'msg':str(e)
             }
 
+
+
+
+
+
 if __name__ == '__main__':
     uvicorn.run(app,port=8000)

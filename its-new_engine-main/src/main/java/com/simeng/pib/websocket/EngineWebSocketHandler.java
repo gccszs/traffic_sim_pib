@@ -127,7 +127,7 @@ public class EngineWebSocketHandler implements WebSocketHandler {
     }
 
     @Override
-    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+    public void handleTransportError(WebSocketSession session, Throwable exception) {
         log.error("Engine WebSocket transport error", exception);
     }
 
