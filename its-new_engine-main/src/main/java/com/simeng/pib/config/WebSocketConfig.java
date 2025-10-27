@@ -1,5 +1,6 @@
 package com.simeng.pib.config;
 
+import com.simeng.pib.config.properties.WebSocketProperties;
 import com.simeng.pib.websocket.EngineWebSocketHandler;
 import com.simeng.pib.websocket.FrontendWebSocketHandler;
 import lombok.RequiredArgsConstructor;
@@ -16,14 +17,17 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final FrontendWebSocketHandler frontendWebSocketHandler;
     private final EngineWebSocketHandler engineWebSocketHandler;
 
+    private final WebSocketProperties webSocketProperties;
+
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         // 前端WebSocket连接
-        registry.addHandler(frontendWebSocketHandler, "/ws/frontend")
-                .setAllowedOrigins("http://127.0.0.1:7142", "http://localhost:7142","http://localhost:3822","http://127.0.0.1:3822");
+        registry.addHandler(frontendWebSocketHandler, webSocketProperties.getServer().getFrontendPath())
+                .setAllowedOrigins(webSocketProperties.getServer().getAllowedOrigins());
 
         // 仿真引擎WebSocket连接
-        registry.addHandler(engineWebSocketHandler, "/ws/exe/{exe_id}")
-                .setAllowedOrigins("*");
+        registry.addHandler(engineWebSocketHandler, webSocketProperties.getServer().getEnginePath())
+                .setAllowedOrigins(webSocketProperties.getServer().getAllowedOrigins());
     }
 }

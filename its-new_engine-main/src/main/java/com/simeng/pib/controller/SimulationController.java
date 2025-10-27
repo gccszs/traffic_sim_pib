@@ -2,9 +2,8 @@ package com.simeng.pib.controller;
 
 import com.simeng.pib.model.SimInfo;
 import com.simeng.pib.model.dto.ApiResponse;
-import com.simeng.pib.service.PluginService;
+import com.simeng.pib.service.SimulationService;
 import com.simeng.pib.service.impl.SessionServiceImpl;
-import com.simeng.pib.service.impl.SimulationServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +14,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -31,9 +29,9 @@ public class SimulationController {
 
     private final SessionServiceImpl sessionServiceImpl;
 
-    private final SimulationServiceImpl simulationService;
+    private final SimulationService  simulationService;
 
-    private final PluginService pluginService;
+
 
 
     @Value("${simeng.simeng-dir}")
@@ -71,36 +69,51 @@ public class SimulationController {
                 return ResponseEntity.badRequest()
                         .body(ApiResponse.error("ERR_ARG", "missing simulation data"));
             }
-
+//
             String simName = (String) simInfoData.get("name");
             simInfo.setName(simName != null ? simName : "test");
             simInfo.setSim_info(simInfoData);
             simInfo.setControl_views(controlViews);
-
-            // 创建仿真插件目录
-            Path simFilesDir = Paths.get(simengDir, id);
-            Path simPluginDir = simFilesDir.resolve("plugins");
-            simInfo.setSim_dir(simFilesDir.toString());
-            Files.createDirectories(simFilesDir);
-            Files.createDirectories(simPluginDir);
-            // 复制路网文件
-            simulationService.copyRoadNetFile(simInfo, simFilesDir);
-            // 创建OD文件
-            simulationService.createOdFile(simFilesDir, simInfoData);
-
-            // 处理插件
-            List<String> usePlugins = extractUsedPluginsPath(controlViews);
-            if (!usePlugins.isEmpty()) {
-                boolean copied = pluginService.copyPlugins(usePlugins, simPluginDir.toString());
-                if (!copied) {
-                    return ResponseEntity.internalServerError()
-                            .body(ApiResponse.error("ERR_FILE", "copy plugin files error"));
-                }
+            
+            // 将map_xml_name和map_xml_path添加到simInfoData中，以便Python服务可以访问
+            if (simInfo.getMap_xml_name() != null && !simInfo.getMap_xml_name().isEmpty()) {
+                simInfoData.put("map_xml_name", simInfo.getMap_xml_name());
+            } else {
+                log.warn("map_xml_name is not set for session: {}", id);
             }
-
-            // 启动仿真引擎
-            startSimulationEngine(id, simName, usePlugins);
-
+            
+            if (simInfo.getXml_path() != null && !simInfo.getXml_path().isEmpty()) {
+                simInfoData.put("map_xml_path", simInfo.getXml_path());
+            } else {
+                log.warn("xml_path is not set for session: {}", id);
+            }
+            
+            simulationService.initSimengByFeign(simInfoData,controlViews,id);
+//
+//            // 创建仿真插件目录
+//            Path simFilesDir = Paths.get(simengDir, id);
+//            Path simPluginDir = simFilesDir.resolve("plugins");
+//            simInfo.setSim_dir(simFilesDir.toString());
+//            Files.createDirectories(simFilesDir);
+//            Files.createDirectories(simPluginDir);
+//            // 复制路网文件
+//            simulationService.copyRoadNetFile(simInfo, simFilesDir);
+//            // 创建OD文件
+//            simulationService.createOdFile(simFilesDir, simInfoData);
+//
+//            // 处理插件
+//            List<String> usePlugins = extractUsedPluginsPath(controlViews);
+//            if (!usePlugins.isEmpty()) {
+//                boolean copied = pluginService.copyPlugins(usePlugins, simPluginDir.toString());
+//                if (!copied) {
+//                    return ResponseEntity.internalServerError()
+//                            .body(ApiResponse.error("ERR_FILE", "copy plugin files error"));
+//                }
+//            }
+//
+//            // 启动仿真引擎
+//            startSimulationEngine(id, simName, usePlugins);
+//
             sessionServiceImpl.updateSessionInfo(id, simInfo);
 
             return ResponseEntity.ok(ApiResponse.success("ok"));
@@ -215,8 +228,8 @@ public class SimulationController {
     }
 
     private static String getRoadPathName(SimInfo simInfo) {
-        int pos = simInfo.getMap_xml_path().lastIndexOf("\\");
-        String fileName = simInfo.getMap_xml_path().substring(pos + 1);
+        int pos = simInfo.getXml_path().lastIndexOf("\\");
+        String fileName = simInfo.getXml_path().substring(pos + 1);
         return fileName;
     }
 

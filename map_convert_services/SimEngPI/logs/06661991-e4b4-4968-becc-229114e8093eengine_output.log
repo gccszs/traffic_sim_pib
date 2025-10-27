@@ -1,0 +1,18 @@
+[2025-09-13 20:33:39|0x00007708][info]	[34m[+] Init BLog Over![0m
+[2025-09-13 20:33:39|0x00007708][info]	[34m[+] SetWorkDir: D:\traffic_pj\java_bk_pib\SimEngPIB-main\SimEngPI[0m
+[2025-09-13 20:33:39|0x00007708][info]	[34m[+] Set SimID test Over![0m
+[2025-09-13 20:33:39|0x00007708][info]	[34m[+] Set SimFiles Path: 06661991-e4b4-4968-becc-229114e8093e Over![0m
+[2025-09-13 20:33:39|0x00007708][info]	[34m[+] Use RoadNetwork File: 06661991-e4b4-4968-becc-229114e8093e\map2.xml[0m
+[2025-09-13 20:33:39|0x00007708][info]	[34m[+] Use OD File: 06661991-e4b4-4968-becc-229114e8093e\od.xml[0m
+[2025-09-13 20:33:39|0x00007708][info]	[34m[-] Launch as no plug-in![0m
+[2025-09-13 20:33:39|0x00007708][info]	[34m[+] Base Initialization Complete![0m
+[2025-09-13 20:33:39|0x00007708][debug]	[32m[#] Connected to 127.0.0.1:3822/ws/exe/06661991-e4b4-4968-becc-229114e8093e[0m
+[2025-09-13 20:33:39|0x00007708][info]	[34m[+] Connect websocket to backend ok...[0m
+[2025-09-13 20:33:39|0x00007708][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"hi","time":1757766819117}[0m
+[2025-09-13 20:33:39|0x00007708][info]	[34m[+] Init backend manager ok![0m
+[2025-09-13 20:33:42|0x00007708][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"setdelay","time":1757766822860,"data":{"Delay":49}}[0m
+[2025-09-13 20:33:42|0x00007708][info]	[34m[*] Set New Delay: 49[0m
+[2025-09-13 20:33:42|0x00007708][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1757766822862, "data":{"result": "setdelay_ok"}}[0m
+[2025-09-13 20:45:24|0x00007708][error]	[31m[!] Error in receive_text: End of file [asio.misc:2][0m
+[2025-09-13 20:45:24|0x00007708][error]	[31m[!] ws recv msg is empty! something went wrong...[0m
+[2025-09-13 20:45:24|0x00007708][error]	[31m[!] Error in close: ”…”⁄œﬂ≥ÃÕÀ≥ˆªÚ”¶”√≥Ã–Ú«Î«Û£¨“—÷–÷π I/O ≤Ÿ◊˜°£ [system:995 at D:\Works\GraduationDesign\SimEngPI\vcpkg_installed\x64-windows\x64-windows\include\boost\beast\websocket\impl\stream_impl.hpp:355:13 in function 'bool __cdecl boost::beast::websocket::stream<class boost::asio::basic_stream_socket<class boost::asio::ip::tcp,class boost::asio::any_io_executor>,1>::impl_type::check_stop_now(class boost::system::error_code &)'][0m
