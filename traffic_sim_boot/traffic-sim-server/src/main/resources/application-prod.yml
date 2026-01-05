@@ -1,0 +1,28 @@
+spring:
+  # 数据源配置 - MySQL (生产环境)
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:traffic_sim}?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+  
+  # MongoDB配置 (生产环境)
+  data:
+    mongodb:
+      host: ${MONGO_HOST:localhost}
+      port: ${MONGO_PORT:27017}
+      database: ${MONGO_DATABASE:traffic_sim}
+      username: ${MONGO_USERNAME:}
+      password: ${MONGO_PASSWORD:}
+
+# 服务器配置
+server:
+  port: ${SERVER_PORT:8080}
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.traffic.sim: INFO
+  file:
+    name: /var/log/traffic-sim/server.log
+

@@ -1,0 +1,7 @@
+plugin:
+  user:
+    # 默认角色ID（需要在数据库中预先创建）
+    default-role: 1
+    # 密码加密方式
+    password-encryption: BCrypt
+

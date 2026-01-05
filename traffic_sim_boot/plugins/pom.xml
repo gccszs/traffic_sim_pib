@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.traffic.sim</groupId>
+        <artifactId>traffic-sim-boot</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>plugins</artifactId>
+    <packaging>pom</packaging>
+    <name>plugins</name>
+    <description>Plugins parent module</description>
+
+    <modules>
+        <module>plugin-auth</module>
+        <module>plugin-user</module>
+        <module>plugin-map</module>
+        <module>plugin-simulation</module>
+        <module>plugin-engine-manager</module>
+        <module>plugin-statistics</module>
+        <module>plugin-engine-replay</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 所有插件都依赖common模块 -->
+            <dependency>
+                <groupId>com.traffic.sim</groupId>
+                <artifactId>traffic-sim-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
+

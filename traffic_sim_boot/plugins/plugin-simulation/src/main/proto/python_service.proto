@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package com.traffic.sim.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.traffic.sim.plugin.simulation.grpc.proto";
+option java_outer_classname = "PythonServiceProto";
+
+// Python服务接口定义
+service PythonService {
+  // 初始化仿真引擎
+  rpc CreateSimeng(CreateSimengRequest) returns (ApiResponse);
+  
+  // 绿信比控制
+  rpc ControlGreenRatio(GreenRatioControlRequest) returns (ApiResponse);
+  
+  // 测试连接
+  rpc TestConnection(Empty) returns (TestResponse);
+}
+
+// 创建仿真引擎请求
+message CreateSimengRequest {
+  SimInfo simInfo = 1;
+  repeated ControlView controlViews = 2;
+  string userId = 3;
+}
+
+message SimInfo {
+  string name = 1;
+  string mapXmlName = 2;
+  string mapXmlPath = 3;
+  FixedOD fixedOd = 4;
+}
+
+message FixedOD {
+  repeated OriginOD od = 1;
+  repeated SignalGroup sg = 2;
+}
+
+message OriginOD {
+  string originId = 1;
+  repeated Destination dist = 2;
+}
+
+message Destination {
+  string destId = 1;
+  double rate = 2;
+}
+
+message SignalGroup {
+  int32 crossId = 1;
+  int32 cycleTime = 2;
+  int32 ewStraight = 3;
+  int32 snStraight = 4;
+  int32 snLeft = 5;
+}
+
+message ControlView {
+  bool usePlugin = 1;
+  string activePlugin = 2;
+}
+
+// 响应消息
+message ApiResponse {
+  string res = 1;
+  string msg = 2;
+  string data = 3;
+}
+
+message TestResponse {
+  bool connected = 1;
+  string message = 2;
+}
+
+// 绿信比控制请求
+message GreenRatioControlRequest {
+  int32 greenRatio = 1;  // 绿信比值（整数，0-100，表示百分比）
+}
+
+message Empty {}
+

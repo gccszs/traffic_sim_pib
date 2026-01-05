@@ -1,0 +1,117 @@
+spring:
+  application:
+    name: traffic-sim-server
+  
+  # 数据源配置 - MySQL
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/traffic_sim?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+  
+  # MongoDB配置
+  data:
+    mongodb:
+      # 使用URI方式配置（推荐，包含认证信息）
+      uri: mongodb://root:root@localhost:27017/traffic_sim?authSource=admin
+      # 或者使用分离配置（如果URI方式有问题，可以取消注释下面的配置）
+      # host: localhost
+      # port: 27017
+      # database: traffic_sim
+      # username: root
+      # password: root
+      # authentication-database: admin 
+
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+
+# 服务器配置
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+# SpringDoc OpenAPI配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# gRPC 客户端配置
+grpc:
+  client:
+    python-service:
+      # 是否启用gRPC客户端（如果设为false，将始终使用兜底数据）
+      enabled: true
+      address: 'static://localhost:50051'
+      negotiationType: plaintext
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      keepAliveTime: 30s
+      keepAliveTimeout: 5s
+      # 容错配置：如果gRPC服务不可用，不会导致应用启动失败
+      # 应用会在运行时返回兜底数据
+
+# 应用配置
+app:
+  # 引擎服务配置
+  engine:
+    python-service:
+      host: localhost
+      port: 5000
+      timeout: 30000
+  
+  # WebSocket配置
+  websocket:
+    frontend:
+      path: /ws/frontend
+    engine:
+      path: /ws/exe
+  
+  # 文件上传配置
+  upload:
+    max-file-size: 100MB
+    max-request-size: 100MB
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.traffic.sim: DEBUG
+    org.springframework.web: INFO
+    org.hibernate: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/traffic-sim-server.log
+    max-size: 10MB
+    max-history: 30

@@ -1,0 +1,23 @@
+spring:
+  # 数据源配置 - MySQL (开发环境)
+  datasource:
+    url: jdbc:mysql://localhost:3306/traffic_sim_dev?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+  
+  # MongoDB配置 (开发环境)
+  data:
+    mongodb:
+      database: traffic_sim_dev
+
+# 服务器配置
+server:
+  port: 8080
+
+# 日志配置
+logging:
+  level:
+    root: DEBUG
+    com.traffic.sim: DEBUG
+    org.springframework.web: DEBUG
+
