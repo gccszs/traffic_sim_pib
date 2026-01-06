@@ -20,8 +20,8 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      - ./mysql/conf:/etc/mysql/conf.d:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./mysql/conf:/etc/mysql/conf.d
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -41,8 +41,8 @@ services:
   # ============================================
   mongodb:
     # Using DaoCloud mirror for better connectivity in China
-    image: m.daocloud.io/docker.io/library/mongo:7.0
-    
+    image: mongo:7.0
+    platform: linux/amd64
     container_name: traffic-sim-mongodb
     restart: unless-stopped
     environment:
@@ -55,7 +55,7 @@ services:
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
-      - ./mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
     command: mongod --auth
     networks:
       - traffic-sim-network
@@ -79,7 +79,7 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     networks:
       - traffic-sim-network
     healthcheck:
