@@ -165,8 +165,8 @@ def copy_plugin(name: Union[str, List[str]], new_folder: str) -> bool:
             continue
         try:
             # 复制源文件夹到目标文件夹
-            src = plugin_manage.root_path + "\\" + p_info.storage_dir
-            dst = new_folder + "\\" + p_info.storage_dir
+            src = Path(plugin_manage.root_path) / p_info.storage_dir
+            dst = Path(new_folder) / p_info.storage_dir
             shutil.copytree(src, dst, dirs_exist_ok=True)
         except FileExistsError as e:
             print("copy_plugin err: " + str(e))
