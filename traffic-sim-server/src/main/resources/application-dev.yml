@@ -12,7 +12,7 @@ spring:
 
 # 服务器配置
 server:
-  port: 8080
+  port: 3822
 
 # 日志配置
 logging:

@@ -34,9 +34,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
      * 不需要认证的路径
      */
     private static final List<String> EXCLUDE_PATHS = Arrays.asList(
-        "/api/auth/login",
-        "/api/auth/register",
-        "/api/auth/captcha",
+        "/auth/login",
+        "/auth/register",
+        "/auth/captcha",
         "/swagger-ui",
         "/v3/api-docs",
         "/error"
@@ -46,7 +46,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, 
                            HttpServletResponse response, 
                            Object handler) throws Exception {
-        String path = request.getRequestURI();
+        String path = request.getServletPath();
+        log.info("[Auth Debug] Servlet Path: {}, Method: {}", path, request.getMethod());
         
         // 检查是否在排除列表中
         if (isExcludedPath(path)) {
@@ -106,7 +107,10 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
      * 检查路径是否在排除列表中
      */
     private boolean isExcludedPath(String path) {
-        return EXCLUDE_PATHS.stream().anyMatch(path::startsWith);
+        log.info("[Auth Debug] Current Exclude Paths: {}", EXCLUDE_PATHS);
+        boolean match = EXCLUDE_PATHS.stream().anyMatch(path::startsWith);
+        log.info("[Auth Debug] Path: {}, Matches Exclude: {}", path, match);
+        return match;
     }
     
     /**
@@ -114,6 +118,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
      */
     private void handleUnauthorized(HttpServletResponse response, String message) throws Exception {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setHeader("X-Auth-Source", "CustomInterceptor");
         response.setContentType("application/json;charset=UTF-8");
         
         ApiResponse<Object> apiResponse = ApiResponse.error(ErrorCode.ERR_AUTH, message);

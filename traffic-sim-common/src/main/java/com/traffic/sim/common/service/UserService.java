@@ -23,7 +23,7 @@ public interface UserService {
     /**
      * 创建用户
      */
-    UserDTO createUser(UserDTO userDTO);
+    UserDTO createUser(UserDTO userDTO, String password);
     
     /**
      * 更新用户

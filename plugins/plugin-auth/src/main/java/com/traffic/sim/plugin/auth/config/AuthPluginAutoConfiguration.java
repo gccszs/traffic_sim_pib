@@ -25,11 +25,12 @@ public class AuthPluginAutoConfiguration implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册认证拦截器
         registry.addInterceptor(authenticationInterceptor)
-            .addPathPatterns("/api/**")
+            .addPathPatterns("/**")
             .excludePathPatterns(
-                "/api/auth/login",
-                "/api/auth/register",
-                "/api/auth/captcha",
+                "/auth/login",
+                "/auth/register",
+                "/auth/captcha",
+                "/swagger-ui.html",
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/error"
@@ -37,9 +38,10 @@ public class AuthPluginAutoConfiguration implements WebMvcConfigurer {
         
         // 注册权限拦截器（在认证拦截器之后执行）
         registry.addInterceptor(permissionInterceptor)
-            .addPathPatterns("/api/**")
+            .addPathPatterns("/**")
             .excludePathPatterns(
-                "/api/auth/**",
+                "/auth/**",
+                "/swagger-ui.html",
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/error"
