@@ -10,8 +10,11 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * Spring Security配置
  * 
- * 注意：实际的认证和授权由 plugin-auth 模块的拦截器处理
- * 这里只是禁用 Spring Security 的默认行为
+ * 注意：实际的认证和授权由 plugin-auth 模块的 AuthenticationInterceptor 处理
+ * Spring Security 在这里只负责：
+ * 1. 禁用 CSRF（使用 JWT 不需要）
+ * 2. 禁用会话（无状态）
+ * 3. 放行所有请求到业务层
  *
  * @author traffic-sim
  */
@@ -24,16 +27,9 @@ public class SecurityConfig {
         http
             // 禁用CSRF（因为使用JWT，不需要CSRF保护）
             .csrf(csrf -> csrf.disable())
-            // 配置请求授权
+            // 放行所有请求，认证由 plugin-auth 的 AuthenticationInterceptor 处理
             .authorizeHttpRequests(auth -> auth
-                // 允许认证相关接口匿名访问
-                .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/captcha").permitAll()
-                // 允许Swagger UI和API文档访问
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                // 允许静态资源访问
-                .requestMatchers("/static/**", "/public/**").permitAll()
-                // 其他请求需要认证
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
             )
             // 使用无状态会话（JWT方式）
             .sessionManagement(session ->
