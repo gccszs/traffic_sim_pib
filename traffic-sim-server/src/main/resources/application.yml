@@ -1,7 +1,7 @@
 spring:
   application:
     name: traffic-sim-server
-  
+
   # 数据源配置 - MySQL
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -14,7 +14,7 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
-  
+
   # JPA配置
   jpa:
     hibernate:
@@ -24,7 +24,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
-  
+
   # MongoDB配置
   data:
     mongodb:
@@ -36,7 +36,7 @@ spring:
       # database: traffic_sim
       # username: root
       # password: root
-      # authentication-database: admin 
+      # authentication-database: admin
 
   # Jackson配置
   jackson:
@@ -49,7 +49,7 @@ spring:
 server:
   port: 8080
   servlet:
-    context-path: /api
+    context-path: /
     encoding:
       charset: UTF-8
       enabled: true
@@ -70,7 +70,7 @@ grpc:
   client:
     python-service:
       # 是否启用gRPC客户端（如果设为false，将始终使用兜底数据）
-      enabled: true
+#      enabled: true
       address: 'static://localhost:50051'
       negotiationType: plaintext
       enableKeepAlive: true
@@ -88,18 +88,24 @@ app:
       host: localhost
       port: 5000
       timeout: 30000
-  
+
   # WebSocket配置
   websocket:
     frontend:
       path: /ws/frontend
     engine:
       path: /ws/exe
-  
+
   # 文件上传配置
   upload:
     max-file-size: 100MB
     max-request-size: 100MB
+
+# 认证插件配置
+plugin:
+  auth:
+    captcha:
+      enabled: false  # 禁用验证码以便测试
 
 # 日志配置
 logging:

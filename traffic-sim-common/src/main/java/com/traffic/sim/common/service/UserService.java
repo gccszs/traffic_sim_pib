@@ -39,5 +39,15 @@ public interface UserService {
      * 验证用户密码
      */
     boolean validatePassword(String username, String password);
+
+    /**
+     * 检查用户名是否存在
+     */
+    boolean existsByUsername(String username);
+
+    /**
+     * 创建用户（包含密码）
+     */
+    UserDTO createUserWithPassword(String username, String password, String email, String phoneNumber, String institution);
 }
 

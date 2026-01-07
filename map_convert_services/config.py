@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     port: int = Field(default=8000, env="APP_PORT")
     client_socket_ip: str = Field(default="192.168.1.212", env="CLIENT_SOCKET_IP")
 
+    # gRPC配置
+    grpc_port: int = Field(default=50052, env="GRPC_PORT")
+
     # 日志配置
     log_home: str = Field(default="./engine_sim_logs/", env="LOG_HOME")
 

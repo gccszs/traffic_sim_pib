@@ -94,24 +94,15 @@ public class JwtTokenService {
     
     /**
      * 验证令牌是否有效
+     * 注意：parseToken 在解析过程中会验证签名和过期时间，
+     * 如果令牌无效或已过期，会返回 null
      */
     public boolean validateToken(String token) {
-        try {
-            TokenInfo tokenInfo = parseToken(token);
-            if (tokenInfo == null) {
-                return false;
-            }
-            
-            // 检查是否过期
-            if (tokenInfo.getExpiresAt() < System.currentTimeMillis()) {
-                return false;
-            }
-            
-            return true;
-        } catch (Exception e) {
-            log.error("验证JWT令牌失败: {}", e.getMessage());
+        if (token == null || token.isEmpty()) {
             return false;
         }
+        // parseToken 已经处理了所有验证逻辑，包括签名验证和过期检查
+        return parseToken(token) != null;
     }
 }
 

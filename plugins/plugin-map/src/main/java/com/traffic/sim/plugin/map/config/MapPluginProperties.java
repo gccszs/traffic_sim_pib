@@ -77,7 +77,7 @@ public class MapPluginProperties {
     @Data
     public static class PythonServiceConfig {
         /**
-         * Python服务URL
+         * Python服务URL（HTTP接口）
          */
         private String url = "http://localhost:8000";
         
@@ -87,9 +87,14 @@ public class MapPluginProperties {
         private long timeout = 300000;
         
         /**
+         * gRPC主机地址
+         */
+        private String grpcHost = "localhost";
+        
+        /**
          * gRPC端口
          */
-        private int grpcPort = 50051;
+        private int grpcPort = 50052;
     }
 }
 

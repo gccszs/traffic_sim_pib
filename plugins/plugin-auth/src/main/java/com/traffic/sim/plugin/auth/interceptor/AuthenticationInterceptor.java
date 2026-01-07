@@ -5,16 +5,17 @@ import com.traffic.sim.common.response.ApiResponse;
 import com.traffic.sim.common.service.AuthService;
 import com.traffic.sim.common.service.TokenInfo;
 import com.traffic.sim.common.util.JsonUtils;
+import com.traffic.sim.plugin.auth.config.AuthPluginProperties;
 import com.traffic.sim.plugin.auth.util.RequestContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,18 +30,9 @@ import java.util.List;
 public class AuthenticationInterceptor implements HandlerInterceptor {
     
     private final AuthService authService;
+    private final AuthPluginProperties authProperties;
     
-    /**
-     * 不需要认证的路径
-     */
-    private static final List<String> EXCLUDE_PATHS = Arrays.asList(
-        "/api/auth/login",
-        "/api/auth/register",
-        "/api/auth/captcha",
-        "/swagger-ui",
-        "/v3/api-docs",
-        "/error"
-    );
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
     
     @Override
     public boolean preHandle(HttpServletRequest request, 
@@ -106,7 +98,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
      * 检查路径是否在排除列表中
      */
     private boolean isExcludedPath(String path) {
-        return EXCLUDE_PATHS.stream().anyMatch(path::startsWith);
+        List<String> excludePaths = authProperties.getInterceptor().getExcludePaths();
+        return excludePaths.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
     }
     
     /**

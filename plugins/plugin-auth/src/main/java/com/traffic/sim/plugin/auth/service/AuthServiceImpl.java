@@ -7,6 +7,7 @@ import com.traffic.sim.common.dto.RegisterRequest;
 import com.traffic.sim.common.dto.UserDTO;
 import com.traffic.sim.common.exception.BusinessException;
 import com.traffic.sim.common.service.AuthService;
+import com.traffic.sim.common.service.PermissionService;
 import com.traffic.sim.common.service.TokenInfo;
 import com.traffic.sim.common.service.UserService;
 import com.traffic.sim.plugin.auth.config.AuthPluginProperties;
@@ -14,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,6 +33,17 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenService jwtTokenService;
     private final CaptchaService captchaService;
     private final AuthPluginProperties authProperties;
+    private final PermissionService permissionService;
+    
+    /**
+     * 令牌存储容量限制
+     */
+    private static final int MAX_TOKEN_STORE_SIZE = 50000;
+    
+    /**
+     * 失效令牌保留时间（毫秒）- 默认保留1小时
+     */
+    private static final long INVALIDATED_TOKEN_RETENTION_MS = 60 * 60 * 1000L;
     
     /**
      * 存储刷新令牌的Map，key为refreshToken，value为TokenInfo
@@ -43,8 +55,17 @@ public class AuthServiceImpl implements AuthService {
      */
     private final ConcurrentHashMap<String, Long> invalidatedTokens = new ConcurrentHashMap<>();
     
+    /**
+     * 存储accessToken到refreshToken的映射关系
+     * 用于登出时同时清理对应的refreshToken
+     */
+    private final ConcurrentHashMap<String, String> accessToRefreshMapping = new ConcurrentHashMap<>();
+    
     @Override
     public LoginResponse login(LoginRequest request) {
+        // 检查令牌存储容量
+        checkTokenStoreCapacity();
+        
         // 验证验证码
         if (authProperties.getCaptcha().getEnabled()) {
             if (!captchaService.validateCaptcha(request.getCaptchaId(), request.getCaptcha())) {
@@ -64,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
         }
         
         // 检查用户状态
-        if (!"ACTIVE".equals(user.getStatus())) {
+        if (!"NORMAL".equals(user.getStatus())) {
             throw new BusinessException(ErrorCode.ERR_AUTH, "用户已被禁用");
         }
         
@@ -77,6 +98,9 @@ public class AuthServiceImpl implements AuthService {
         
         // 存储刷新令牌
         refreshTokenStore.put(refreshToken, tokenInfo);
+        
+        // 存储accessToken到refreshToken的映射关系
+        accessToRefreshMapping.put(accessToken, refreshToken);
         
         // 构建响应
         LoginResponse response = new LoginResponse();
@@ -93,32 +117,21 @@ public class AuthServiceImpl implements AuthService {
     public void register(RegisterRequest request) {
         // 验证密码强度
         validatePasswordStrength(request.getPassword());
-        
+
         // 检查用户名是否已存在
-        UserDTO existingUser = userService.getUserByUsername(request.getUsername());
-        if (existingUser != null) {
+        if (userService.existsByUsername(request.getUsername())) {
             throw new BusinessException(ErrorCode.ERR_EXIST, "用户名已存在");
         }
-        
-        // 创建用户DTO
-        // 注意：UserDTO 不包含密码字段，密码需要通过其他方式传递给 UserService
-        // plugin-user 模块实现时，可能需要扩展 UserService 接口或使用其他方式传递密码
-        UserDTO userDTO = new UserDTO();
-        userDTO.setUsername(request.getUsername());
-        userDTO.setEmail(request.getEmail());
-        userDTO.setPhoneNumber(request.getPhoneNumber());
-        userDTO.setInstitution(request.getInstitution());
-        userDTO.setStatus("ACTIVE");
-        userDTO.setRoleId(1); // 默认角色ID，可根据需求调整
-        userDTO.setRoleName("USER"); // 默认角色名称
-        
-        // TODO: 密码传递问题需要解决
-        // 方案1: 扩展 UserService.createUser 方法，添加密码参数
-        // 方案2: 创建 CreateUserRequest DTO，包含密码字段
-        // 方案3: 在 UserDTO 中添加临时密码字段（不推荐）
-        // 当前实现：假设 plugin-user 模块会通过其他方式获取密码（如从 RegisterRequest）
-        userService.createUser(userDTO);
-        
+
+        // 创建用户
+        userService.createUserWithPassword(
+            request.getUsername(),
+            request.getPassword(),
+            request.getEmail(),
+            request.getPhoneNumber(),
+            request.getInstitution()
+        );
+
         log.info("用户注册成功: {}", request.getUsername());
     }
     
@@ -168,6 +181,11 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenStore.remove(refreshToken);
         refreshTokenStore.put(newRefreshToken, tokenInfo);
         
+        // 更新accessToken到refreshToken的映射关系
+        // 移除旧的映射（通过遍历找到旧的accessToken）
+        accessToRefreshMapping.entrySet().removeIf(entry -> refreshToken.equals(entry.getValue()));
+        accessToRefreshMapping.put(newAccessToken, newRefreshToken);
+        
         // 获取用户信息
         UserDTO user = userService.getUserById(Long.parseLong(tokenInfo.getUserId()));
         
@@ -190,13 +208,15 @@ public class AuthServiceImpl implements AuthService {
         // 将令牌标记为失效
         invalidatedTokens.put(token, System.currentTimeMillis());
         
-        // 解析令牌获取刷新令牌（如果有）
-        TokenInfo tokenInfo = jwtTokenService.parseToken(token);
-        if (tokenInfo != null) {
-            // 清理刷新令牌（需要找到对应的refreshToken，这里简化处理）
-            // 实际实现中可能需要维护accessToken和refreshToken的映射关系
+        // 通过映射关系找到并清理对应的refreshToken
+        String refreshToken = accessToRefreshMapping.remove(token);
+        if (refreshToken != null) {
+            refreshTokenStore.remove(refreshToken);
+            log.debug("已清理对应的刷新令牌");
         }
         
+        // 解析令牌获取用户信息用于日志
+        TokenInfo tokenInfo = jwtTokenService.parseToken(token);
         log.info("用户登出: {}", tokenInfo != null ? tokenInfo.getUsername() : "unknown");
     }
     
@@ -212,19 +232,31 @@ public class AuthServiceImpl implements AuthService {
         tokenInfo.setExpiresAt(System.currentTimeMillis() + 
             authProperties.getJwt().getExpire() * 1000L);
         
-        // 设置权限列表（根据角色，这里简化处理）
-        List<String> permissions = new ArrayList<>();
-        if ("ADMIN".equals(user.getRoleName())) {
-            permissions.add("user:create");
-            permissions.add("user:update");
-            permissions.add("user:delete");
-            permissions.add("user:query");
-        } else {
-            permissions.add("user:query");
+        // 从数据库动态获取权限列表
+        List<String> permissions = permissionService.getPermissionsByUserId(user.getId());
+        
+        // 如果数据库中没有配置权限，则使用默认权限
+        if (permissions == null || permissions.isEmpty()) {
+            log.debug("用户 {} 未配置权限，使用默认权限", user.getUsername());
+            permissions = getDefaultPermissions(user.getRoleName());
         }
+        
         tokenInfo.setPermissions(permissions);
         
         return tokenInfo;
+    }
+    
+    /**
+     * 获取默认权限（用于数据库未配置权限时的降级处理）
+     */
+    private List<String> getDefaultPermissions(String roleName) {
+        if ("ADMIN".equals(roleName)) {
+            return Arrays.asList("user:create", "user:update", "user:delete", "user:query",
+                    "map:create", "map:update", "map:delete", "map:query",
+                    "simulation:create", "simulation:control", "simulation:query");
+        } else {
+            return Arrays.asList("user:query", "map:query", "simulation:query");
+        }
     }
     
     /**
@@ -256,6 +288,52 @@ public class AuthServiceImpl implements AuthService {
         if (passwordConfig.getRequireSpecial() && 
             !password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
             throw new BusinessException(ErrorCode.ERR_ARG, "密码必须包含特殊字符");
+        }
+    }
+    
+    /**
+     * 清理过期的令牌存储
+     * 由定时任务调用
+     */
+    public void cleanExpiredTokens() {
+        long now = System.currentTimeMillis();
+        
+        // 清理过期的刷新令牌
+        int refreshTokensBefore = refreshTokenStore.size();
+        refreshTokenStore.entrySet().removeIf(entry -> {
+            TokenInfo tokenInfo = entry.getValue();
+            // 使用刷新令牌的过期时间判断
+            long refreshExpireTime = tokenInfo.getIssuedAt() + 
+                authProperties.getJwt().getRefreshExpire() * 1000L;
+            return now > refreshExpireTime;
+        });
+        int refreshTokensRemoved = refreshTokensBefore - refreshTokenStore.size();
+        
+        // 清理过期的失效令牌记录（保留一段时间后删除）
+        int invalidatedBefore = invalidatedTokens.size();
+        invalidatedTokens.entrySet().removeIf(entry -> 
+            now - entry.getValue() > INVALIDATED_TOKEN_RETENTION_MS);
+        int invalidatedRemoved = invalidatedBefore - invalidatedTokens.size();
+        
+        // 清理孤立的映射关系
+        int mappingsBefore = accessToRefreshMapping.size();
+        accessToRefreshMapping.entrySet().removeIf(entry -> 
+            !refreshTokenStore.containsKey(entry.getValue()));
+        int mappingsRemoved = mappingsBefore - accessToRefreshMapping.size();
+        
+        if (refreshTokensRemoved > 0 || invalidatedRemoved > 0 || mappingsRemoved > 0) {
+            log.info("令牌清理完成: 刷新令牌移除 {}, 失效记录移除 {}, 映射关系移除 {}", 
+                refreshTokensRemoved, invalidatedRemoved, mappingsRemoved);
+        }
+    }
+    
+    /**
+     * 检查并维护令牌存储容量
+     */
+    private void checkTokenStoreCapacity() {
+        if (refreshTokenStore.size() >= MAX_TOKEN_STORE_SIZE) {
+            log.warn("刷新令牌存储接近上限: {}, 触发清理", refreshTokenStore.size());
+            cleanExpiredTokens();
         }
     }
 }

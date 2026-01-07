@@ -3,6 +3,9 @@ package com.traffic.sim.plugin.auth.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * 认证插件配置属性
  * 
@@ -26,6 +29,11 @@ public class AuthPluginProperties {
      * 验证码配置
      */
     private Captcha captcha = new Captcha();
+    
+    /**
+     * 拦截器配置
+     */
+    private Interceptor interceptor = new Interceptor();
     
     @Data
     public static class Jwt {
@@ -99,6 +107,47 @@ public class AuthPluginProperties {
          * 验证码过期时间（秒）
          */
         private Integer expireSeconds = 300;
+    }
+    
+    @Data
+    public static class Interceptor {
+        /**
+         * 需要认证的路径模式
+         */
+        private List<String> protectedPaths = Arrays.asList(
+            "/api/**",
+            // 旧版兼容接口
+            "/saveMapInfo",
+            "/getUserMap",
+            "/getMapInfoDB",
+            "/previewMapInfo",
+            "/deleteMap",
+            "/getAllMap",
+            "/getPublicMap"
+        );
+        
+        /**
+         * 排除认证的路径（不需要认证）
+         */
+        private List<String> excludePaths = Arrays.asList(
+            "/api/auth/login",
+            "/api/auth/register",
+            "/api/auth/captcha",
+            "/api/auth/refresh",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/error"
+        );
+        
+        /**
+         * 排除权限检查的路径
+         */
+        private List<String> excludePermissionPaths = Arrays.asList(
+            "/api/auth/**",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/error"
+        );
     }
 }
 
