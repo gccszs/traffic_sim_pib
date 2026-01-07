@@ -1,0 +1,206 @@
+# ============================================
+# Traffic Simulation - 完整部署配置
+# 包含所有服务：基础设施 + 应用服务
+#
+# 使用方法：
+# 1. 先打包 Java 项目: mvn clean package -DskipTests
+# 2. 启动所有服务: docker-compose -f docker-compose.full.yml up -d --build
+# ============================================
+
+version: '3.8'
+
+services:
+  # ============================================
+  # MySQL 数据库服务
+  # ============================================
+  mysql:
+    image: m.daocloud.io/docker.io/library/mysql:8.0
+    container_name: traffic-sim-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: traffic_sim
+      MYSQL_USER: traffic_sim
+      MYSQL_PASSWORD: traffic_sim
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./infrastructure/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./infrastructure/mysql/conf:/etc/mysql/conf.d
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max_connections=1000
+    networks:
+      - traffic-sim-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # MongoDB 数据库服务
+  # ============================================
+  mongodb:
+    image: mongo:7.0
+    platform: linux/amd64
+    container_name: traffic-sim-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: traffic_sim
+      TZ: Asia/Shanghai
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+      - ./infrastructure/mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    command: mongod --auth
+    networks:
+      - traffic-sim-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # Redis 缓存服务
+  # ============================================
+  redis:
+    image: m.daocloud.io/docker.io/library/redis:7.2-alpine
+    container_name: traffic-sim-redis
+    restart: unless-stopped
+    command: redis-server --requirepass redis123 --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - traffic-sim-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ============================================
+  # Java 后端服务
+  # ============================================
+  traffic-sim-server:
+    build:
+      context: ./traffic-sim-server
+      dockerfile: Dockerfile.simple
+    image: traffic-sim-server:latest
+    container_name: traffic-sim-server
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 3822
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: traffic_sim
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_DATABASE: traffic_sim
+      MONGO_USERNAME: root
+      MONGO_PASSWORD: root
+      PYTHON_SERVICE_HOST: python-service
+      PYTHON_SERVICE_PORT: 8000
+      PYTHON_GRPC_HOST: python-service
+      PYTHON_GRPC_PORT: 50052
+      JAVA_OPTS: -Xms512m -Xmx1024m -XX:+UseG1GC
+      TZ: Asia/Shanghai
+    ports:
+      - "3822:3822"
+    volumes:
+      - server_logs:/app/logs
+      - server_maps:/app/maps
+    networks:
+      - traffic-sim-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3822/api/v3/api-docs"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+  # ============================================
+  # Python 地图转换服务
+  # ============================================
+  python-service:
+    build:
+      context: ./map_convert_services
+      dockerfile: Dockerfile
+    image: traffic-sim-python:latest
+    container_name: traffic-sim-python
+    restart: unless-stopped
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      GRPC_PORT: 50052
+      CLIENT_SOCKET_IP: traffic-sim-server
+      LOG_HOME: /app/engine_sim_logs/
+      TZ: Asia/Shanghai
+    ports:
+      - "8000:8000"
+      - "50052:50052"
+    volumes:
+      - python_logs:/app/engine_sim_logs
+      - python_cache:/app/cache
+      - python_plugins:/app/plugins
+    networks:
+      - traffic-sim-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/test"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+# ============================================
+# 数据卷定义
+# ============================================
+volumes:
+  mysql_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+  redis_data:
+    driver: local
+  server_logs:
+    driver: local
+  server_maps:
+    driver: local
+  python_logs:
+    driver: local
+  python_cache:
+    driver: local
+  python_plugins:
+    driver: local
+
+# ============================================
+# 网络定义
+# ============================================
+networks:
+  traffic-sim-network:
+    driver: bridge
+    name: traffic-sim-network
+

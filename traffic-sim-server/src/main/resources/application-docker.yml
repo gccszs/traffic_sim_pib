@@ -1,0 +1,120 @@
+# ============================================
+# Docker 环境配置
+# ============================================
+spring:
+  application:
+    name: traffic-sim-server
+  
+  # 数据源配置 - MySQL (Docker)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:traffic_sim}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+  
+  # MongoDB配置 (Docker)
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USERNAME:root}:${MONGO_PASSWORD:root}@${MONGO_HOST:mongodb}:${MONGO_PORT:27017}/${MONGO_DATABASE:traffic_sim}?authSource=admin
+
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+
+# 服务器配置
+server:
+  port: ${SERVER_PORT:3822}
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+# SpringDoc OpenAPI配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# gRPC 客户端配置
+grpc:
+  client:
+    python-service:
+      address: static://${PYTHON_GRPC_HOST:python-service}:${PYTHON_GRPC_PORT:50051}
+      negotiationType: plaintext
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      keepAliveTime: 30s
+      keepAliveTimeout: 5s
+
+# 应用配置
+app:
+  # 引擎服务配置
+  engine:
+    python-service:
+      host: ${PYTHON_SERVICE_HOST:python-service}
+      port: ${PYTHON_SERVICE_PORT:8000}
+      timeout: 30000
+  
+  # WebSocket配置
+  websocket:
+    frontend:
+      path: /ws/frontend
+    engine:
+      path: /ws/exe
+  
+  # 文件上传配置
+  upload:
+    max-file-size: 100MB
+    max-request-size: 100MB
+
+# 插件配置
+plugin:
+  auth:
+    captcha:
+      enabled: false
+  map:
+    storage:
+      base-path: /app/maps
+    python-service:
+      grpc-host: ${PYTHON_GRPC_HOST:python-service}
+      grpc-port: ${PYTHON_GRPC_PORT:50052}
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.traffic.sim: INFO
+    org.springframework.web: INFO
+    org.hibernate: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /app/logs/traffic-sim-server.log
+    max-size: 50MB
+    max-history: 30
+
