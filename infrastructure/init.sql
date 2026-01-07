@@ -202,6 +202,20 @@ ON DUPLICATE KEY UPDATE `role_id`=VALUES(`role_id`);
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================
+-- 授权远程访问（Docker 网络必需）
+-- ============================================
+
+-- 授权 root 用户从任意主机连接
+CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY 'root';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+
+-- 授权 traffic_sim 用户从任意主机连接
+CREATE USER IF NOT EXISTS 'traffic_sim'@'%' IDENTIFIED BY 'traffic_sim';
+GRANT ALL PRIVILEGES ON traffic_sim.* TO 'traffic_sim'@'%';
+
+FLUSH PRIVILEGES;
+
+-- ============================================
 -- 初始化完成
 -- ============================================
 
