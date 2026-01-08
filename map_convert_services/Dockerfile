@@ -61,6 +61,14 @@ VOLUME ["/data/logs", "/data/config"]
 
 # 暴露端口
 EXPOSE $APP_PORT
+EXPOSE 50052
 
-# 默认只启动 Python 服务
-CMD ["python3", "web_app.py", "--port", "8000"]
+# 安装 gRPC 依赖
+RUN pip3 install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple/ grpcio grpcio-tools protobuf
+
+# 启动脚本
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+# 默认启动 Python 服务
+CMD ["/app/start.sh"]

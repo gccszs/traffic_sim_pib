@@ -1,0 +1,48 @@
+# ============================================
+# Traffic Simulation Server Dockerfile
+# 简化版 - 直接使用已打包的 jar 文件
+# ============================================
+
+FROM eclipse-temurin:17-jre-alpine
+
+LABEL maintainer="traffic-sim-team"
+LABEL version="1.0.0"
+LABEL description="Traffic Simulation Server"
+
+# 安装必要工具
+RUN apk add --no-cache \
+    curl \
+    tzdata \
+    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone
+
+# 创建应用用户
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制已打包的 jar 文件
+COPY target/traffic-sim-server-*.jar app.jar
+
+# 创建日志和数据目录
+RUN mkdir -p /app/logs /app/data /app/maps \
+    && chown -R appuser:appgroup /app
+
+# 切换到非 root 用户
+USER appuser
+
+# 环境变量
+ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+ENV SPRING_PROFILES_ACTIVE=docker
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:${SERVER_PORT:-3822}/api/v3/api-docs || exit 1
+
+# 暴露端口
+EXPOSE 3822
+
+# 启动命令
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+
