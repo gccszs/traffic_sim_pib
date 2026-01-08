@@ -6,6 +6,7 @@ import com.traffic.sim.common.response.ApiResponse;
 import com.traffic.sim.common.response.PageResult;
 import com.traffic.sim.common.service.MapService;
 import com.traffic.sim.common.util.RequestContext;
+import com.traffic.sim.plugin.auth.annotation.RequireRole;
 import com.traffic.sim.plugin.map.dto.MapListResponse;
 import com.traffic.sim.plugin.map.dto.MapSaveResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.Map;
 
 /**
  * 地图Controller（旧版兼容接口）
- * 
+ *
  * @author traffic-sim
  */
 @RestController
@@ -25,9 +26,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class MapController {
-    
+
     private final MapService mapService;
-    
+
     /**
      * 【旧版兼容】保存地图信息
      * POST /saveMapInfo
@@ -35,17 +36,17 @@ public class MapController {
     @PostMapping("/saveMapInfo")
     public ResponseEntity<ApiResponse<MapSaveResponse>> saveMapInfo(
             @RequestBody Map<String, String> request) {
-        
+
         Long userId = getCurrentUserId();
         MapDTO mapDTO = mapService.saveMapInfo(request, userId);
-        
+
         MapSaveResponse response = new MapSaveResponse();
         response.setMapId(mapDTO.getId().toString());
         response.setStatus("success");
-        
+
         return ResponseEntity.ok(ApiResponse.success(response));
     }
-    
+
     /**
      * 【旧版兼容】获取用户地图列表
      * GET /getUserMap
@@ -55,14 +56,14 @@ public class MapController {
             @RequestParam(required = false) String mapName,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int limit) {
-        
+
         Long userId = getCurrentUserId();
         PageResult<MapDTO> result = mapService.getUserMaps(userId, mapName, page, limit);
-        
+
         MapListResponse response = MapListResponse.fromPageResult(result);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
-    
+
     /**
      * 【旧版兼容】获取公开地图列表
      * GET /getPublicMap
@@ -72,13 +73,13 @@ public class MapController {
             @RequestParam(required = false) String mapName,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int limit) {
-        
+
         PageResult<MapDTO> result = mapService.getPublicMaps(mapName, page, limit);
-        
+
         MapListResponse response = MapListResponse.fromPageResult(result);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
-    
+
     /**
      * 【旧版兼容】从MongoDB获取地图数据
      * GET /getMapInfoDB
@@ -86,13 +87,13 @@ public class MapController {
     @GetMapping("/getMapInfoDB")
     public ResponseEntity<ApiResponse<MapInfoDTO>> getMapInfoDB(
             @RequestParam String mapId) {
-        
+
         Long userId = getCurrentUserId();
         MapInfoDTO mapInfo = mapService.getMapInfoFromMongoDB(mapId, userId);
-        
+
         return ResponseEntity.ok(ApiResponse.success(mapInfo));
     }
-    
+
     /**
      * 【旧版兼容】预览地图信息
      * POST /previewMapInfo
@@ -100,11 +101,11 @@ public class MapController {
     @PostMapping("/previewMapInfo")
     public ResponseEntity<ApiResponse<MapInfoDTO>> previewMapInfo(
             @RequestBody Map<String, String> request) {
-        
+
         MapInfoDTO mapInfo = mapService.previewMapInfo(request.get("mapFile"));
         return ResponseEntity.ok(ApiResponse.success(mapInfo));
     }
-    
+
     /**
      * 【旧版兼容】删除地图（管理员）
      */
@@ -112,14 +113,14 @@ public class MapController {
     @RequireRole("ADMIN")
     public ResponseEntity<ApiResponse<String>> deleteMap(
             @RequestBody Map<String, Object> request) {
-        
+
         String mapId = (String) request.get("mapId");
         Integer status = (Integer) request.get("status");
-        
+
         mapService.deleteMapByAdmin(mapId, status);
         return ResponseEntity.ok(ApiResponse.success("Delete Success"));
     }
-    
+
     /**
      * 【旧版兼容】获取所有地图（管理员）
      */
@@ -129,13 +130,13 @@ public class MapController {
             @RequestParam(required = false) String mapName,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int limit) {
-        
+
         PageResult<MapDTO> result = mapService.getAllMaps(mapName, page, limit);
-        
+
         MapListResponse response = MapListResponse.fromPageResult(result);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
-    
+
     /**
      * 获取当前用户ID
      */

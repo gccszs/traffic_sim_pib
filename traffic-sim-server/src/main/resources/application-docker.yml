@@ -100,6 +100,17 @@ plugin:
   auth:
     captcha:
       enabled: false
+    interceptor:
+      exclude-paths:
+        - /auth/login
+        - /auth/register
+        - /auth/captcha
+        - /auth/refresh
+        - /swagger-ui/**
+        - /swagger-ui.html
+        - /v3/api-docs/**
+        - /error
+        - /actuator/**
   map:
     storage:
       base-path: /app/maps

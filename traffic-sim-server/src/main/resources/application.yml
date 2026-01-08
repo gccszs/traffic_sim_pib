@@ -1,7 +1,7 @@
 spring:
   application:
     name: traffic-sim-server
-  
+
   # 数据源配置 - MySQL
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -14,7 +14,7 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
-  
+
   # JPA配置
   jpa:
     hibernate:
@@ -24,7 +24,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
-  
+
   # MongoDB配置
   data:
     mongodb:
@@ -36,7 +36,7 @@ spring:
       # database: traffic_sim
       # username: root
       # password: root
-      # authentication-database: admin 
+      # authentication-database: admin
 
   # Jackson配置
   jackson:
@@ -87,14 +87,14 @@ app:
       host: localhost
       port: 5000
       timeout: 30000
-  
+
   # WebSocket配置
   websocket:
     frontend:
       path: /ws/frontend
     engine:
       path: /ws/exe
-  
+
   # 文件上传配置
   upload:
     max-file-size: 100MB
@@ -105,6 +105,17 @@ plugin:
   auth:
     captcha:
       enabled: false
+    interceptor:
+      exclude-paths:
+        - /auth/login
+        - /auth/register
+        - /auth/captcha
+        - /auth/refresh
+        - /swagger-ui/**
+        - /swagger-ui.html
+        - /v3/api-docs/**
+        - /error
+        - /actuator/**
 
 # 日志配置
 logging:

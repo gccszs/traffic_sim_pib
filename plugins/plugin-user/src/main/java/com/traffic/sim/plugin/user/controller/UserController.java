@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 /**
  * 用户管理Controller
- * 
+ *
  * @author traffic-sim
  */
 @RestController
@@ -39,10 +39,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Tag(name = "用户管理", description = "用户管理相关接口")
 public class UserController {
-    
+
     private final UserService userService;
     private final UserServiceExt userServiceExt;
-    
+
     /**
      * 获取用户信息
      */
@@ -51,20 +51,20 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserDTO>> getUser(@PathVariable Long id) {
         String currentUserId = RequestContext.getCurrentUserId();
         if (currentUserId == null) {
-            return ResponseEntity.status(401).body(ApiResponse.error(401, "未认证"));
+            return ResponseEntity.status(401).body(ApiResponse.error("401", "未认证"));
         }
-        
+
         Long currentUserIdLong = Long.parseLong(currentUserId);
         String currentRole = RequestContext.getCurrentUser().getRole();
-        
+
         if (!"ADMIN".equals(currentRole) && !currentUserIdLong.equals(id)) {
-            return ResponseEntity.status(403).body(ApiResponse.error(403, "无权访问其他用户信息"));
+            return ResponseEntity.status(403).body(ApiResponse.error("403", "无权访问其他用户信息"));
         }
-        
+
         UserDTO user = userService.getUserById(id);
         return ResponseEntity.ok(ApiResponse.success(user));
     }
-    
+
     /**
      * 根据用户名获取用户信息
      */
@@ -74,7 +74,7 @@ public class UserController {
         UserDTO user = userService.getUserByUsername(username);
         return ResponseEntity.ok(ApiResponse.success(user));
     }
-    
+
     /**
      * 创建用户
      */
@@ -85,7 +85,7 @@ public class UserController {
         UserDTO createdUser = userServiceExt.createUserWithPassword(request);
         return ResponseEntity.ok(ApiResponse.success("用户创建成功", createdUser));
     }
-    
+
     /**
      * 更新用户信息（用户自己）
      */
@@ -95,14 +95,14 @@ public class UserController {
             @Valid @RequestBody UserUpdateRequest request) {
         String currentUserId = RequestContext.getCurrentUserId();
         if (currentUserId == null) {
-            return ResponseEntity.status(401).body(ApiResponse.error(401, "未认证"));
+            return ResponseEntity.status(401).body(ApiResponse.error("401", "未认证"));
         }
-        
+
         Long currentUserIdLong = Long.parseLong(currentUserId);
         UserDTO updatedUser = userServiceExt.updateUserWithPassword(currentUserIdLong, request);
         return ResponseEntity.ok(ApiResponse.success("用户更新成功", updatedUser));
     }
-    
+
     /**
      * 管理员更新用户信息
      */
@@ -115,7 +115,7 @@ public class UserController {
         UserDTO updatedUser = userServiceExt.updateUserByAdmin(userId, request);
         return ResponseEntity.ok(ApiResponse.success("用户更新成功", updatedUser));
     }
-    
+
     /**
      * 修改自己的密码
      */
@@ -125,14 +125,14 @@ public class UserController {
             @Valid @RequestBody ChangePasswordRequest request) {
         String currentUserId = RequestContext.getCurrentUserId();
         if (currentUserId == null) {
-            return ResponseEntity.status(401).body(ApiResponse.error(401, "未认证"));
+            return ResponseEntity.status(401).body(ApiResponse.error("401", "未认证"));
         }
-        
+
         Long currentUserIdLong = Long.parseLong(currentUserId);
         userServiceExt.changePassword(currentUserIdLong, request);
         return ResponseEntity.ok(ApiResponse.success("密码修改成功"));
     }
-    
+
     /**
      * 管理员重置用户密码
      */
@@ -145,7 +145,7 @@ public class UserController {
         userServiceExt.updatePassword(userId, newPassword);
         return ResponseEntity.ok(ApiResponse.success("密码重置成功"));
     }
-    
+
     /**
      * 封禁/解封用户
      */
@@ -155,11 +155,11 @@ public class UserController {
     public ResponseEntity<ApiResponse<String>> banUser(@Valid @RequestBody UserBanRequest request) {
         userServiceExt.banUser(request);
         String action = request.getAction().toUpperCase();
-        String message = "BAN".equals(action) || "BLOCK".equals(action) ? 
+        String message = "BAN".equals(action) || "BLOCK".equals(action) ?
             "用户已封禁" : "用户已解封";
         return ResponseEntity.ok(ApiResponse.success(message));
     }
-    
+
     /**
      * 解封用户
      */
@@ -170,7 +170,7 @@ public class UserController {
         userServiceExt.unbanUser(userId);
         return ResponseEntity.ok(ApiResponse.success("用户已解封"));
     }
-    
+
     /**
      * 删除用户
      */
@@ -180,7 +180,7 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok(ApiResponse.success("用户删除成功"));
     }
-    
+
     /**
      * 获取用户列表（分页）
      */

@@ -27,6 +27,11 @@ public class AuthPluginProperties {
      */
     private Captcha captcha = new Captcha();
     
+    /**
+     * 拦截器配置
+     */
+    private Interceptor interceptor = new Interceptor();
+    
     @Data
     public static class Jwt {
         /**
@@ -99,6 +104,24 @@ public class AuthPluginProperties {
          * 验证码过期时间（秒）
          */
         private Integer expireSeconds = 300;
+    }
+    
+    @Data
+    public static class Interceptor {
+        /**
+         * 排除路径列表（不需要认证的路径）
+         */
+        private java.util.List<String> excludePaths = java.util.Arrays.asList(
+            "/auth/login",
+            "/auth/register",
+            "/auth/captcha",
+            "/auth/refresh",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/error",
+            "/actuator/**"
+        );
     }
 }
 
