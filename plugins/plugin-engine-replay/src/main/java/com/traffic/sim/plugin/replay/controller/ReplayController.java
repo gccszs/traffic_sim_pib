@@ -2,7 +2,7 @@ package com.traffic.sim.plugin.replay.controller;
 
 import com.traffic.sim.common.response.ApiResponse;
 import com.traffic.sim.common.response.PageResult;
-import com.traffic.sim.plugin.auth.util.RequestContext;
+import com.traffic.sim.common.util.RequestContext;
 import com.traffic.sim.plugin.replay.dto.CreateReplayTaskRequest;
 import com.traffic.sim.plugin.replay.dto.ReplayControlRequest;
 import com.traffic.sim.plugin.replay.dto.ReplayDataDTO;

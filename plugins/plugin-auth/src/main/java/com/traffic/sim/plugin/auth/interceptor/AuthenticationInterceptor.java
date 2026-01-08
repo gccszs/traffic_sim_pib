@@ -6,7 +6,7 @@ import com.traffic.sim.common.service.AuthService;
 import com.traffic.sim.common.service.TokenInfo;
 import com.traffic.sim.common.util.JsonUtils;
 import com.traffic.sim.plugin.auth.config.AuthPluginProperties;
-import com.traffic.sim.plugin.auth.util.RequestContext;
+import com.traffic.sim.common.util.RequestContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

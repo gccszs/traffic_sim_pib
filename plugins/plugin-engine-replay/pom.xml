@@ -61,10 +61,6 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>com.traffic.sim</groupId>
-            <artifactId>plugin-auth</artifactId>
-        </dependency>
     </dependencies>
 </project>
 

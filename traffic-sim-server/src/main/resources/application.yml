@@ -111,7 +111,7 @@ plugin:
 logging:
   level:
     root: INFO
-    com.traffic.sim: DEBUG
+    com.traffic.sim: ${LOG_LEVEL:INFO}
     org.springframework.web: INFO
     org.hibernate: INFO
   pattern:

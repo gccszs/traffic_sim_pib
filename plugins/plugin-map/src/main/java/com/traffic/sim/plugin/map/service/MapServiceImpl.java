@@ -8,7 +8,7 @@ import com.traffic.sim.common.exception.BusinessException;
 import com.traffic.sim.common.response.PageResult;
 import com.traffic.sim.common.service.MapService;
 import com.traffic.sim.common.service.TokenInfo;
-import com.traffic.sim.plugin.auth.util.RequestContext;
+import com.traffic.sim.common.util.RequestContext;
 import com.traffic.sim.plugin.map.client.PythonGrpcClient;
 import com.traffic.sim.plugin.map.config.MapPluginProperties;
 import com.traffic.sim.plugin.map.entity.MapEntity;

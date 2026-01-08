@@ -2,7 +2,10 @@ package com.traffic.sim.plugin.user.service;
 
 import com.traffic.sim.common.dto.UserDTO;
 import com.traffic.sim.common.response.PageResult;
+import com.traffic.sim.plugin.user.dto.ChangePasswordRequest;
+import com.traffic.sim.plugin.user.dto.UserBanRequest;
 import com.traffic.sim.plugin.user.dto.UserCreateRequest;
+import com.traffic.sim.plugin.user.dto.UserUpdateByAdminRequest;
 import com.traffic.sim.plugin.user.dto.UserUpdateRequest;
 
 /**
@@ -32,5 +35,12 @@ public interface UserServiceExt {
      * 分页获取用户列表
      */
     PageResult<UserDTO> getUserList(int page, int size, String status);
-}
+    
+    UserDTO updateUserByAdmin(Long userId, UserUpdateByAdminRequest request);
+    
+    void changePassword(Long userId, ChangePasswordRequest request);
+    
+    void banUser(UserBanRequest request);
+    
+    void unbanUser(Long userId);
 

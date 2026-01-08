@@ -5,7 +5,7 @@ import com.traffic.sim.common.dto.MapInfoDTO;
 import com.traffic.sim.common.response.ApiResponse;
 import com.traffic.sim.common.response.PageResult;
 import com.traffic.sim.common.service.MapService;
-import com.traffic.sim.plugin.auth.util.RequestContext;
+import com.traffic.sim.common.util.RequestContext;
 import com.traffic.sim.plugin.map.dto.MapListResponse;
 import com.traffic.sim.plugin.map.dto.MapSaveResponse;
 import lombok.RequiredArgsConstructor;
@@ -107,9 +107,9 @@ public class MapController {
     
     /**
      * 【旧版兼容】删除地图（管理员）
-     * DELETE /deleteMap
      */
     @DeleteMapping("/deleteMap")
+    @RequireRole("ADMIN")
     public ResponseEntity<ApiResponse<String>> deleteMap(
             @RequestBody Map<String, Object> request) {
         
@@ -122,9 +122,9 @@ public class MapController {
     
     /**
      * 【旧版兼容】获取所有地图（管理员）
-     * GET /getAllMap
      */
     @GetMapping("/getAllMap")
+    @RequireRole("ADMIN")
     public ResponseEntity<ApiResponse<MapListResponse>> getAllMap(
             @RequestParam(required = false) String mapName,
             @RequestParam(defaultValue = "1") int page,

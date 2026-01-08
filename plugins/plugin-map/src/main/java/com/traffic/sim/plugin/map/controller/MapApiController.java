@@ -6,7 +6,7 @@ import com.traffic.sim.common.dto.UserMapSpaceDTO;
 import com.traffic.sim.common.response.ApiResponse;
 import com.traffic.sim.common.response.PageResult;
 import com.traffic.sim.common.service.MapService;
-import com.traffic.sim.plugin.auth.util.RequestContext;
+import com.traffic.sim.common.util.RequestContext;
 import com.traffic.sim.plugin.map.entity.MapEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

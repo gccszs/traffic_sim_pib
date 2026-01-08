@@ -96,10 +96,6 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.traffic.sim</groupId>
-            <artifactId>plugin-auth</artifactId>
-        </dependency>
     </dependencies>
     
     <build>

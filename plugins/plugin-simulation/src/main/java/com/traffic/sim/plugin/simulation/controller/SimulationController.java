@@ -7,6 +7,7 @@ import com.traffic.sim.common.dto.SimulationTaskDTO;
 import com.traffic.sim.common.response.ApiResponse;
 import com.traffic.sim.common.response.PageResult;
 import com.traffic.sim.common.service.SimulationService;
+import com.traffic.sim.common.util.RequestContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -105,8 +106,13 @@ public class SimulationController {
             @RequestBody @Valid GreenRatioControlRequest request,
             @CookieValue(value = "id", required = false) String sessionId) {
         
-        log.info("Received green ratio control request: greenRatio={}, sessionId={}", 
-            request.getGreenRatio(), sessionId);
+        String currentUserId = RequestContext.getCurrentUserId();
+        if (currentUserId == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error(ErrorCode.ERR_AUTH, "未认证"));
+        }
+        
+        log.info("Received green ratio control request: greenRatio={}, sessionId={}, userId={}", 
+            request.getGreenRatio(), sessionId, currentUserId);
         
         // 验证会话ID
         if (sessionId == null || sessionId.trim().isEmpty()) {

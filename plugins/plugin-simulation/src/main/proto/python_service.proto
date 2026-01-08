@@ -10,10 +10,10 @@ option java_outer_classname = "PythonServiceProto";
 service PythonService {
   // 初始化仿真引擎
   rpc CreateSimeng(CreateSimengRequest) returns (ApiResponse);
-  
+
   // 绿信比控制
   rpc ControlGreenRatio(GreenRatioControlRequest) returns (ApiResponse);
-  
+
   // 测试连接
   rpc TestConnection(Empty) returns (TestResponse);
 }

@@ -3,7 +3,7 @@ package com.traffic.sim.common.constant;
 /**
  * 用户状态常量
  * 
- * @author traffic-sim
+ * @author chonghaoGao
  */
 public class UserStatus {
     

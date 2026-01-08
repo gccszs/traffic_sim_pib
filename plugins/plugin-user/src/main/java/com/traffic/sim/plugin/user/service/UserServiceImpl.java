@@ -372,5 +372,105 @@ public class UserServiceImpl implements UserService, UserServiceExt {
                 pageSize
         );
     }
+    
+    @Override
+    @Transactional
+    public UserDTO updateUserByAdmin(Long userId, UserUpdateByAdminRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在"));
+        
+        if (request.getEmail() != null && !request.getEmail().isEmpty() 
+                && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new BusinessException(ErrorCode.ERR_EXIST, "邮箱已被使用");
+            }
+            user.setEmail(request.getEmail());
+        }
+        
+        if (request.getPhoneNumber() != null) {
+            user.setPhoneNumber(request.getPhoneNumber());
+        }
+        if (request.getInstitution() != null) {
+            user.setInstitution(request.getInstitution());
+        }
+        if (request.getRoleId() != null) {
+            user.setRoleId(request.getRoleId());
+            Optional<Role> role = roleRepository.findById(request.getRoleId().longValue());
+            if (role.isEmpty()) {
+                throw new BusinessException(ErrorCode.ERR_NOT_FOUND, "角色不存在");
+            }
+        }
+        if (request.getStatus() != null && !request.getStatus().isEmpty()) {
+            user.setStatus(request.getStatus());
+        }
+        
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        
+        User updatedUser = userRepository.save(user);
+        log.info("管理员更新用户成功: username={}, id={}", updatedUser.getUsername(), updatedUser.getId());
+        
+        return convertToDTO(updatedUser);
+    }
+    
+    @Override
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在"));
+        
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new BusinessException(ErrorCode.ERR_ARG, "旧密码不正确");
+        }
+        
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        
+        log.info("用户修改密码成功: username={}, id={}", user.getUsername(), user.getId());
+    }
+    
+    @Override
+    @Transactional
+    public void banUser(UserBanRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在"));
+        
+        String action = request.getAction().toUpperCase();
+        String newStatus;
+        
+        switch (action) {
+            case "BAN":
+                newStatus = UserStatus.BANNED;
+                break;
+            case "BLOCK":
+                newStatus = UserStatus.BLOCKED;
+                break;
+            case "UNBAN":
+            case "UNBLOCK":
+                newStatus = UserStatus.NORMAL;
+                break;
+            default:
+                throw new BusinessException(ErrorCode.ERR_ARG, "无效的操作类型: " + request.getAction());
+        }
+        
+        user.setStatus(newStatus);
+        userRepository.save(user);
+        
+        log.info("用户状态变更: username={}, id={}, status={}, reason={}", 
+            user.getUsername(), user.getId(), newStatus, request.getReason());
+    }
+    
+    @Override
+    @Transactional
+    public void unbanUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在"));
+        
+        user.setStatus(UserStatus.NORMAL);
+        userRepository.save(user);
+        
+        log.info("用户解封成功: username={}, id={}", user.getUsername(), user.getId());
+    }
 }
 
