@@ -24,7 +24,7 @@ import java.util.Collections;
  * @author traffic-sim
  */
 @RestController
-@RequestMapping("/api/simulation")
+@RequestMapping("/simulation")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "仿真任务管理", description = "仿真任务的创建、查询和控制接口")

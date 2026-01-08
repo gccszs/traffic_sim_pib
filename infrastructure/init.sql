@@ -178,9 +178,9 @@ CREATE TABLE `replay_task` (
 
 -- 插入默认角色
 INSERT INTO `role` (`role_name`, `role_code`, `description`) VALUES
-('管理员', 'ADMIN', '系统管理员，拥有所有权限'),
-('普通用户', 'USER', '普通用户，拥有基本权限'),
-('研究员', 'RESEARCHER', '研究员，拥有高级权限')
+('ADMIN', '管理员', '系统管理员，拥有所有权限'),
+('USER', '普通用户', '普通用户，拥有基本权限'),
+('RESEARCHER', '研究员', '研究员，拥有高级权限')
 ON DUPLICATE KEY UPDATE `role_name`=VALUES(`role_name`);
 
 -- 插入默认权限

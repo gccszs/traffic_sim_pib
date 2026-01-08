@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * @author traffic-sim
  */
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "用户管理", description = "用户管理相关接口")

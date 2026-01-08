@@ -47,7 +47,7 @@ spring:
 server:
   port: ${SERVER_PORT:3822}
   servlet:
-    context-path: /
+    context-path: /api
     encoding:
       charset: UTF-8
       enabled: true

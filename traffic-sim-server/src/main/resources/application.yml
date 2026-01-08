@@ -107,15 +107,16 @@ plugin:
       enabled: false
     interceptor:
       exclude-paths:
-        - /auth/login
-        - /auth/register
-        - /auth/captcha
-        - /auth/refresh
+        - /api/auth/login
+        - /api/auth/register
+        - /api/auth/captcha
+        - /api/auth/refresh
         - /swagger-ui/**
         - /swagger-ui.html
-        - /v3/api-docs/**
+        - /api/v3/api-docs/**
+        - /api/error
+        - /api/actuator/**
         - /error
-        - /actuator/**
 
 # 日志配置
 logging:

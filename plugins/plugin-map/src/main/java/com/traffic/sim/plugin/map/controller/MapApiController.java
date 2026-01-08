@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author traffic-sim
  */
 @RestController
-@RequestMapping("/api/map")
+@RequestMapping("/map")
 @RequiredArgsConstructor
 @Slf4j
 public class MapApiController {

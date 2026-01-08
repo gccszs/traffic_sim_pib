@@ -24,7 +24,7 @@ import java.util.List;
  * @author traffic-sim
  */
 @RestController
-@RequestMapping("/api/replay")
+@RequestMapping("/replay")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "回放管理", description = "仿真历史数据回放相关接口")
