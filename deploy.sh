@@ -44,11 +44,11 @@ fi
 
 # 停止旧服务
 echo -e "${YELLOW}[2/3] 停止旧服务...${NC}"
-docker-compose -f docker-compose.full.yml down 2>/dev/null || true
+docker compose -f docker-compose.full.yml down 2>/dev/null || true
 
 # 启动所有服务
 echo -e "${YELLOW}[3/3] 启动所有服务...${NC}"
-docker-compose -f docker-compose.full.yml up -d --build
+docker compose -f docker-compose.full.yml up -d --build
 
 # 等待服务启动
 echo ""
@@ -61,7 +61,7 @@ echo -e "${GREEN}============================================${NC}"
 echo -e "${GREEN}  部署完成！${NC}"
 echo -e "${GREEN}============================================${NC}"
 echo ""
-docker-compose -f docker-compose.full.yml ps
+docker compose -f docker-compose.full.yml ps
 echo ""
 echo "服务访问地址:"
 echo "  - Java API:     http://localhost:3822/api"
