@@ -1,0 +1,121 @@
+# ============================================
+# Traffic Simulation - 应用服务
+# 与基础设施配合使用：
+# docker-compose -f docker-compose.yml -f docker-compose.app.yml up -d
+# ============================================
+
+version: '3.8'
+
+services:
+  # ============================================
+  # Java 后端服务
+  # ============================================
+  traffic-sim-server:
+    build:
+      context: ..
+      dockerfile: traffic-sim-server/Dockerfile
+    image: traffic-sim-server:latest
+    container_name: traffic-sim-server
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Spring 配置
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 3822
+      # 数据库配置
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: traffic_sim
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      # MongoDB 配置
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_DATABASE: traffic_sim
+      MONGO_USERNAME: root
+      MONGO_PASSWORD: root
+      # Python 服务配置
+      PYTHON_SERVICE_HOST: python-service
+      PYTHON_SERVICE_PORT: 8000
+      PYTHON_GRPC_HOST: python-service
+      PYTHON_GRPC_PORT: 50052
+      # JVM 配置
+      JAVA_OPTS: -Xms512m -Xmx1024m -XX:+UseG1GC
+      # 时区
+      TZ: Asia/Shanghai
+    ports:
+      - "3822:3822"
+    volumes:
+      - server_logs:/app/logs
+      - server_maps:/app/maps
+    networks:
+      - traffic-sim-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3822/api/v3/api-docs"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+  # ============================================
+  # Python 地图转换服务
+  # ============================================
+  python-service:
+    build:
+      context: ../map_convert_services
+      dockerfile: Dockerfile
+    image: traffic-sim-python:latest
+    container_name: traffic-sim-python
+    restart: unless-stopped
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      GRPC_PORT: 50052
+      CLIENT_SOCKET_IP: traffic-sim-server
+      LOG_HOME: /app/engine_sim_logs/
+      TZ: Asia/Shanghai
+    ports:
+      - "8000:8000"
+      - "50052:50052"
+    volumes:
+      - python_logs:/app/engine_sim_logs
+      - python_cache:/app/cache
+      - python_plugins:/app/plugins
+    networks:
+      - traffic-sim-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/test"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+# ============================================
+# 数据卷定义
+# ============================================
+volumes:
+  server_logs:
+    driver: local
+  server_maps:
+    driver: local
+  python_logs:
+    driver: local
+  python_cache:
+    driver: local
+  python_plugins:
+    driver: local
+
+# ============================================
+# 使用已存在的网络
+# ============================================
+networks:
+  traffic-sim-network:
+    external: true
+    name: traffic-sim-network
+

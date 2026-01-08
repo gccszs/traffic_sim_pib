@@ -47,7 +47,7 @@ spring:
 
 # 服务器配置
 server:
-  port: 8080
+  port: 3822
   servlet:
     context-path: /api
     encoding:
@@ -70,7 +70,6 @@ grpc:
   client:
     python-service:
       # 是否启用gRPC客户端（如果设为false，将始终使用兜底数据）
-      enabled: true
       address: 'static://localhost:50051'
       negotiationType: plaintext
       enableKeepAlive: true
@@ -100,6 +99,12 @@ app:
   upload:
     max-file-size: 100MB
     max-request-size: 100MB
+
+# 插件配置
+plugin:
+  auth:
+    captcha:
+      enabled: false
 
 # 日志配置
 logging:

@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+import logging
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
@@ -13,6 +14,20 @@ import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
 from starlette.websockets import WebSocketDisconnect, WebSocket
+
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),  # 输出到控制台
+    ]
+)
+logger = logging.getLogger(__name__)
+
+logger.info("=" * 60)
+logger.info("Starting FastAPI Service...")
+logger.info("=" * 60)
 
 import sim_plugin
 from utils.command_runner import RunExe
@@ -30,22 +45,42 @@ host = settings.host
 LOG_HOME = settings.log_home
 port = settings.port
 client_socket_ip = settings.client_socket_ip
+
+logger.info("Configuration loaded:")
+logger.info(f"  - Host: {host}")
+logger.info(f"  - Port: {port}")
+logger.info(f"  - Client Socket IP: {client_socket_ip}")
+logger.info(f"  - Log Home: {LOG_HOME}")
+
 app = FastAPI()
+
+logger.info("FastAPI application created successfully")
 
 # 保存缓存的目录
 CACHE_DIR = Path("cache/")
 CACHE_DIR.mkdir(exist_ok=True)  # 创建文件夹，如果不存在
+logger.info(f"Cache directory: {CACHE_DIR} (exists: {CACHE_DIR.exists()})")
+
 # 存放插件的目录
 PLUGIN_DIR = Path("plugins/")
 PLUGIN_DIR.mkdir(exist_ok=True)
-sim_plugin.init_plugin_info(str(PLUGIN_DIR))  #初始化插件信息
+logger.info(f"Plugin directory: {PLUGIN_DIR} (exists: {PLUGIN_DIR.exists()})")
+
+try:
+    sim_plugin.init_plugin_info(str(PLUGIN_DIR))  # 初始化插件信息
+    logger.info("Plugin initialization successful")
+except Exception as e:
+    logger.error(f"Plugin initialization failed: {e}")
+
 # 仿真进程目录
 SIMENG_DIR = Path("SimEngPI/")
 SIMENG_DIR.mkdir(exist_ok=True)
+logger.info(f"Simulation engine directory: {SIMENG_DIR} (exists: {SIMENG_DIR.exists()})")
 
 
 @app.get("/test")
 async def test():
+    logger.info("Test endpoint called")
     return 'hello'
 
 
@@ -53,9 +88,9 @@ async def test():
 async def map_file_upload(upload_file: UploadFile, user_id: str):
     """文件上传和转换 - 返回二进制流"""
     try:
-        print(user_id)
+        logger.info(f"File upload request - user_id: {user_id}, file: {upload_file.filename}")
         workDir = str(CACHE_DIR / user_id)
-        print(workDir)
+        logger.info(f"Work directory: {workDir}")
         # 创建工作目录
         os.makedirs(workDir, exist_ok=True)
         # 安全的文件路径
@@ -66,10 +101,14 @@ async def map_file_upload(upload_file: UploadFile, user_id: str):
             content = await upload_file.read()
             f.write(content)
 
+        logger.info(f"File saved successfully: {file_path}")
+
         # 文件转换并返回二进制流
-        return await map_convert_to_binary(upload_file, workDir)
+        result = await map_convert_to_binary(upload_file, workDir)
+        logger.info("File conversion completed")
+        return result
     except Exception as e:
-        print(e)
+        logger.error(f"File upload error: {e}", exc_info=True)
         return JSONResponse(
             status_code=500,
             content={
@@ -90,10 +129,12 @@ class ApiResponse(BaseModel):
 @app.post("/init_simeng", response_model=ApiResponse)
 async def create_simeng(request: CreateSimengRequest):
     try:
+        logger.info(f"Init simulation request - user_id: {request.userId}")
         sim_info = request.simInfo
         user_id = request.userId
         control_views = request.controlViews
         cur_sim_name = sim_info['name']
+        logger.info(f"Simulation name: {cur_sim_name}")
         id_infos[user_id].name = cur_sim_name
         id_infos[user_id].sim_info = sim_info
         id_infos[user_id].control_views = control_views
@@ -181,13 +222,14 @@ async def create_simeng(request: CreateSimengRequest):
         sim_cmd = ['./SimEngPI/SimulationEngine.exe', '--log=0', arg_sid, arg_simfile, arg_roadfile, '--ip=' + client_socket_ip,
                    '--port=3822', "--noplugin"]  # debug用
         user_log_file = LOG_HOME + '' + user_id + '.txt'
-        print(' '.join(sim_cmd))
-        print(user_log_file)
-        res = await RunExe(sim_cmd,log_file=user_log_file,output_mode="file")
+        logger.info(f"Simulation command: {' '.join(sim_cmd)}")
+        logger.info(f"User log file: {user_log_file}")
+        res = await RunExe(sim_cmd, log_file=user_log_file, output_mode="file")
+        logger.info(f"Simulation engine started with result: {res}")
 
-        return {"res": res,'code':200 ,"eng_msg": 'test_info', "msg": "ok"}
+        return {"res": res, 'code': 200, "eng_msg": 'test_info', "msg": "ok"}
     except Exception as e:
-        print(e)
+        logger.error(f"Init simulation error: {e}", exc_info=True)
         return JSONResponse(
             status_code=500,
             content={
@@ -204,6 +246,7 @@ async def upload_plugin(file: UploadFile = File(...)):
     Args:
         file (UploadFile, optional): plugin.zip. Defaults to File(...).
     """
+    logger.info(f"Plugin upload request - file: {file.filename}, type: {file.content_type}")
     # 验证文件类型
     if file.content_type not in ["application/zip", "application/x-zip-compressed"]:
         return {"res": "ERR_FILE", "msg": "not a zip file"}
@@ -237,24 +280,24 @@ async def upload_plugin(file: UploadFile = File(...)):
 @app.websocket("/ws/exe/{exe_id}")
 async def exe_websocket(websocket: WebSocket, exe_id: str):
     cookie_id = exe_id
-    print('[',websocket,']')
+    logger.info(f"WebSocket connection established - exe_id: {exe_id}")
     await websocket.accept()
     try:
         while True:
             data = await websocket.receive_json()
-            print("Received from Java backend:", data)
+            logger.debug(f"Received from Java backend: {data}")
 
             if data['type'] == 'frontend':
                 await handle_frontend_message(websocket, cookie_id, data)
             elif data['type'] == 'backend':
                 await handle_backend_message(websocket, cookie_id, data)
             else:
-                print(f"Unknown message type: {data['type']}")
+                logger.warning(f"Unknown message type: {data['type']}")
 
     except WebSocketDisconnect as e:
-        print(f"Connection closed: Code={e.code}, Reason={e.reason}")
+        logger.info(f"WebSocket connection closed: Code={e.code}, Reason={e.reason}")
     except Exception as e:
-        print(f"Unexpected error: {str(e)}")
+        logger.error(f"WebSocket error: {str(e)}", exc_info=True)
 
 
 def get_current_timestamp_ms():
@@ -265,4 +308,7 @@ def get_current_timestamp_ms():
 
 
 if __name__ == '__main__':
+    logger.info("=" * 60)
+    logger.info(f"Starting Uvicorn server on {host}:{port}")
+    logger.info("=" * 60)
     uvicorn.run(app, host=host, port=port)

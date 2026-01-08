@@ -9,6 +9,7 @@ import com.traffic.sim.common.exception.BusinessException;
 import com.traffic.sim.common.service.AuthService;
 import com.traffic.sim.common.service.TokenInfo;
 import com.traffic.sim.common.service.UserService;
+import com.traffic.sim.common.constant.UserStatus;
 import com.traffic.sim.plugin.auth.config.AuthPluginProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,11 +61,11 @@ public class AuthServiceImpl implements AuthService {
         // 获取用户信息
         UserDTO user = userService.getUserByUsername(request.getUsername());
         if (user == null) {
-            throw new BusinessException(ErrorCode.ERR_AUTH, "用户不存在");
+            throw new BusinessException(ErrorCode.ERR_AUTH, "用户不存在 (AuthService.login)");
         }
         
         // 检查用户状态
-        if (!"ACTIVE".equals(user.getStatus())) {
+        if (!UserStatus.NORMAL.equals(user.getStatus())) {
             throw new BusinessException(ErrorCode.ERR_AUTH, "用户已被禁用");
         }
         
@@ -91,6 +92,7 @@ public class AuthServiceImpl implements AuthService {
     
     @Override
     public void register(RegisterRequest request) {
+        log.info("[Auth Debug] Entering register for user: {}", request.getUsername());
         // 验证密码强度
         validatePasswordStrength(request.getPassword());
         
@@ -108,16 +110,11 @@ public class AuthServiceImpl implements AuthService {
         userDTO.setEmail(request.getEmail());
         userDTO.setPhoneNumber(request.getPhoneNumber());
         userDTO.setInstitution(request.getInstitution());
-        userDTO.setStatus("ACTIVE");
+        userDTO.setStatus(UserStatus.NORMAL);
         userDTO.setRoleId(1); // 默认角色ID，可根据需求调整
         userDTO.setRoleName("USER"); // 默认角色名称
         
-        // TODO: 密码传递问题需要解决
-        // 方案1: 扩展 UserService.createUser 方法，添加密码参数
-        // 方案2: 创建 CreateUserRequest DTO，包含密码字段
-        // 方案3: 在 UserDTO 中添加临时密码字段（不推荐）
-        // 当前实现：假设 plugin-user 模块会通过其他方式获取密码（如从 RegisterRequest）
-        userService.createUser(userDTO);
+        userService.createUser(userDTO, request.getPassword());
         
         log.info("用户注册成功: {}", request.getUsername());
     }
