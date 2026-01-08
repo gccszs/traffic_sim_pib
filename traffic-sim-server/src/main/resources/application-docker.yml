@@ -4,20 +4,23 @@
 spring:
   application:
     name: traffic-sim-server
-  
+
   # 数据源配置 - MySQL (Docker)
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:traffic_sim}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:traffic_sim}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000&autoReconnect=true
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
-      connection-timeout: 30000
+      connection-timeout: 60000
       idle-timeout: 600000
       max-lifetime: 1800000
-  
+      initialization-fail-timeout: 60000
+      # 连接重试配置
+      connection-test-query: SELECT 1
+
   # JPA配置
   jpa:
     hibernate:
@@ -27,7 +30,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: false
-  
+
   # MongoDB配置 (Docker)
   data:
     mongodb:
@@ -44,7 +47,7 @@ spring:
 server:
   port: ${SERVER_PORT:3822}
   servlet:
-    context-path: /api
+    context-path: /
     encoding:
       charset: UTF-8
       enabled: true
@@ -79,14 +82,14 @@ app:
       host: ${PYTHON_SERVICE_HOST:python-service}
       port: ${PYTHON_SERVICE_PORT:8000}
       timeout: 30000
-  
+
   # WebSocket配置
   websocket:
     frontend:
       path: /ws/frontend
     engine:
       path: /ws/exe
-  
+
   # 文件上传配置
   upload:
     max-file-size: 100MB

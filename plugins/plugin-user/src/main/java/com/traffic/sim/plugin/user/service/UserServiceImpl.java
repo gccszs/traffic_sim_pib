@@ -44,20 +44,20 @@ public class UserServiceImpl implements UserService, UserServiceExt {
     @Override
     public UserDTO getUserById(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在 (UserService.getUserById)"));
         return convertToDTO(user);
     }
     
     @Override
     public UserDTO getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在"));
-        return convertToDTO(user);
+        return userRepository.findByUsername(username)
+                .map(this::convertToDTO)
+                .orElse(null);
     }
     
     @Override
     @Transactional
-    public UserDTO createUser(UserDTO userDTO) {
+    public UserDTO createUser(UserDTO userDTO, String password) {
         // 检查用户名是否已存在
         if (userRepository.existsByUsername(userDTO.getUsername())) {
             throw new BusinessException(ErrorCode.ERR_EXIST, "用户名已存在");
@@ -74,8 +74,12 @@ public class UserServiceImpl implements UserService, UserServiceExt {
         User user = new User();
         BeanUtils.copyProperties(userDTO, user);
         
-        // 注意：UserDTO 不包含密码字段，密码应该通过其他方式传递（如 UserCreateRequest）
-        // 这里假设密码已经通过其他方式设置到 user 对象中，或者需要扩展接口
+        // 设置密码
+        if (password != null && !password.isEmpty()) {
+            user.setPassword(passwordEncoder.encode(password));
+        } else {
+            throw new BusinessException(ErrorCode.ERR_ARG, "密码不能为空");
+        }
         
         // 设置默认状态
         if (user.getStatus() == null || user.getStatus().isEmpty()) {
@@ -101,7 +105,7 @@ public class UserServiceImpl implements UserService, UserServiceExt {
     @Transactional
     public UserDTO updateUser(Long userId, UserDTO userDTO) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在 (UserService.updateUser)"));
         
         // 更新邮箱（如果提供了且与现有邮箱不同）
         if (userDTO.getEmail() != null && !userDTO.getEmail().isEmpty() 
@@ -144,7 +148,7 @@ public class UserServiceImpl implements UserService, UserServiceExt {
     @Transactional
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在");
+            throw new BusinessException(ErrorCode.ERR_NOT_FOUND, "用户不存在 (UserService.deleteUser)");
         }
         userRepository.deleteById(userId);
         log.info("删除用户成功: id={}", userId);
@@ -156,61 +160,15 @@ public class UserServiceImpl implements UserService, UserServiceExt {
         if (userOpt.isEmpty()) {
             return false;
         }
-
+        
         User user = userOpt.get();
         // 检查用户状态
         if (!UserStatus.NORMAL.equals(user.getStatus())) {
             log.warn("用户状态异常，无法验证密码: username={}, status={}", username, user.getStatus());
             return false;
         }
-
+        
         return passwordEncoder.matches(password, user.getPassword());
-    }
-
-    @Override
-    public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
-    }
-
-    @Override
-    @Transactional
-    public UserDTO createUserWithPassword(String username, String password, String email,
-                                         String phoneNumber, String institution) {
-        // 检查用户名是否已存在
-        if (userRepository.existsByUsername(username)) {
-            throw new BusinessException(ErrorCode.ERR_EXIST, "用户名已存在");
-        }
-
-        // 检查邮箱是否已存在（如果提供了邮箱）
-        if (email != null && !email.isEmpty()) {
-            if (userRepository.existsByEmail(email)) {
-                throw new BusinessException(ErrorCode.ERR_EXIST, "邮箱已被使用");
-            }
-        }
-
-        // 创建用户实体
-        User user = new User();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPhoneNumber(phoneNumber);
-        user.setInstitution(institution);
-        user.setRoleId(1); // 默认角色ID
-
-        // 加密密码
-        if (password != null && !password.isEmpty()) {
-            user.setPassword(passwordEncoder.encode(password));
-        } else {
-            throw new BusinessException(ErrorCode.ERR_ARG, "密码不能为空");
-        }
-
-        // 设置默认状态
-        user.setStatus(UserStatus.NORMAL);
-
-        // 保存用户
-        User savedUser = userRepository.save(user);
-        log.info("创建用户成功: username={}, id={}", savedUser.getUsername(), savedUser.getId());
-
-        return convertToDTO(savedUser);
     }
     
     /**

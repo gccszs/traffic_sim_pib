@@ -7,9 +7,6 @@ import com.traffic.sim.common.dto.UserMapSpaceDTO;
 import com.traffic.sim.common.exception.BusinessException;
 import com.traffic.sim.common.response.PageResult;
 import com.traffic.sim.common.service.MapService;
-import com.traffic.sim.common.service.TokenInfo;
-import com.traffic.sim.plugin.auth.util.RequestContext;
-import com.traffic.sim.plugin.map.client.PythonGrpcClient;
 import com.traffic.sim.plugin.map.config.MapPluginProperties;
 import com.traffic.sim.plugin.map.entity.MapEntity;
 import com.traffic.sim.plugin.map.entity.UserMapQuota;
@@ -27,10 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,7 +48,6 @@ public class MapServiceImpl implements MapService {
     private final MapPermissionService permissionService;
     private final MapPluginProperties mapProperties;
     private final MongoTemplate mongoTemplate;
-    private final PythonGrpcClient pythonGrpcClient;
     
     @Override
     @Transactional
@@ -92,37 +86,24 @@ public class MapServiceImpl implements MapService {
         quotaService.checkUserQuota(userId, file.getSize());
         
         try {
-            // 调用Python服务转换文件
-            PythonGrpcClient.ConvertFileResponse convertResponse = 
-                pythonGrpcClient.uploadAndConvertFile(file, userId.toString());
-            
-            if (!convertResponse.isSuccess()) {
-                throw new BusinessException("地图转换失败: " + convertResponse.getMessage());
-            }
-            
-            // 保存原始文件
+            // 保存文件
             String storagePath = saveFile(file, userId);
             
-            // 保存转换后的XML文件
-            String xmlStoragePath = null;
-            if (convertResponse.getXmlData() != null && convertResponse.getXmlData().length > 0) {
-                xmlStoragePath = saveXmlFile(convertResponse.getXmlData(), 
-                    convertResponse.getXmlFileName(), userId);
-            }
+            // 调用Python服务转换文件（这里先简化，实际需要gRPC调用）
+            // TODO: 实现gRPC调用Python服务
             
             // 创建地图实体
             MapEntity mapEntity = new MapEntity();
-            mapEntity.setName(name != null ? name : getMapNameFromFile(file.getOriginalFilename()));
+            mapEntity.setName(name);
             mapEntity.setDescription(description);
             mapEntity.setFilePath(storagePath);
             mapEntity.setFileName(file.getOriginalFilename());
-            mapEntity.setXmlFileName(convertResponse.getXmlFileName());
             mapEntity.setOwnerId(userId);
             mapEntity.setFileSize(file.getSize());
-            mapEntity.setStoragePath(xmlStoragePath != null ? xmlStoragePath : storagePath);
+            mapEntity.setStoragePath(storagePath);
             mapEntity.setStatus(status != null ? MapEntity.MapStatus.fromCode(status) : MapEntity.MapStatus.PRIVATE);
             
-            // 生成mapId
+            // 生成mapId（MongoDB ID）
             String mapId = UUID.randomUUID().toString();
             mapEntity.setMapId(mapId);
             
@@ -130,8 +111,6 @@ public class MapServiceImpl implements MapService {
             
             // 更新配额
             quotaService.updateQuotaAfterUpload(userId, file.getSize());
-            
-            log.info("Map uploaded and converted successfully: mapId={}, userId={}", mapId, userId);
             
             return convertToDTO(saved);
         } catch (IOException e) {
@@ -181,7 +160,8 @@ public class MapServiceImpl implements MapService {
             .orElseThrow(() -> new BusinessException("地图不存在"));
         
         // 检查权限
-        if (!permissionService.canAccess(mapEntity, userId, isCurrentUserAdmin())) {
+        boolean isAdmin = false; // TODO: 从TokenInfo获取管理员标识
+        if (!permissionService.canAccess(mapEntity, userId, isAdmin)) {
             throw new BusinessException("无权访问该地图");
         }
         
@@ -195,7 +175,8 @@ public class MapServiceImpl implements MapService {
             .orElseThrow(() -> new BusinessException("地图不存在"));
         
         // 检查权限
-        if (!permissionService.canModify(mapEntity, userId, isCurrentUserAdmin())) {
+        boolean isAdmin = false; // TODO: 从TokenInfo获取管理员标识
+        if (!permissionService.canModify(mapEntity, userId, isAdmin)) {
             throw new BusinessException("无权修改该地图");
         }
         
@@ -220,7 +201,8 @@ public class MapServiceImpl implements MapService {
             .orElseThrow(() -> new BusinessException("地图不存在"));
         
         // 检查权限
-        if (!permissionService.canDelete(mapEntity, userId, isCurrentUserAdmin())) {
+        boolean isAdmin = false; // TODO: 从TokenInfo获取管理员标识
+        if (!permissionService.canDelete(mapEntity, userId, isAdmin)) {
             throw new BusinessException("无权删除该地图");
         }
         
@@ -273,7 +255,8 @@ public class MapServiceImpl implements MapService {
         MapEntity mapEntity = mapRepository.findByMapId(mapId)
             .orElseThrow(() -> new BusinessException("地图不存在"));
         
-        if (!permissionService.canAccess(mapEntity, userId, isCurrentUserAdmin())) {
+        boolean isAdmin = false; // TODO: 从TokenInfo获取管理员标识
+        if (!permissionService.canAccess(mapEntity, userId, isAdmin)) {
             throw new BusinessException("无权访问该地图");
         }
         
@@ -290,66 +273,10 @@ public class MapServiceImpl implements MapService {
     
     @Override
     public MapInfoDTO previewMapInfo(String mapFile) {
-        if (mapFile == null || mapFile.isEmpty()) {
-            throw new BusinessException("地图文件路径不能为空");
-        }
-        
+        // 预览地图信息（简化实现）
         MapInfoDTO mapInfo = new MapInfoDTO();
-        
-        try {
-            // 读取文件内容
-            Path filePath = Paths.get(mapFile);
-            if (!Files.exists(filePath)) {
-                throw new BusinessException("地图文件不存在: " + mapFile);
-            }
-            
-            byte[] fileContent = Files.readAllBytes(filePath);
-            String fileName = filePath.getFileName().toString();
-            
-            // 获取当前用户ID用于创建预览目录
-            String userId = RequestContext.getCurrentUserId();
-            if (userId == null) {
-                userId = "anonymous";
-            }
-            
-            // 创建临时 MultipartFile 进行预览
-            // 由于 gRPC 客户端需要 MultipartFile，这里创建一个简单的包装
-            PythonGrpcClient.PreviewFileResponse previewResponse = 
-                previewMapFileByContent(fileContent, fileName, userId);
-            
-            if (!previewResponse.isSuccess()) {
-                throw new BusinessException("预览失败: " + previewResponse.getMessage());
-            }
-            
-            // 构建返回数据
-            Map<String, Object> mapData = new HashMap<>();
-            mapData.put("roadCount", previewResponse.getRoadCount());
-            mapData.put("intersectionCount", previewResponse.getIntersectionCount());
-            mapData.put("previewData", previewResponse.getPreviewData());
-            
-            mapInfo.setMapData(mapData);
-            mapInfo.setMetadata(Collections.singletonMap("fileName", fileName));
-            
-            log.info("Map preview successful: file={}, roads={}, intersections={}", 
-                fileName, previewResponse.getRoadCount(), previewResponse.getIntersectionCount());
-            
-        } catch (IOException e) {
-            log.error("Failed to read map file for preview", e);
-            throw new BusinessException("读取地图文件失败: " + e.getMessage());
-        }
-        
+        // TODO: 实现预览逻辑
         return mapInfo;
-    }
-    
-    /**
-     * 通过文件内容预览地图
-     */
-    private PythonGrpcClient.PreviewFileResponse previewMapFileByContent(
-            byte[] fileContent, String fileName, String userId) {
-        
-        // 直接使用 gRPC 客户端的底层方法
-        return pythonGrpcClient.previewMapFile(
-            new ByteArrayMultipartFile(fileContent, fileName), userId);
     }
     
     @Override
@@ -380,20 +307,6 @@ public class MapServiceImpl implements MapService {
     }
     
     // ========== 私有辅助方法 ==========
-    
-    /**
-     * 判断当前用户是否为管理员
-     * 
-     * @return 是否是管理员
-     */
-    private boolean isCurrentUserAdmin() {
-        TokenInfo tokenInfo = RequestContext.getCurrentUser();
-        if (tokenInfo == null) {
-            return false;
-        }
-        String role = tokenInfo.getRole();
-        return "ADMIN".equalsIgnoreCase(role) || "ROLE_ADMIN".equalsIgnoreCase(role);
-    }
     
     /**
      * 验证文件
@@ -441,41 +354,6 @@ public class MapServiceImpl implements MapService {
     }
     
     /**
-     * 保存XML文件
-     */
-    private String saveXmlFile(byte[] xmlData, String xmlFileName, Long userId) throws IOException {
-        String basePath = mapProperties.getStorage().getBasePath();
-        String userPath = basePath + File.separator + userId;
-        
-        // 创建用户目录
-        Path userDir = Paths.get(userPath);
-        Files.createDirectories(userDir);
-        
-        // 生成文件名
-        String fileName = UUID.randomUUID().toString() + "_" + xmlFileName;
-        Path filePath = userDir.resolve(fileName);
-        
-        // 保存XML文件
-        Files.write(filePath, xmlData);
-        
-        return filePath.toString();
-    }
-    
-    /**
-     * 从文件名获取地图名称
-     */
-    private String getMapNameFromFile(String filename) {
-        if (filename == null || filename.isEmpty()) {
-            return "未命名地图";
-        }
-        int dotIndex = filename.lastIndexOf('.');
-        if (dotIndex > 0) {
-            return filename.substring(0, dotIndex);
-        }
-        return filename;
-    }
-    
-    /**
      * 实体转DTO
      */
     private MapDTO convertToDTO(MapEntity entity) {
@@ -511,61 +389,6 @@ public class MapServiceImpl implements MapService {
             page.getNumber() + 1,
             page.getSize()
         );
-    }
-    
-    /**
-     * 字节数组包装的 MultipartFile 实现
-     * 用于将文件内容转换为 MultipartFile 对象
-     */
-    private static class ByteArrayMultipartFile implements MultipartFile {
-        
-        private final byte[] content;
-        private final String name;
-        
-        public ByteArrayMultipartFile(byte[] content, String name) {
-            this.content = content;
-            this.name = name;
-        }
-        
-        @Override
-        public String getName() {
-            return name;
-        }
-        
-        @Override
-        public String getOriginalFilename() {
-            return name;
-        }
-        
-        @Override
-        public String getContentType() {
-            return "application/octet-stream";
-        }
-        
-        @Override
-        public boolean isEmpty() {
-            return content == null || content.length == 0;
-        }
-        
-        @Override
-        public long getSize() {
-            return content != null ? content.length : 0;
-        }
-        
-        @Override
-        public byte[] getBytes() throws IOException {
-            return content;
-        }
-        
-        @Override
-        public InputStream getInputStream() throws IOException {
-            return new ByteArrayInputStream(content);
-        }
-        
-        @Override
-        public void transferTo(File dest) throws IOException, IllegalStateException {
-            Files.write(dest.toPath(), content);
-        }
     }
 }
 

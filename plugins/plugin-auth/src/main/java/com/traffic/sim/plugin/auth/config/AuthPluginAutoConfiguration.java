@@ -20,21 +20,32 @@ public class AuthPluginAutoConfiguration implements WebMvcConfigurer {
     
     private final AuthenticationInterceptor authenticationInterceptor;
     private final PermissionInterceptor permissionInterceptor;
-    private final AuthPluginProperties authProperties;
     
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        AuthPluginProperties.Interceptor interceptorConfig = authProperties.getInterceptor();
-        
         // 注册认证拦截器
         registry.addInterceptor(authenticationInterceptor)
-            .addPathPatterns(interceptorConfig.getProtectedPaths().toArray(new String[0]))
-            .excludePathPatterns(interceptorConfig.getExcludePaths().toArray(new String[0]));
+            .addPathPatterns("/**")
+            .excludePathPatterns(
+                "/auth/login",
+                "/auth/register",
+                "/auth/captcha",
+                "/swagger-ui.html",
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/error"
+            );
         
         // 注册权限拦截器（在认证拦截器之后执行）
         registry.addInterceptor(permissionInterceptor)
-            .addPathPatterns(interceptorConfig.getProtectedPaths().toArray(new String[0]))
-            .excludePathPatterns(interceptorConfig.getExcludePermissionPaths().toArray(new String[0]));
+            .addPathPatterns("/**")
+            .excludePathPatterns(
+                "/auth/**",
+                "/swagger-ui.html",
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/error"
+            );
     }
 }
 

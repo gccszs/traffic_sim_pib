@@ -37,10 +37,12 @@ services:
     networks:
       - traffic-sim-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      # 使用更严格的健康检查，确保 MySQL 可以执行查询
+      test: ["CMD", "mysql", "-h", "localhost", "-u", "root", "-proot", "-e", "SELECT 1"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      start_period: 30s
+      retries: 10
 
   # ============================================
   # MongoDB 数据库服务
@@ -137,8 +139,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:3822/api/v3/api-docs"]
       interval: 30s
       timeout: 10s
-      start_period: 60s
-      retries: 3
+      start_period: 90s
+      retries: 5
 
   # ============================================
   # Python 地图转换服务
