@@ -112,6 +112,7 @@ spring:
 ### 3. 编译项目
 
 ```bash
+cd traffic_sim_boot
 mvn clean install
 ```
 
@@ -130,11 +131,11 @@ mvn spring-boot:run
 
 ## 📝 设计文档
 
-详细设计说明请参考仓库中的以下文档：
+详细设计文档请参考 `../boot-design/` 目录：
 
-- `infrastructure/README.md` - 基础设施与数据服务部署
-- `plugins/*/README.md` - 各业务插件的模块说明
-- `plugins/*-Issue.md` - 插件待办与问题记录
+- `boot设计需求.md` - 设计需求文档
+- `新版引擎交互接口文档.md` - 引擎交互接口文档
+- `plugin-*-模块详细设计.md` - 各插件模块详细设计
 
 ## 🔌 插件机制
 
@@ -188,76 +189,5 @@ plugin:
 ---
 
 **项目版本**: 1.0.0-SNAPSHOT  
-**最后更新**: 2026年
-
-## 🧭 附加模块
-
-### map_convert_services（Python服务）
-
-- 基于 `FastAPI` 与 `uvicorn`，负责地图上传转换、仿真引擎初始化、插件管理以及与引擎的 WebSocket 通信
-- 默认端口由环境变量 `APP_PORT` 控制，缺省为 `8000`（参见 `map_convert_services/config.py:4-18`）
-- 关键接口：
-  - `POST /fileupload`：上传地图（OSM/自定义），转换为引擎 `map.xml`，返回二进制流（`map_convert_services/web_app.py:52-81`）
-  - `POST /init_simeng`：依据前端提交的仿真配置生成 `map.xml`、`od.xml`，复制所选插件并启动 `SimulationEngine.exe`（`map_convert_services/web_app.py:90-189`）
-  - `POST /upload_plugin`：校验并接收插件 ZIP 包，落盘后加载清单（`map_convert_services/web_app.py:200-232`）
-  - `WS /ws/exe/{exe_id}`：与前端/后端的双向消息通道（`map_convert_services/web_app.py:237-258`）
-- 引擎启动流程由 `utils/command_runner.py` 实现，支持文件日志与控制台输出（`map_convert_services/utils/command_runner.py:11-199`）
-- 插件管理由 `sim_plugin.py` 提供，支持插件描述清单加载、更新与复制（`map_convert_services/sim_plugin.py:8-177`）
-
-### SimEngPI（仿真引擎与资源）
-
-- 目录内包含 `SimulationEngine.exe` 及所需 DLL，按会话用户隔离仿真文件（`map_convert_services/web_app.py:101-113`）
-- 每次仿真初始化会生成 `map.xml` 与 `od.xml`（OD与信号数据由前端 JSON 转换，见 `json_utils.py` 与 `web_app.py:117-160`）
-
-### frontend（前端资源）
-
-- 打包后的静态资源与 `index.html`，用于构建交互式仿真控制界面
-- 静态图像位于 `frontend/sim_imgs/`
-
-### infrastructure（基础设施）
-
-- 使用 Docker Compose 管理 `MySQL`、`MongoDB`、`Redis`、`Kafka`、管理UI等（详见 `infrastructure/README.md:1-400`）
-- 提供 `start.sh/.bat` 与 `stop.sh/.bat` 一键启动/停止脚本
-
-## 🧩 Java 服务与插件
-
-### traffic-sim-server（主服务）
-
-- 端口 `8080`，上下文路径 `/api`（`traffic-sim-server/src/main/resources/application.yml:48-57`）
-- 跨域配置（`traffic-sim-server/src/main/java/com/traffic/sim/config/WebConfig.java:14-27`）
-- 全局异常处理（`traffic-sim-server/src/main/java/com/traffic/sim/exception/GlobalExceptionHandler.java:25-107`）
-- OpenAPI 文档路径：`/api/swagger-ui.html`（`traffic-sim-server/src/main/resources/application.yml:59-67`）
-
-### traffic-sim-common（公共模块）
-
-- 提供 DTO、响应封装、错误码、服务接口与工具类，供各插件与主服务共享
-
-### plugins（业务插件）
-
-- `plugin-simulation`：仿真任务管理与控制，REST 接口例如：
-  - 创建仿真任务 `POST /api/simulation/create`（`plugins/plugin-simulation/src/main/java/com/traffic/sim/plugin/simulation/controller/SimulationController.java:37-60`）
-  - 任务列表 `GET /api/simulation/list`（`plugins/plugin-simulation/src/main/java/com/traffic/sim/plugin/simulation/controller/SimulationController.java:65-79`）
-  - 绿信比控制 `POST /api/simulation/control_green_ratio`（`plugins/plugin-simulation/src/main/java/com/traffic/sim/plugin/simulation/controller/SimulationController.java:102-131`）
-- `plugin-engine-manager`：前端与仿真引擎的 WebSocket 桥接与配置（`plugins/plugin-engine-manager/src/main/java/com/traffic/sim/plugin/engine/manager/config/WebSocketConfig.java:16-39`，`EngineManagerProperties.java:15-41`）
-- `plugin-auth`、`plugin-user`、`plugin-map`、`plugin-statistics`、`plugin-engine-replay`：分别负责认证、用户、地图、统计与回放等功能，按需引入
-
-## 🚀 完整启动流程
-
-- 启动基础设施：在 `infrastructure/` 执行 `docker-compose up -d`（详见其 README）
-- 安装并启动 Python 服务：
-  - 安装依赖：在 `map_convert_services/` 执行 `pip install -r requirements.txt`
-  - 启动服务：`python -m uvicorn map_convert_services.web_app:app --host 0.0.0.0 --port 8000`
-- 编译并运行 Java 服务：在项目根目录执行 `mvn clean install`，进入 `traffic-sim-server/` 执行 `mvn spring-boot:run`
-- 访问 API 文档：`http://localhost:8080/api/swagger-ui.html`
-
-## 🕸️ 通信与数据流
-
-- 前端通过 REST 上传地图与配置，Java 服务与 Python 服务协作生成仿真所需文件
-- WebSocket 通道 `/ws/exe/{exe_id}` 用于前端与引擎的数据交互（消息类型定义见 `traffic-sim-common/common/constant/*`）
-- gRPC 面向 Python 服务的调用在插件内配置，服务不可用时主服务会给出兜底提示（`TrafficSimApplication.java:33-39`）
-
-## ⚠️ 生产建议
-
-- 调整 `infrastructure/` 中默认凭证与端口映射，启用 TLS 与网络隔离
-- 配置备份策略与监控，限制上传大小（`application.yml:99-103`）
+**最后更新**: 2025年
 

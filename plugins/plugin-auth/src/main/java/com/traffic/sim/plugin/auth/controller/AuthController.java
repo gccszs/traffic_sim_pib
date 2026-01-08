@@ -5,11 +5,11 @@ import com.traffic.sim.common.dto.LoginResponse;
 import com.traffic.sim.common.dto.RegisterRequest;
 import com.traffic.sim.common.response.ApiResponse;
 import com.traffic.sim.common.service.AuthService;
-import com.traffic.sim.plugin.auth.dto.RefreshTokenRequest;
 import com.traffic.sim.plugin.auth.service.CaptchaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @Tag(name = "认证管理", description = "用户认证、注册、令牌管理接口")
 @RequiredArgsConstructor
 public class AuthController {
@@ -104,6 +104,14 @@ public class AuthController {
             return null;
         }
         return authorization.substring(7);
+    }
+    
+    /**
+     * 刷新令牌请求
+     */
+    @Data
+    public static class RefreshTokenRequest {
+        private String refreshToken;
     }
 }
 

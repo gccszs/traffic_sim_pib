@@ -10,9 +10,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -38,30 +38,11 @@ public class CaptchaService {
     private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     
     /**
-     * 安全随机数生成器
-     */
-    private final SecureRandom secureRandom = new SecureRandom();
-    
-    /**
-     * 验证码存储容量限制
-     */
-    private static final int MAX_CAPTCHA_STORE_SIZE = 10000;
-    
-    /**
      * 生成验证码
      */
     public CaptchaResult generateCaptcha() {
         if (!authProperties.getCaptcha().getEnabled()) {
             return null;
-        }
-        
-        // 检查容量限制，超过限制时先清理过期验证码
-        if (captchaStore.size() >= MAX_CAPTCHA_STORE_SIZE) {
-            cleanExpiredCaptcha();
-            // 如果清理后仍然超过限制，记录警告
-            if (captchaStore.size() >= MAX_CAPTCHA_STORE_SIZE) {
-                log.warn("验证码存储已达上限: {}", captchaStore.size());
-            }
         }
         
         String captchaId = generateCaptchaId();
@@ -111,26 +92,28 @@ public class CaptchaService {
     }
     
     /**
-     * 生成验证码ID（使用UUID确保唯一性）
+     * 生成验证码ID
      */
     private String generateCaptchaId() {
-        return "captcha_" + UUID.randomUUID().toString().replace("-", "");
+        return "captcha_" + System.currentTimeMillis() + "_" + 
+            new Random().nextInt(10000);
     }
     
     /**
-     * 生成验证码字符串（使用SecureRandom确保安全性）
+     * 生成验证码字符串
      */
     private String generateCode() {
+        Random random = new Random();
         int length = authProperties.getCaptcha().getLength();
         StringBuilder code = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            code.append(CHARS.charAt(secureRandom.nextInt(CHARS.length())));
+            code.append(CHARS.charAt(random.nextInt(CHARS.length())));
         }
         return code.toString();
     }
     
     /**
-     * 生成验证码图片（使用SecureRandom确保安全性）
+     * 生成验证码图片
      */
     private byte[] generateImage(String code) {
         int width = authProperties.getCaptcha().getWidth();
@@ -151,19 +134,20 @@ public class CaptchaService {
         g.drawRect(0, 0, width - 1, height - 1);
         
         // 绘制验证码
+        Random random = new Random();
         g.setFont(new Font("Arial", Font.BOLD, height - 10));
         int x = 10;
         for (int i = 0; i < code.length(); i++) {
-            g.setColor(new Color(secureRandom.nextInt(100), secureRandom.nextInt(100), secureRandom.nextInt(100)));
+            g.setColor(new Color(random.nextInt(100), random.nextInt(100), random.nextInt(100)));
             g.drawString(String.valueOf(code.charAt(i)), x, height - 5);
             x += width / (code.length() + 1);
         }
         
         // 绘制干扰线
         for (int i = 0; i < 5; i++) {
-            g.setColor(new Color(secureRandom.nextInt(200), secureRandom.nextInt(200), secureRandom.nextInt(200)));
-            g.drawLine(secureRandom.nextInt(width), secureRandom.nextInt(height),
-                      secureRandom.nextInt(width), secureRandom.nextInt(height));
+            g.setColor(new Color(random.nextInt(200), random.nextInt(200), random.nextInt(200)));
+            g.drawLine(random.nextInt(width), random.nextInt(height),
+                      random.nextInt(width), random.nextInt(height));
         }
         
         g.dispose();
