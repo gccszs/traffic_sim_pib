@@ -21,12 +21,23 @@ from map_utils import osmtrans, mapmaker, mapmaker_new
 from config import settings
 
 # 配置日志
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),  # 输出到控制台
+    ]
+)
 logger = logging.getLogger(__name__)
+
+logger.info("=" * 60)
+logger.info("Starting gRPC Service...")
+logger.info("=" * 60)
 
 # 缓存目录
 CACHE_DIR = Path("cache/")
 CACHE_DIR.mkdir(exist_ok=True)
+logger.info(f"Cache directory: {CACHE_DIR} (exists: {CACHE_DIR.exists()})")
 
 
 class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
@@ -48,7 +59,7 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
             转换结果，包含XML数据或错误信息
         """
         try:
-            logger.info(f"ConvertMap request: user_id={request.user_id}, file_name={request.file_name}")
+            logger.info(f"ConvertMap request - user_id: {request.user_id}, file_name: {request.file_name}, file_size: {len(request.file_content)} bytes")
             
             # 创建用户工作目录
             work_dir = CACHE_DIR / request.user_id
@@ -66,7 +77,7 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
                 request.file_name
             )
             
-            logger.info(f"Conversion successful: {xml_file_name}, method={conversion_method}")
+            logger.info(f"Conversion successful - xml_file: {xml_file_name}, method: {conversion_method}, xml_size: {len(xml_data)} bytes")
             
             return map_service_pb2.ConvertMapResponse(
                 success=True,
@@ -78,6 +89,7 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
             
         except Exception as e:
             logger.error(f"ConvertMap error: {str(e)}", exc_info=True)
+            logger.error(f"Request details - user_id: {request.user_id}, file_name: {request.file_name}")
             return map_service_pb2.ConvertMapResponse(
                 success=False,
                 message=f"转换失败: {str(e)}",
@@ -102,7 +114,7 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
             预览结果，包含简化的地图信息
         """
         try:
-            logger.info(f"PreviewMap request: user_id={request.user_id}, file_name={request.file_name}")
+            logger.info(f"PreviewMap request - user_id: {request.user_id}, file_name: {request.file_name}, file_size: {len(request.file_content)} bytes")
             
             # 创建临时工作目录
             work_dir = CACHE_DIR / f"preview_{request.user_id}"
@@ -138,6 +150,7 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
             
         except Exception as e:
             logger.error(f"PreviewMap error: {str(e)}", exc_info=True)
+            logger.error(f"Request details - user_id: {request.user_id}, file_name: {request.file_name}")
             return map_service_pb2.PreviewMapResponse(
                 success=False,
                 message=f"预览失败: {str(e)}",
@@ -175,11 +188,14 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
         # 根据文件类型处理
         if file_extension == 'osm':
             txt_file_path = new_file_location + '.txt'
+            logger.info(f"Converting OSM to TXT: {file_path} -> {txt_file_path}")
             result = osmtrans.osm_to_txt(file_path, txt_file_path)
             if not result:
                 raise RuntimeError("OSM转TXT失败")
+            logger.info("OSM to TXT conversion successful")
             xml_file_path, conversion_method = await self._convert_txt_to_xml(txt_file_path, new_file_location)
         elif file_extension == 'txt':
+            logger.info(f"Converting TXT to XML: {file_path}")
             xml_file_path, conversion_method = await self._convert_txt_to_xml(file_path, new_file_location)
         else:
             raise ValueError(f"不支持的文件格式: {file_extension}")
@@ -205,15 +221,19 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
         """
         xml_file_path = new_file_location + '.xml'
         
+        logger.info(f"Converting TXT to XML: {txt_file_path} -> {xml_file_path}")
+        
         if not os.path.exists(txt_file_path):
             raise FileNotFoundError(f"源文件不存在: {txt_file_path}")
         
         # 尝试旧方法转换
+        logger.info("Trying old conversion method...")
         result = mapmaker.txt_to_xml(txt_file_path, xml_file_path)
         conversion_method = 'old'
         
         if not result:
             # 尝试新方法转换
+            logger.info("Old method failed, trying new conversion method...")
             conversion_method = 'new'
             result = mapmaker_new.txt_to_xml_new(txt_file_path, xml_file_path)
         
@@ -222,6 +242,8 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
         
         if not os.path.exists(xml_file_path):
             raise RuntimeError("输出文件未创建")
+        
+        logger.info(f"TXT to XML conversion successful using {conversion_method} method")
         
         return xml_file_path, conversion_method
 
@@ -256,6 +278,10 @@ async def serve(port: int = 50052):
     Args:
         port: 服务端口，默认50052
     """
+    logger.info("=" * 60)
+    logger.info(f"Initializing gRPC server on port {port}")
+    logger.info("=" * 60)
+    
     server = aio.server(futures.ThreadPoolExecutor(max_workers=10))
     map_service_pb2_grpc.add_MapConvertServiceServicer_to_server(
         MapConvertServiceServicer(), server
@@ -264,16 +290,21 @@ async def serve(port: int = 50052):
     listen_addr = f'[::]:{port}'
     server.add_insecure_port(listen_addr)
     
-    logger.info(f"Starting gRPC server on port {port}")
+    logger.info(f"Starting gRPC server...")
     await server.start()
     
-    logger.info(f"gRPC server started, listening on {listen_addr}")
+    logger.info(f"gRPC server started successfully")
+    logger.info(f"Listening on: {listen_addr}")
+    logger.info(f"Server is ready to accept connections")
+    logger.info("=" * 60)
+    
     await server.wait_for_termination()
 
 
 def main():
     """主入口"""
     grpc_port = int(os.environ.get('GRPC_PORT', 50052))
+    logger.info(f"gRPC port from environment: {grpc_port}")
     asyncio.run(serve(grpc_port))
 
 

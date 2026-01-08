@@ -50,13 +50,14 @@ def fix_imports(proto_dir: Path):
     grpc_file = proto_dir / "map_service_pb2_grpc.py"
     
     if grpc_file.exists():
-        content = grpc_file.read_text()
+        # 使用 UTF-8 编码读取和写入文件
+        content = grpc_file.read_text(encoding='utf-8')
         # 修复相对导入
         content = content.replace(
             "import map_service_pb2 as map__service__pb2",
             "from . import map_service_pb2 as map__service__pb2"
         )
-        grpc_file.write_text(content)
+        grpc_file.write_text(content, encoding='utf-8')
         print(f"Fixed imports in {grpc_file}")
 
 
