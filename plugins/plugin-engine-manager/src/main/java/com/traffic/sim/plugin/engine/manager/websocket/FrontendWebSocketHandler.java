@@ -161,12 +161,12 @@ public class FrontendWebSocketHandler implements WebSocketHandler {
     }
     
     @Override
-    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+    public void handleTransportError(WebSocketSession session, Throwable exception) {
         log.error("WebSocket transport error for frontend session", exception);
     }
     
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus)  {
         String sessionId = extractSessionId(session);
         log.info("Frontend WebSocket closed: {}, status: {}", sessionId, closeStatus);
         

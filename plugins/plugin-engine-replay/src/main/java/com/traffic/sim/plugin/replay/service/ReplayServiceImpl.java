@@ -1,5 +1,6 @@
 package com.traffic.sim.plugin.replay.service;
 
+import com.traffic.sim.common.dto.ReplayDataDTO;
 import com.traffic.sim.common.exception.BusinessException;
 import com.traffic.sim.common.response.PageResult;
 import com.traffic.sim.plugin.replay.config.ReplayPluginProperties;
@@ -42,6 +43,14 @@ public class ReplayServiceImpl implements ReplayService {
         // 生成任务ID
         String taskId = UUID.randomUUID().toString().replace("-", "");
         
+        // 查询MongoDB中是否有该仿真任务的数据
+        long dataCount = replayDataService.countReplayData(request.getSimulationTaskId());
+        if (dataCount == 0) {
+            throw new BusinessException("没有找到仿真任务ID为 " + request.getSimulationTaskId() + " 的回放数据，请确保仿真已结束并成功保存数据");
+        }
+        
+        log.info("Found {} steps of replay data for simulation task: {}", dataCount, request.getSimulationTaskId());
+        
         // 创建回放任务实体
         ReplayTask replayTask = new ReplayTask();
         replayTask.setTaskId(taskId);
@@ -49,12 +58,14 @@ public class ReplayServiceImpl implements ReplayService {
         replayTask.setName(request.getName());
         replayTask.setStatus(ReplayTask.ReplayStatus.CREATED.getCode());
         replayTask.setCurrentStep(0L);
-        replayTask.setTotalSteps(0L);
+        replayTask.setTotalSteps(dataCount); // 设置从 MongoDB 查询到的步数
         replayTask.setPlaybackSpeed(properties.getReplay().getDefaultSpeed());
         replayTask.setUserId(userId);
         
         // 保存到数据库
         replayTask = replayTaskRepository.save(replayTask);
+        
+        log.info("Replay task created successfully: taskId={}, totalSteps={}", taskId, dataCount);
         
         // 转换为DTO
         return convertToDTO(replayTask);

@@ -5,7 +5,7 @@ import com.traffic.sim.common.response.PageResult;
 import com.traffic.sim.common.util.RequestContext;
 import com.traffic.sim.plugin.replay.dto.CreateReplayTaskRequest;
 import com.traffic.sim.plugin.replay.dto.ReplayControlRequest;
-import com.traffic.sim.plugin.replay.dto.ReplayDataDTO;
+import com.traffic.sim.common.dto.ReplayDataDTO;
 import com.traffic.sim.plugin.replay.dto.ReplayTaskDTO;
 import com.traffic.sim.plugin.replay.service.ReplayService;
 import io.swagger.v3.oas.annotations.Operation;

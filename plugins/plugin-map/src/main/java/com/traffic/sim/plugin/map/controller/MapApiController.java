@@ -2,6 +2,7 @@ package com.traffic.sim.plugin.map.controller;
 
 import com.traffic.sim.common.dto.MapDTO;
 import com.traffic.sim.common.dto.MapUpdateRequest;
+import com.traffic.sim.common.dto.MapUploadResponse;
 import com.traffic.sim.common.dto.UserMapSpaceDTO;
 import com.traffic.sim.common.response.ApiResponse;
 import com.traffic.sim.common.response.PageResult;
@@ -30,18 +31,20 @@ public class MapApiController {
     /**
      * 【新版】上传地图文件（文件上传方式）
      * POST /api/map/upload
+     * 
+     * 上传成功后直接返回地图JSON数据，前端无需再次请求
      */
     @PostMapping("/upload")
-    public ResponseEntity<ApiResponse<MapDTO>> uploadMap(
+    public ResponseEntity<ApiResponse<MapUploadResponse>> uploadMap(
             @RequestParam("file") MultipartFile file,
             @RequestParam("name") String name,
             @RequestParam(required = false) String description,
             @RequestParam(defaultValue = "1") Integer status) {
         
         Long userId = getCurrentUserId();
-        MapDTO mapDTO = mapService.uploadAndConvertMap(file, name, description, status, userId);
+        MapUploadResponse response = mapService.uploadMapWithData(file, name, description, status, userId);
         
-        return ResponseEntity.ok(ApiResponse.success(mapDTO));
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
     
     /**

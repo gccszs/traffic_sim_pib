@@ -93,6 +93,7 @@ CREATE TABLE `map` (
   `file_path` VARCHAR(500) NOT NULL COMMENT '文件路径',
   `file_name` VARCHAR(255) DEFAULT NULL COMMENT '原始文件名',
   `xml_file_name` VARCHAR(255) DEFAULT NULL COMMENT 'XML文件名',
+  `xml_file_path` VARCHAR(500) DEFAULT NULL COMMENT 'Python端XML文件路径（用于仿真引擎）',
   `map_image` LONGTEXT COMMENT '地图图片（Base64）',
   `owner_id` BIGINT(20) NOT NULL COMMENT '所有者用户ID',
   `status` TINYINT(4) NOT NULL DEFAULT 1 COMMENT '地图状态：0-公开，1-私有，2-禁用',
@@ -101,6 +102,7 @@ CREATE TABLE `map` (
   `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
+  KEY `idx_map_id` (`map_id`),
   KEY `idx_owner_id` (`owner_id`),
   KEY `idx_status` (`status`),
   KEY `idx_create_time` (`create_time`)

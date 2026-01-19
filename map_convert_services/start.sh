@@ -1,7 +1,11 @@
 #!/bin/bash
 # ============================================
 # Python Services Startup Script
-# Start FastAPI (HTTP) and gRPC services
+# 启动以下服务:
+# 1. FastAPI (HTTP/WebSocket) - 用于引擎和Java后端的WebSocket连接
+# 2. gRPC Services - 包含两个服务:
+#    - MapConvertService (50052) - 地图转换服务
+#    - PythonService (50051) - 仿真引擎管理服务
 # ============================================
 
 set -e
@@ -12,6 +16,9 @@ mkdir -p "$LOG_DIR"
 
 echo "========================================="
 echo "Starting Traffic Simulation Python Services..."
+echo "  - FastAPI (HTTP/WebSocket): port ${APP_PORT:-8000}"
+echo "  - MapConvertService (gRPC): port ${MAP_GRPC_PORT:-50052}"
+echo "  - PythonService (gRPC): port ${SIM_GRPC_PORT:-50051}"
 echo "========================================="
 
 # 日志文件路径（带时间戳）
@@ -48,7 +55,9 @@ echo "[$(date '+%Y-%m-%d %H:%M:%S')] FastAPI started successfully (PID: $FASTAPI
 
 # Check if gRPC service file exists
 if [ -f "grpc_server.py" ]; then
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting gRPC service on port ${GRPC_PORT:-50052}..." | tee -a "$MAIN_LOG"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting gRPC services..." | tee -a "$MAIN_LOG"
+    echo "  - MapConvertService on port ${MAP_GRPC_PORT:-50052}" | tee -a "$MAIN_LOG"
+    echo "  - PythonService on port ${SIM_GRPC_PORT:-50051}" | tee -a "$MAIN_LOG"
     python grpc_server.py > "$GRPC_LOG" 2>&1 &
     GRPC_PID=$!
 
@@ -74,8 +83,16 @@ fi
 echo "=========================================" | tee -a "$MAIN_LOG"
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Services started successfully!" | tee -a "$MAIN_LOG"
 echo "  - FastAPI PID: $FASTAPI_PID (log: $FASTAPI_LOG)" | tee -a "$MAIN_LOG"
-[ -n "$GRPC_PID" ] && echo "  - gRPC PID: $GRPC_PID (log: $GRPC_LOG)" | tee -a "$MAIN_LOG"
+if [ -n "$GRPC_PID" ]; then
+    echo "  - gRPC PID: $GRPC_PID (log: $GRPC_LOG)" | tee -a "$MAIN_LOG"
+    echo "    - MapConvertService: port ${MAP_GRPC_PORT:-50052}" | tee -a "$MAIN_LOG"
+    echo "    - PythonService: port ${SIM_GRPC_PORT:-50051}" | tee -a "$MAIN_LOG"
+fi
 echo "  - Main log: $MAIN_LOG" | tee -a "$MAIN_LOG"
+echo "=========================================" | tee -a "$MAIN_LOG"
+echo "" | tee -a "$MAIN_LOG"
+echo "NOTE: WebSocket service at /ws/exe/{exe_id} is handled by FastAPI" | tee -a "$MAIN_LOG"
+echo "NOTE: Engine and Java backend communicate via WebSocket (HTTP protocol)" | tee -a "$MAIN_LOG"
 echo "=========================================" | tee -a "$MAIN_LOG"
 echo "Monitoring services. Press Ctrl+C to stop..." | tee -a "$MAIN_LOG"
 

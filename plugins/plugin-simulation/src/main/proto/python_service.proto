@@ -6,7 +6,7 @@ option java_multiple_files = true;
 option java_package = "com.traffic.sim.plugin.simulation.grpc.proto";
 option java_outer_classname = "PythonServiceProto";
 
-// Python服务接口定义
+// Python服务接口定义 - 用于仿真引擎管理和插件管理
 service PythonService {
   // 初始化仿真引擎
   rpc CreateSimeng(CreateSimengRequest) returns (ApiResponse);
@@ -16,6 +16,17 @@ service PythonService {
 
   // 测试连接
   rpc TestConnection(Empty) returns (TestResponse);
+
+  // ========== 插件管理接口 ==========
+  
+  // 获取所有插件信息
+  rpc GetPluginInfo(GetPluginInfoRequest) returns (GetPluginInfoResponse);
+  
+  // 上传插件
+  rpc UploadPlugin(UploadPluginRequest) returns (ApiResponse);
+  
+  // 更新插件信息
+  rpc UpdatePluginInfo(UpdatePluginInfoRequest) returns (ApiResponse);
 }
 
 // 创建仿真引擎请求
@@ -78,4 +89,37 @@ message GreenRatioControlRequest {
 }
 
 message Empty {}
+
+// ========== 插件管理消息定义 ==========
+
+// 获取插件信息请求
+message GetPluginInfoRequest {
+  string pluginName = 1;  // 可选，为空则获取所有插件
+}
+
+// 插件信息
+message PluginInfo {
+  string name = 1;           // 插件名称（目录名）
+  string manifestJson = 2;   // 插件描述文件内容（JSON字符串）
+}
+
+// 获取插件信息响应
+message GetPluginInfoResponse {
+  string res = 1;
+  string msg = 2;
+  repeated PluginInfo plugins = 3;
+}
+
+// 上传插件请求
+message UploadPluginRequest {
+  string fileName = 1;     // 文件名
+  bytes fileContent = 2;   // 文件内容（zip包）
+}
+
+// 更新插件信息请求
+message UpdatePluginInfoRequest {
+  string pluginName = 1;
+  string updateInfosJson = 2;  // 更新内容（JSON字符串）
+  bool applyDisk = 3;          // 是否写入磁盘
+}
 

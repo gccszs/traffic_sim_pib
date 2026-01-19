@@ -134,29 +134,3 @@ async def handle_other_operations(websocket, cookie_id, data):
         "data": {"session_id": cookie_id, "result": "success"}
     }
     await websocket.send_json(response_msg)
-
-async def handle_backend_message(websocket, cookie_id, data):
-    """处理Java后端的控制消息"""
-    ope = data.get('ope', '')
-
-    if ope == 'hello':
-        # 响应Java后端的握手
-        hi_msg = {
-            "type": "eng",
-            "ope": "hi",
-            "time": time.time()
-        }
-        await websocket.send_json(hi_msg)
-        print(f"Sent hi message to Java backend for session: {cookie_id}")
-
-    elif ope == 'status_check':
-        status_msg = {
-            "type": "eng",
-            "ope": "status",
-            "time": time.time(),
-            "data": {"status": "running"}
-        }
-        await websocket.send_json(status_msg)
-
-    else:
-        print(f"Unknown backend operation: {ope}")

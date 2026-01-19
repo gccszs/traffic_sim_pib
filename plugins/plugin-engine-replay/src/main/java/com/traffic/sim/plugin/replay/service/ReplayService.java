@@ -2,7 +2,7 @@ package com.traffic.sim.plugin.replay.service;
 
 import com.traffic.sim.plugin.replay.dto.CreateReplayTaskRequest;
 import com.traffic.sim.plugin.replay.dto.ReplayControlRequest;
-import com.traffic.sim.plugin.replay.dto.ReplayDataDTO;
+import com.traffic.sim.common.dto.ReplayDataDTO;
 import com.traffic.sim.plugin.replay.dto.ReplayTaskDTO;
 import com.traffic.sim.common.response.PageResult;
 

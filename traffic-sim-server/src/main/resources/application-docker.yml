@@ -111,6 +111,7 @@ plugin:
         - /v3/api-docs/**
         - /error
         - /actuator/**
+        - /ws/**
   map:
     storage:
       base-path: /app/maps

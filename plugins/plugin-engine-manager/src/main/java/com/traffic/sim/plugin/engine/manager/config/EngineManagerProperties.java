@@ -23,7 +23,9 @@ public class EngineManagerProperties {
     @Data
     public static class WebSocketConfig {
         private String frontendPath = "/ws/frontend";
-        private String enginePath = "/ws/exe/{exe_id}";
+        // 注意：Spring WebSocket 使用 Ant-style 路径匹配，不支持 {exe_id} 语法
+        // 使用 /* 匹配单层路径
+        private String enginePath = "/ws/exe/*";
         private List<String> allowedOrigins = new ArrayList<>(Arrays.asList("*"));
         private boolean sockjsEnabled = true;
     }

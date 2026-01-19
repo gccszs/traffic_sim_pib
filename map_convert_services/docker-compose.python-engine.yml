@@ -1,0 +1,132 @@
+# ============================================================================
+# Docker Compose 配置 - Python 引擎服务
+# ============================================================================
+#
+# 【使用说明】
+# 
+# 1. 单独启动 Python 引擎服务:
+#    docker-compose -f docker-compose.python-engine.yml up -d
+#
+# 2. 与 Java 主服务一起启动:
+#    docker-compose -f docker-compose.yml -f docker-compose.python-engine.yml up -d
+#
+# 3. 查看日志:
+#    docker-compose -f docker-compose.python-engine.yml logs -f python-engine
+#
+# 4. 停止服务:
+#    docker-compose -f docker-compose.python-engine.yml down
+#
+# 【部署模式说明】
+#
+# 模式1: 同主机部署 (Java 和 Python 在同一 Docker 网络)
+#   - Java 服务通过服务名 'python-engine' 访问
+#   - 配置: PYTHON_SERVICE_HOST=python-engine
+#
+# 模式2: 分布式部署 (Java 和 Python 在不同主机)
+#   - 需要将端口映射到宿主机
+#   - Java 服务通过宿主机 IP 访问
+#   - 配置: PYTHON_SERVICE_HOST=<python主机IP>
+#
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # Python 引擎服务
+  # 提供 gRPC 和 HTTP/WebSocket 接口
+  # ==========================================================================
+  python-engine:
+    # 构建配置
+    build:
+      context: ./map_convert_services
+      dockerfile: Dockerfile
+    
+    # 镜像名称
+    image: traffic-sim-python-engine:latest
+    
+    # 容器名称
+    container_name: traffic-sim-python-engine
+    
+    # 重启策略
+    restart: unless-stopped
+    
+    # 环境变量配置
+    # 【运维人员注意】根据实际部署环境修改这些值
+    environment:
+      # HTTP/WebSocket 服务配置
+      - APP_HOST=0.0.0.0           # 监听所有网络接口
+      - APP_PORT=8000              # HTTP/WebSocket 端口
+      
+      # gRPC 服务端口
+      - SIM_GRPC_PORT=50051        # 仿真服务端口 (PythonService)
+      - MAP_GRPC_PORT=50052        # 地图服务端口 (MapConvertService)
+      
+      # 仿真引擎配置
+      # CLIENT_SOCKET_IP: 仿真引擎连接的客户端 IP
+      # 如果 Java 服务在同一 Docker 网络，使用服务名
+      # 如果在不同主机，使用 Java 服务所在主机的 IP
+      - CLIENT_SOCKET_IP=${CLIENT_SOCKET_IP:-host.docker.internal}
+      
+      # 日志目录
+      - LOG_HOME=/app/engine_sim_logs/
+    
+    # 端口映射
+    # 【运维人员注意】
+    # - 同一 Docker 网络部署时，可以不映射端口
+    # - 分布式部署或需要从宿主机访问时，需要映射端口
+    ports:
+      # HTTP/WebSocket 端口 - FastAPI 服务
+      - "${PYTHON_HTTP_PORT:-8000}:8000"
+      # gRPC 仿真服务端口
+      - "${PYTHON_SIM_GRPC_PORT:-50051}:50051"
+      # gRPC 地图服务端口
+      - "${PYTHON_MAP_GRPC_PORT:-50052}:50052"
+    
+    # 数据卷挂载
+    volumes:
+      # 仿真日志持久化
+      - python-engine-logs:/data/logs
+      # 配置文件持久化
+      - python-engine-config:/data/config
+      # 缓存目录（可选，用于调试）
+      # - ./map_convert_services/cache:/app/cache
+    
+    # 网络配置
+    networks:
+      - traffic-sim-network
+    
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/test"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # 日志配置
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ==========================================================================
+# 数据卷定义
+# ==========================================================================
+volumes:
+  python-engine-logs:
+    driver: local
+  python-engine-config:
+    driver: local
+
+# ==========================================================================
+# 网络定义
+# 【运维人员注意】
+# 如果与 Java 主服务一起部署，确保它们在同一个网络中
+# ==========================================================================
+networks:
+  traffic-sim-network:
+    driver: bridge
+    # 如果已存在网络，使用 external: true
+    # external: true

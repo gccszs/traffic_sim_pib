@@ -2,6 +2,7 @@ package com.traffic.sim.plugin.map.controller;
 
 import com.traffic.sim.common.dto.MapDTO;
 import com.traffic.sim.common.dto.MapInfoDTO;
+import com.traffic.sim.common.dto.MapUploadResponse;
 import com.traffic.sim.common.response.ApiResponse;
 import com.traffic.sim.common.response.PageResult;
 import com.traffic.sim.common.service.MapService;
@@ -79,9 +80,22 @@ public class MapController {
         MapListResponse response = MapListResponse.fromPageResult(result);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+    
+    /**
+     * 【旧版兼容】获取地图 JSON 数据
+     * GET /get_map_json
+     * 
+     * 返回当前用户最近上传/操作的地图JSON数据
+     */
+    @GetMapping("/get_map_json")
+    public ResponseEntity<MapUploadResponse> getMapJson() {
+        Long userId = getCurrentUserId();
+        MapUploadResponse response = mapService.getLatestMapJson(userId);
+        return ResponseEntity.ok(response);
+    }
 
     /**
-     * 【旧版兼容】从MongoDB获取地图数据
+     * 【旧版兼容】从 MongoDB 获取地图数据
      * GET /getMapInfoDB
      */
     @GetMapping("/getMapInfoDB")

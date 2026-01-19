@@ -84,6 +84,92 @@ async def test():
     return 'hello'
 
 
+@app.get("/get_plugin_info")
+async def get_plugin_info_all():
+    """获取所有插件信息"""
+    logger.info("Get all plugin info request")
+    try:
+        plugins = sim_plugin.get_plugin_info()
+        # 转换为可序列化的格式
+        plugin_list = []
+        for p in plugins:
+            plugin_list.append({
+                "name": p.storage_dir,
+                "manifest": p.manifest_content
+            })
+        return {
+            "res": "ERR_OK",
+            "msg": "get plugin info ok",
+            "plugins": plugin_list
+        }
+    except Exception as e:
+        logger.error(f"Get plugin info error: {e}", exc_info=True)
+        return {
+            "res": "ERR_FAIL",
+            "msg": str(e)
+        }
+
+
+@app.get("/get_plugin_info/{plugin_name}")
+async def get_plugin_info_by_name(plugin_name: str):
+    """获取指定插件信息"""
+    logger.info(f"Get plugin info request for: {plugin_name}")
+    try:
+        plugin = sim_plugin.get_plugin_info(plugin_name)
+        if plugin is None:
+            return {
+                "res": "ERR_NOT_FOUND",
+                "msg": f"Plugin not found: {plugin_name}"
+            }
+        return {
+            "res": "ERR_OK",
+            "msg": "get plugin info ok",
+            "plugin": {
+                "name": plugin.storage_dir,
+                "manifest": plugin.manifest_content
+            }
+        }
+    except Exception as e:
+        logger.error(f"Get plugin info error: {e}", exc_info=True)
+        return {
+            "res": "ERR_FAIL",
+            "msg": str(e)
+        }
+
+
+class UpdatePluginRequest(BaseModel):
+    pluginName: str
+    updateInfos: list
+    applyDisk: bool = False
+
+@app.post("/update_plugin_info")
+async def update_plugin_info(request: UpdatePluginRequest):
+    """更新插件信息"""
+    logger.info(f"Update plugin info request: {request.pluginName}")
+    try:
+        result = sim_plugin.update_plugin_info(
+            request.pluginName, 
+            request.updateInfos, 
+            request.applyDisk
+        )
+        if result:
+            return {
+                "res": "ERR_OK",
+                "msg": "update plugin info ok"
+            }
+        else:
+            return {
+                "res": "ERR_FAIL",
+                "msg": "update plugin info failed"
+            }
+    except Exception as e:
+        logger.error(f"Update plugin info error: {e}", exc_info=True)
+        return {
+            "res": "ERR_FAIL",
+            "msg": str(e)
+        }
+
+
 @app.post("/fileupload")
 async def map_file_upload(upload_file: UploadFile, user_id: str):
     """文件上传和转换 - 返回二进制流"""
@@ -219,8 +305,10 @@ async def create_simeng(request: CreateSimengRequest):
         arg_sid = "--sid=" + cur_sim_name
         arg_simfile = "--sfile=" + user_id
         arg_roadfile = "--road=" + Path(id_infos[user_id].map_xml_path).name
-        sim_cmd = ['./SimEngPI/SimulationEngine.exe', '--log=0', arg_sid, arg_simfile, arg_roadfile, '--ip=' + client_socket_ip,
-                   '--port=3822', "--noplugin"]  # debug用
+        # 引擎直接连接 Java 后端的 WebSocket，使用 Java 后端端口 3822
+        ws_url = "ws://localhost:3822/ws/exe/" + user_id  # 使用 user_id（taskId）作为 exe_id
+        sim_cmd = ['./SimEngPI/SimulationEngine.exe', '--log=0', arg_sid, arg_simfile, arg_roadfile, '--ip=localhost',
+                   '--port=3822', '--ws=' + ws_url, arg_plugin]  # 使用 Java 后端端口 3822
         user_log_file = LOG_HOME + '' + user_id + '.txt'
         logger.info(f"Simulation command: {' '.join(sim_cmd)}")
         logger.info(f"User log file: {user_log_file}")

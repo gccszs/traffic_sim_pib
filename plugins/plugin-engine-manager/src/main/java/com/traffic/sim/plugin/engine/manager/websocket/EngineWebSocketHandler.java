@@ -6,6 +6,8 @@ import com.traffic.sim.common.model.StatisticsData;
 import com.traffic.sim.common.model.WebSocketInfo;
 import com.traffic.sim.common.service.SessionService;
 import com.traffic.sim.common.service.StatisticsService;
+import com.traffic.sim.plugin.engine.manager.service.SimulationDataCollector;
+import com.traffic.sim.plugin.engine.manager.service.SimulationDataPersistenceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,7 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +34,8 @@ import java.util.Map;
 public class EngineWebSocketHandler implements WebSocketHandler {
     
     private final SessionService sessionService;
+    private final SimulationDataCollector dataCollector;
+    private final SimulationDataPersistenceService dataPersistenceService;
     private FrontendWebSocketHandler frontendWebSocketHandler;
     private StatisticsService statisticsService; // 可选依赖，由 plugin-statistics 模块提供
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -85,6 +90,13 @@ public class EngineWebSocketHandler implements WebSocketHandler {
                 if ("sim_data".equals(wsMessage.getOpe())) {
                     // 仿真数据，需要先进行统计处理
                     processSimulationData(exeId, wsMessage, simInfo);
+                } else if ("sim_end".equals(wsMessage.getOpe()) || "finished".equals(wsMessage.getOpe())) {
+                    // 仿真结束，保存数据到MongoDB
+                    handleSimulationEnd(exeId, simInfo);
+                    // 转发结束消息
+                    if (simInfo != null && simInfo.isFrontendInitialized() && frontendWebSocketHandler != null) {
+                        frontendWebSocketHandler.sendMessageToFrontend(exeId, wsMessage);
+                    }
                 } else {
                     // 其他消息直接转发
                     if (simInfo != null && simInfo.isFrontendInitialized() && frontendWebSocketHandler != null) {
@@ -144,7 +156,14 @@ public class EngineWebSocketHandler implements WebSocketHandler {
             }
             statsMessage.setData(statsData);
             
-            // 4. 转发给前端
+            // 4. 收集仿真数据用于回放
+            Long step = extractStep(simData, statsData);
+            if (step != null) {
+                dataCollector.addStepData(sessionId, step, simData, statsData);
+                log.debug("Collected step {} data for session: {}", step, sessionId);
+            }
+            
+            // 5. 转发给前端
             if (simInfo != null && simInfo.isFrontendInitialized() && frontendWebSocketHandler != null) {
                 frontendWebSocketHandler.sendMessageToFrontend(sessionId, statsMessage);
             }
@@ -231,7 +250,7 @@ public class EngineWebSocketHandler implements WebSocketHandler {
     }
     
     /**
-     * 从URI路径中提取exe_id（session_id）
+     * 从 URI路径中提取exe_id（session_id）
      */
     private String extractExeId(WebSocketSession session) {
         String uri = session.getUri().toString();
@@ -242,6 +261,92 @@ public class EngineWebSocketHandler implements WebSocketHandler {
                 return parts[i + 1].split("\\?")[0]; // 去掉查询参数
             }
         }
+        return null;
+    }
+        
+    /**
+     * 从仿真数据中提取步数
+     */
+    private Long extractStep(Map<String, Object> simData, Map<String, Object> statsData) {
+        // 先从统计数据中获取
+        Object stepObj = statsData.get("step");
+        if (stepObj == null) {
+            // 再从原始仿真数据中获取
+            stepObj = simData.get("step");
+        }
+            
+        if (stepObj instanceof Number) {
+            return ((Number) stepObj).longValue();
+        } else if (stepObj instanceof String) {
+            try {
+                return Long.parseLong((String) stepObj);
+            } catch (NumberFormatException e) {
+                log.warn("Failed to parse step from string: {}", stepObj);
+            }
+        }
+        return null;
+    }
+        
+    /**
+     * 处理仿真结束，保存数据到MongoDB
+     */
+    private void handleSimulationEnd(String sessionId, SimInfo simInfo) {
+        try {
+            log.info("Simulation ended for session: {}, saving data to MongoDB", sessionId);
+                
+            // 获取收集的数据
+            List<SimulationDataCollector.StepData> stepDataList = 
+                dataCollector.getAndClearSessionData(sessionId);
+                
+            if (stepDataList.isEmpty()) {
+                log.warn("No simulation data collected for session: {}", sessionId);
+                return;
+            }
+                
+            // 从 SimInfo 中获取仿真任务ID
+            String simulationTaskId = extractSimulationTaskId(simInfo);
+            if (simulationTaskId == null) {
+                log.error("Cannot save simulation data: simulation task ID not found for session: {}", 
+                    sessionId);
+                return;
+            }
+                
+            // 异步保存到MongoDB
+            boolean saved = dataPersistenceService.saveSimulationData(simulationTaskId, stepDataList);
+                
+            if (saved) {
+                log.info("Successfully saved {} steps of simulation data for task: {}", 
+                    stepDataList.size(), simulationTaskId);
+            } else {
+                log.error("Failed to save simulation data for task: {}", simulationTaskId);
+            }
+        } catch (Exception e) {
+            log.error("Error handling simulation end for session: {}", sessionId, e);
+        }
+    }
+        
+    /**
+     * 从 SimInfo 中提取仿真任务ID
+     */
+    private String extractSimulationTaskId(SimInfo simInfo) {
+        if (simInfo == null) {
+            return null;
+        }
+            
+        // 尝试从 simInfo 字段中获取 taskId
+        Map<String, Object> simInfoMap = simInfo.getSimInfo();
+        if (simInfoMap != null && simInfoMap.containsKey("taskId")) {
+            return (String) simInfoMap.get("taskId");
+        }
+            
+        // 如果没有，使用 sessionId 作为 taskId（临时方案）
+        String sessionId = simInfo.getSessionId();
+        if (sessionId != null && !sessionId.isEmpty()) {
+            log.warn("Using sessionId as taskId: {}", sessionId);
+            return sessionId;
+        }
+            
+        log.warn("Simulation task ID not found in SimInfo");
         return null;
     }
     
@@ -257,6 +362,14 @@ public class EngineWebSocketHandler implements WebSocketHandler {
         
         SimInfo simInfo = sessionService.getSessionInfo(exeId);
         if (simInfo != null) {
+            // 尝试保存数据（如果还有未保存的数据）
+            int cachedStepCount = dataCollector.getSessionStepCount(exeId);
+            if (cachedStepCount > 0) {
+                log.warn("Connection closed but {} steps of data not saved yet, attempting to save", 
+                    cachedStepCount);
+                handleSimulationEnd(exeId, simInfo);
+            }
+            
             simInfo.setSimengConnection(null);
             simInfo.setSimengInitOk(false);
             sessionService.updateSessionInfo(exeId, simInfo);

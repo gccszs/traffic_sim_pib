@@ -123,7 +123,8 @@ public class AuthPluginProperties {
             "/swagger-ui.html",
             "/v3/api-docs/**",
             "/error",
-            "/actuator/**"
+            "/actuator/**",
+            "/ws/exe/**"  // WebSocket路径，不需要认证
         );
     }
 }

@@ -18,10 +18,11 @@ public interface SimulationService {
      * 创建仿真任务
      * 
      * @param request 创建仿真请求
+     * @param userId 用户ID
      * @param sessionId 会话ID
      * @return 仿真任务DTO
      */
-    SimulationTaskDTO createSimulation(CreateSimulationRequest request, String sessionId);
+    SimulationTaskDTO createSimulation(CreateSimulationRequest request, String userId, String sessionId);
     
     /**
      * 获取仿真任务

@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package com.traffic.sim.plugin.map.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.traffic.sim.plugin.map.grpc";
+option java_outer_classname = "MapServiceProto";
+
+// 地图转换服务
+service MapConvertService {
+  // 转换地图文件
+  rpc ConvertMap(ConvertMapRequest) returns (ConvertMapResponse);
+
+  // 预览地图（简化转换，用于快速预览）
+  rpc PreviewMap(PreviewMapRequest) returns (PreviewMapResponse);
+}
+
+// 转换地图请求
+message ConvertMapRequest {
+  bytes file_content = 1;   // 文件内容（二进制）
+  string file_name = 2;     // 文件名
+  string user_id = 3;       // 用户ID
+}
+
+// 转换地图响应
+message ConvertMapResponse {
+  bool success = 1;               // 是否成功
+  string message = 2;             // 消息
+  bytes xml_data = 3;             // 转换后的XML数据
+  string xml_file_name = 4;       // XML文件名
+  string conversion_method = 5;   // 使用的转换方法
+  string xml_file_path = 6;       // Python端保存的XML文件路径
+}
+
+// 预览地图请求
+message PreviewMapRequest {
+  bytes file_content = 1;   // 文件内容（二进制）
+  string file_name = 2;     // 文件名
+  string user_id = 3;       // 用户ID
+}
+
+// 预览地图响应
+message PreviewMapResponse {
+  bool success = 1;             // 是否成功
+  string message = 2;           // 消息
+  string preview_data = 3;      // 预览数据（JSON格式）
+  int32 road_count = 4;         // 道路数量
+  int32 intersection_count = 5; // 交叉口数量
+}

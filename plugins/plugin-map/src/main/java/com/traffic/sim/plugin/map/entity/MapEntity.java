@@ -37,6 +37,9 @@ public class MapEntity {
     @Column(name = "xml_file_name")
     private String xmlFileName;         // XML文件名
     
+    @Column(name = "xml_file_path")
+    private String xmlFilePath;          // Python端XML文件路径（用于仿真引擎）
+    
     @Lob
     @Column(name = "map_image", columnDefinition = "LONGTEXT")
     private String mapImage;            // 地图图片（Base64）

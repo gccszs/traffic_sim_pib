@@ -1,10 +1,13 @@
 """
-gRPC服务端 - 地图转换服务
-提供地图文件转换和预览功能的gRPC接口
+gRPC服务端 - 统一gRPC服务入口
+提供两个服务:
+1. MapConvertService (50052端口) - 地图文件转换和预览
+2. PythonService (50051端口) - 仿真引擎管理（对应Java端 SimulationPythonGrpcClient）
 """
 import os
 import asyncio
 import logging
+import uuid
 from concurrent import futures
 from pathlib import Path
 from typing import Tuple
@@ -12,13 +15,19 @@ from typing import Tuple
 import grpc
 from grpc import aio
 
-# 导入生成的 gRPC 代码
+# 导入生成的 gRPC 代码 - 地图服务
 from proto import map_service_pb2
 from proto import map_service_pb2_grpc
+
+# 导入生成的 gRPC 代码 - 仿真服务
+from proto import python_service_pb2_grpc
 
 # 导入地图转换工具
 from map_utils import osmtrans, mapmaker, mapmaker_new
 from config import settings
+
+# 导入仿真服务实现
+from simulation_service import PythonServiceServicer
 
 # 配置日志
 logging.basicConfig(
@@ -71,20 +80,22 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
                 f.write(request.file_content)
             
             # 执行转换
-            xml_data, xml_file_name, conversion_method = await self._convert_file(
+            xml_data, xml_file_name, conversion_method, xml_file_path = await self._convert_file(
                 str(file_path), 
                 str(work_dir),
-                request.file_name
+                request.file_name,
+                request.user_id
             )
             
-            logger.info(f"Conversion successful - xml_file: {xml_file_name}, method: {conversion_method}, xml_size: {len(xml_data)} bytes")
+            logger.info(f"Conversion successful - xml_file: {xml_file_name}, method: {conversion_method}, xml_size: {len(xml_data)} bytes, xml_path: {xml_file_path}")
             
             return map_service_pb2.ConvertMapResponse(
                 success=True,
                 message="转换成功",
                 xml_data=xml_data,
                 xml_file_name=xml_file_name,
-                conversion_method=conversion_method
+                conversion_method=conversion_method,
+                xml_file_path=xml_file_path
             )
             
         except Exception as e:
@@ -125,11 +136,13 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
             with open(file_path, 'wb') as f:
                 f.write(request.file_content)
             
-            # 执行转换获取预览数据
-            xml_data, xml_file_name, _ = await self._convert_file(
+            # 执行转换获取预览数据（预览不需要添加UUID）
+            xml_data, xml_file_name, _, _ = await self._convert_file(
                 str(file_path),
                 str(work_dir),
-                request.file_name
+                request.file_name,
+                request.user_id,
+                add_uuid=False  # 预览不需要UUID
             )
             
             # 解析XML获取统计信息
@@ -163,8 +176,10 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
         self, 
         file_path: str, 
         work_dir: str, 
-        original_filename: str
-    ) -> Tuple[bytes, str, str]:
+        original_filename: str,
+        user_id: str,
+        add_uuid: bool = True
+    ) -> Tuple[bytes, str, str, str]:
         """
         执行文件转换
         
@@ -172,9 +187,11 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
             file_path: 文件路径
             work_dir: 工作目录
             original_filename: 原始文件名
+            user_id: 用户ID
+            add_uuid: 是否添加UUID防止覆盖（默认True）
             
         Returns:
-            (XML数据, XML文件名, 转换方法)
+            (XML数据, XML文件名, 转换方法, XML文件路径)
         """
         name_parts = original_filename.split('.')
         if len(name_parts) < 2:
@@ -183,7 +200,14 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
         file_name = name_parts[0]
         file_extension = name_parts[-1].lower()
         
-        new_file_location = os.path.join(work_dir, file_name)
+        # 添加UUID防止文件名覆盖
+        if add_uuid:
+            unique_id = uuid.uuid4().hex[:8]  # 取前8位，足够区分
+            output_name = f"{file_name}_{unique_id}"
+        else:
+            output_name = file_name
+        
+        new_file_location = os.path.join(work_dir, output_name)
         
         # 根据文件类型处理
         if file_extension == 'osm':
@@ -197,6 +221,11 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
         elif file_extension == 'txt':
             logger.info(f"Converting TXT to XML: {file_path}")
             xml_file_path, conversion_method = await self._convert_txt_to_xml(file_path, new_file_location)
+        elif file_extension == 'xml':
+            # XML文件直接使用，不需要转换
+            logger.info(f"XML file detected, using directly: {file_path}")
+            xml_file_path = file_path
+            conversion_method = 'direct'
         else:
             raise ValueError(f"不支持的文件格式: {file_extension}")
         
@@ -206,7 +235,11 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
         
         xml_file_name = os.path.basename(xml_file_path)
         
-        return xml_data, xml_file_name, conversion_method
+        # 返回相对路径（相对于 cache 目录）
+        # 格式：{userId}/{xmlFileName}
+        relative_path = os.path.join(user_id, xml_file_name)
+        
+        return xml_data, xml_file_name, conversion_method, relative_path
 
     async def _convert_txt_to_xml(self, txt_file_path: str, new_file_location: str) -> Tuple[str, str]:
         """
@@ -271,18 +304,26 @@ class MapConvertServiceServicer(map_service_pb2_grpc.MapConvertServiceServicer):
             return 0, 0
 
 
-async def serve(port: int = 50052):
+async def serve_map_service(port: int = 50052):
     """
-    启动gRPC服务器
+    启动地图转换gRPC服务器
     
     Args:
         port: 服务端口，默认50052
     """
     logger.info("=" * 60)
-    logger.info(f"Initializing gRPC server on port {port}")
+    logger.info(f"Initializing MapConvertService gRPC server on port {port}")
     logger.info("=" * 60)
     
-    server = aio.server(futures.ThreadPoolExecutor(max_workers=10))
+    # 添加优化配置
+    options = [
+        ('grpc.max_concurrent_streams', 100),            # 最大并发流数
+        ('grpc.max_receive_message_length', 1024 * 1024 * 100),  # 最大接收消息大小 (100MB)
+        ('grpc.max_send_message_length', 1024 * 1024 * 100),     # 最大发送消息大小 (100MB)
+        ('grpc.so_reuseport', True),                    # 启用端口复用
+    ]
+    
+    server = aio.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
     map_service_pb2_grpc.add_MapConvertServiceServicer_to_server(
         MapConvertServiceServicer(), server
     )
@@ -290,22 +331,97 @@ async def serve(port: int = 50052):
     listen_addr = f'[::]:{port}'
     server.add_insecure_port(listen_addr)
     
-    logger.info(f"Starting gRPC server...")
+    logger.info(f"Starting MapConvertService gRPC server...")
     await server.start()
     
-    logger.info(f"gRPC server started successfully")
+    logger.info(f"MapConvertService gRPC server started successfully")
     logger.info(f"Listening on: {listen_addr}")
-    logger.info(f"Server is ready to accept connections")
     logger.info("=" * 60)
     
-    await server.wait_for_termination()
+    return server
+
+
+async def serve_simulation_service(port: int = 50051):
+    """
+    启动仿真服务gRPC服务器
+    对应Java端的 SimulationPythonGrpcClient 调用
+    
+    Args:
+        port: 服务端口，默认50051
+    """
+    logger.info("=" * 60)
+    logger.info(f"Initializing PythonService gRPC server on port {port}")
+    logger.info("=" * 60)
+    
+    # 添加优化配置
+    options = [
+        ('grpc.max_concurrent_streams', 100),            # 最大并发流数
+        ('grpc.max_receive_message_length', 1024 * 1024 * 100),  # 最大接收消息大小 (100MB)
+        ('grpc.max_send_message_length', 1024 * 1024 * 100),     # 最大发送消息大小 (100MB)
+        ('grpc.so_reuseport', True),                    # 启用端口复用
+    ]
+    
+    server = aio.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
+    python_service_pb2_grpc.add_PythonServiceServicer_to_server(
+        PythonServiceServicer(), server
+    )
+    
+    listen_addr = f'[::]:{port}'
+    server.add_insecure_port(listen_addr)
+    
+    logger.info(f"Starting PythonService gRPC server...")
+    await server.start()
+    
+    logger.info(f"PythonService gRPC server started successfully")
+    logger.info(f"Listening on: {listen_addr}")
+    logger.info("=" * 60)
+    
+    return server
+
+
+async def serve(map_port: int = 50052, sim_port: int = 50051):
+    """
+    启动所有gRPC服务
+    
+    Args:
+        map_port: 地图服务端口，默认50052
+        sim_port: 仿真服务端口，默认50051
+    """
+    logger.info("=" * 60)
+    logger.info("Starting All gRPC Services...")
+    logger.info("=" * 60)
+    
+    # 启动地图转换服务
+    map_server = await serve_map_service(map_port)
+    
+    # 启动仿真服务
+    sim_server = await serve_simulation_service(sim_port)
+    
+    logger.info("=" * 60)
+    logger.info("All gRPC services started successfully!")
+    logger.info(f"  - MapConvertService: port {map_port}")
+    logger.info(f"  - PythonService: port {sim_port}")
+    logger.info("Server is ready to accept connections")
+    logger.info("=" * 60)
+    
+    # 等待服务终止
+    await asyncio.gather(
+        map_server.wait_for_termination(),
+        sim_server.wait_for_termination()
+    )
 
 
 def main():
     """主入口"""
-    grpc_port = int(os.environ.get('GRPC_PORT', 50052))
-    logger.info(f"gRPC port from environment: {grpc_port}")
-    asyncio.run(serve(grpc_port))
+    # 地图服务端口 - 对应 Java 端 plugin-map 的 MapPythonGrpcClient
+    map_grpc_port = int(os.environ.get('MAP_GRPC_PORT', 50052))
+    # 仿真服务端口 - 对应 Java 端 plugin-simulation 的 SimulationPythonGrpcClient
+    sim_grpc_port = int(os.environ.get('SIM_GRPC_PORT', 50051))
+    
+    logger.info(f"Map gRPC port: {map_grpc_port}")
+    logger.info(f"Simulation gRPC port: {sim_grpc_port}")
+    
+    asyncio.run(serve(map_grpc_port, sim_grpc_port))
 
 
 if __name__ == '__main__':

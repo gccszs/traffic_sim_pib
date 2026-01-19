@@ -9,6 +9,8 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 
+import java.util.ArrayDeque;
+
 /**
  * Traffic Simulation Boot Application
  * 主启动类

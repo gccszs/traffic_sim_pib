@@ -2,11 +2,15 @@ package com.traffic.sim.plugin.simulation.service;
 
 import com.traffic.sim.common.constant.ErrorCode;
 import com.traffic.sim.common.dto.CreateSimulationRequest;
+import com.traffic.sim.common.dto.MapDTO;
 import com.traffic.sim.common.dto.SimulationTaskDTO;
 import com.traffic.sim.common.exception.BusinessException;
 import com.traffic.sim.common.exception.ServiceException;
+import com.traffic.sim.common.model.SimInfo;
 import com.traffic.sim.common.response.ApiResponse;
 import com.traffic.sim.common.response.PageResult;
+import com.traffic.sim.common.service.MapService;
+import com.traffic.sim.common.service.SessionService;
 import com.traffic.sim.common.service.SimulationService;
 import com.traffic.sim.common.util.JsonUtils;
 import com.traffic.sim.plugin.simulation.entity.SimulationTask;
@@ -21,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,55 +42,108 @@ import java.util.stream.Collectors;
 public class SimulationServiceImpl implements SimulationService {
     
     private final SimulationTaskRepository simulationTaskRepository;
-    private final SimulationPythonGrpcClient simulationPythonGrpcClient; // 即使 gRPC 不可用，这个 Bean 也会存在（返回兜底数据）
+    private final SimulationPythonGrpcClient simulationPythonGrpcClient; // 即使 gRPC 不可用，这个 Bean 也会存在（返回兗底数据）
+    private final SessionService sessionService; // 会话服务
+    private final MapService mapService; // 地图服务（用于获取用户最近上传的地图路径）
     
     @Override
     @Transactional
-    public SimulationTaskDTO createSimulation(CreateSimulationRequest request, String sessionId) {
-        log.info("Creating simulation task: name={}, sessionId={}", request.getName(), sessionId);
+    public SimulationTaskDTO createSimulation(CreateSimulationRequest request, String userId, String taskId) {
+        log.info("Creating simulation task: userId={}, sessionId={}, mapId={}", 
+            userId, taskId, request.getSimInfo().getMapId());
+        String xmlMapName = UUID.randomUUID().toString().replace("-","");
+        request.getSimInfo().setMapXmlName(xmlMapName);
         
-        // 1. 验证请求参数
-        validateCreateRequest(request);
-        
-        // 2. 生成任务ID
-        String taskId = UUID.randomUUID().toString().replace("-", "");
-        
-        // 3. 调用Python服务创建仿真引擎（支持容错，gRPC不可用时使用兜底数据）
-        ApiResponse response = simulationPythonGrpcClient.createSimeng(request, sessionId);
+        // 0. 先创建 Session，确保引擎连接 WebSocket 时能找到对应的 session
+        SimInfo simInfo = sessionService.createSession(taskId);
+        simInfo.setName(request.getSimInfo().getName());
+        simInfo.setMapXmlName(xmlMapName);
+        sessionService.updateSessionInfo(taskId, simInfo);
+        log.info("Session created for taskId: {}", taskId);
+            
+        // 1. 根据 mapId 查询地图XML文件路径（优先使用 mapId）
+        if (request.getSimInfo().getMapXmlPath() == null || 
+            request.getSimInfo().getMapXmlPath().trim().isEmpty()) {
+            String mapId = request.getSimInfo().getMapId();
+            if (mapId != null && !mapId.trim().isEmpty()) {
+                // 使用 mapId 查询路径（从Redis缓存或数据库）
+                String xmlPath = mapService.getXmlFilePathByMapId(mapId);
+                if (xmlPath != null && !xmlPath.isEmpty()) {
+                    request.getSimInfo().setMapXmlPath(xmlPath);
+                    log.info("Found mapXmlPath for mapId {}: {}", mapId, xmlPath);
+                } else {
+                    log.warn("No xmlPath found for mapId: {}", mapId);
+                    // 尝试直接从数据库查询完整的地图信息
+                    MapDTO mapDTO = mapService.getMapById(mapId, parseUserId(userId));
+                    if (mapDTO != null) {
+                        log.info("Found mapDTO for mapId {}: {}", mapId, mapDTO.getName());
+                        // 如果有地图实体但没有xmlFilePath，可能需要重新生成或使用默认路径
+                        String defaultXmlPath = mapId + "/" + mapId + ".xml";
+                        request.getSimInfo().setMapXmlPath(defaultXmlPath);
+                        log.info("Using default xmlPath for mapId {}: {}", mapId, defaultXmlPath);
+                    } else {
+                        log.error("No map found for mapId: {}", mapId);
+                    }
+                }
+            } else {
+                log.warn("mapId is null or empty, cannot lookup xmlPath");
+            }
+        }
+            
+
+        // 4. 调用Python服务创建仿真引擎（支持容错，gRPC不可用时使用兗底数据）
+        ApiResponse response = simulationPythonGrpcClient.createSimeng(request, taskId);
+            
+        // 5. 保存仿真任务记录
+        SimulationTask task = new SimulationTask();
+        task.setTaskId(taskId);
+        task.setName(request.getSimInfo().getName());
+        task.setMapXmlName(request.getSimInfo() != null ? request.getSimInfo().getMapXmlName() : null);
+        task.setMapXmlPath(request.getSimInfo() != null ? request.getSimInfo().getMapXmlPath() : null);
+        task.setSimConfig(JsonUtils.toJson(request));
         
         // 检查响应，如果是兜底响应（包含gRPC不可用提示），记录警告但继续执行
         if (response.getMsg() != null && response.getMsg().contains("gRPC unavailable")) {
             log.warn("gRPC service unavailable, using fallback response. Message: {}", response.getMsg());
             // 继续执行，但记录警告
+            task.setStatus("CREATED");
         } else if (!ErrorCode.ERR_OK.equals(response.getRes())) {
             // 如果是真正的错误响应，抛出异常
             throw new BusinessException(response.getRes(), 
                 "Failed to create simulation engine: " + response.getMsg());
+        } else if (response.getData() != null && response.getData().toString().contains("Failed")) {
+            // 引擎启动失败，返回的是ERR_OK但消息中包含失败信息
+            log.error("Simulation engine failed to start: {}", response.getData());
+            // 继续执行，保存任务记录，但标记为失败状态
+            task.setStatus("FAILED");
+        } else {
+            // 引擎启动成功
+            task.setStatus("CREATED");
         }
-        
-        // 4. 保存仿真任务记录
-        SimulationTask task = new SimulationTask();
-        task.setTaskId(taskId);
-        task.setName(request.getName());
-        task.setMapXmlName(request.getSimInfo() != null ? request.getSimInfo().getMapXmlName() : null);
-        task.setMapXmlPath(request.getSimInfo() != null ? request.getSimInfo().getMapXmlPath() : null);
-        task.setSimConfig(JsonUtils.toJson(request));
-        task.setStatus("CREATED");
-        // TODO: 从请求上下文获取userId，当前使用sessionId作为临时方案
-        // 实际应该从RequestContext.getCurrentUserId()获取
-        try {
-            task.setUserId(Long.parseLong(sessionId));
-        } catch (NumberFormatException e) {
-            // 如果sessionId不是数字，使用hashCode作为临时userId
-            // 实际应该从认证上下文获取
-            task.setUserId((long) sessionId.hashCode());
-        }
+            
+        // 使用真实的 userId
+        task.setUserId(parseUserId(userId));
+            
         task.setCreateTime(new Date());
         task.setUpdateTime(new Date());
-        
+            
         task = simulationTaskRepository.save(task);
-        
-        // 5. 转换为DTO并返回
+            
+        // 6. 更新 SessionService 中的 SimInfo，添加 taskId
+        // 注意：simInfo 已经在方法开头创建，这里重新获取以确保数据最新
+        SimInfo updatedSimInfo = sessionService.getSessionInfo(taskId);
+        if (updatedSimInfo != null) {
+            if (updatedSimInfo.getSimInfo() == null) {
+                updatedSimInfo.setSimInfo(new HashMap<>());
+            }
+            updatedSimInfo.getSimInfo().put("taskId", taskId);
+            sessionService.updateSessionInfo(taskId, updatedSimInfo);
+            log.info("Updated session {} with taskId: {}", taskId, taskId);
+        } else {
+            log.warn("SimInfo not found for session: {} (this should not happen)", taskId);
+        }
+            
+        // 7. 转换为DTO并返回
         return convertToDTO(task);
     }
     
@@ -144,29 +202,38 @@ public class SimulationServiceImpl implements SimulationService {
     }
     
     /**
+     * 解析userId
+     */
+    private Long parseUserId(String userIdStr) {
+        if (userIdStr == null) {
+            return null;
+        }
+        try {
+            return Long.parseLong(userIdStr);
+        } catch (NumberFormatException e) {
+            // 如果userId不是数字，使用hashCode作为临时userId
+            return (long) userIdStr.hashCode();
+        }
+    }
+    
+    /**
      * 验证创建请求
      */
     private void validateCreateRequest(CreateSimulationRequest request) {
         if (request == null) {
             throw new BusinessException(ErrorCode.ERR_ARG, "Request cannot be null");
         }
-        
-        if (request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new BusinessException(ErrorCode.ERR_ARG, "Simulation name cannot be empty");
-        }
-        
         if (request.getSimInfo() == null) {
             throw new BusinessException(ErrorCode.ERR_ARG, "SimInfo cannot be null");
         }
-        
-        if (request.getSimInfo().getMapXmlName() == null || 
-            request.getSimInfo().getMapXmlName().trim().isEmpty()) {
-            throw new BusinessException(ErrorCode.ERR_ARG, "Map XML name cannot be empty");
+
+        if (request.getSimInfo().getName() == null || request.getSimInfo().getName().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.ERR_ARG, "Simulation name cannot be empty");
         }
         
-        if (request.getSimInfo().getMapXmlPath() == null || 
-            request.getSimInfo().getMapXmlPath().trim().isEmpty()) {
-            throw new BusinessException(ErrorCode.ERR_ARG, "Map XML path cannot be empty");
+        // mapId 必须存在
+        if (request.getSimInfo().getMapId() == null || request.getSimInfo().getMapId().trim().isEmpty()) {
+            throw new BusinessException(ErrorCode.ERR_ARG, "请选择地图（mapId不能为空）");
         }
     }
     

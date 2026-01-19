@@ -37,6 +37,23 @@ spring:
       # username: root
       # password: root
       # authentication-database: admin
+    
+    # Redis配置
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:redis123}  # 默认密码与infrastructure/redis/redis.conf一致
+      database: 0
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+      # 配置Redis为可选依赖，当Redis不可用时应用仍能启动
+      auto-startup: false
+      health-checks: false
 
   # Jackson配置
   jackson:
@@ -66,21 +83,61 @@ springdoc:
     operations-sorter: alpha
 
 # gRPC 客户端配置
+# ============================================================
+# 【部署说明】
+# Python 引擎服务提供两个 gRPC 服务:
+# 1. python-service (50051) - 仿真引擎管理 (CreateSimeng, ControlGreenRatio)
+# 2. map-service (50052) - 地图转换服务 (ConvertMap, PreviewMap)
+#
+# 部署架构:
+# ┌─────────────────┐     gRPC      ┌─────────────────┐
+# │  Java 主服务     │ ─────────> │  Python 引擎服务 │
+# │ (traffic-sim)  │   50051/52   │ (map_convert)  │
+# └─────────────────┘              └─────────────────┘
+#
+# 同主机部署: 使用 localhost
+# 分布式部署: 配置 Python 服务的实际 IP 或 Docker 服务名
+# 环境变量: PYTHON_SERVICE_HOST, PYTHON_MAP_SERVICE_HOST
+# ============================================================
 grpc:
   client:
+    # 仿真服务 - 对应 Python PythonService (SimulationPythonGrpcClient)
     python-service:
-      # 是否启用gRPC客户端（如果设为false，将始终使用兜底数据）
-      address: 'static://localhost:50051'
+      # 是否启用gRPC客户端（如果设为false，将始终使用兆底数据）
+      # 地址格式: static://host:port
+      # 同主机: static://localhost:50051
+      # Docker: static://python-engine:50051
+      address: 'static://${PYTHON_SERVICE_HOST:localhost}:${PYTHON_SERVICE_PORT:50051}'
       negotiationType: plaintext
       enableKeepAlive: true
-      keepAliveWithoutCalls: true
-      keepAliveTime: 30s
-      keepAliveTimeout: 5s
+      keepAliveWithoutCalls: false
+      # 调整 keepalive 时间避免 too_many_pings 警告
+      keepAliveTime: 60s
+      keepAliveTimeout: 20s
       # 容错配置：如果gRPC服务不可用，不会导致应用启动失败
-      # 应用会在运行时返回兜底数据
+      # 应用会在运行时返回兆底数据
+    
+    # 地图服务 - 对应 Python MapConvertService (PythonGrpcClient)
+    map-service:
+      # 启用地图服务 gRPC 客户端
+      # 地址格式: static://host:port
+      # 同主机: static://localhost:50052
+      # Docker: static://python-engine:50052
+      address: 'static://${PYTHON_MAP_SERVICE_HOST:localhost}:${PYTHON_MAP_SERVICE_PORT:50052}'
+      negotiationType: plaintext
+      enableKeepAlive: true
+      keepAliveWithoutCalls: false
+      # 调整 keepalive 时间避免 too_many_pings 警告
+      keepAliveTime: 60s
+      keepAliveTimeout: 20s
 
 # 应用配置
 app:
+  # CORS 跨域配置
+  cors:
+    # 允许的跨域来源（多个用逗号分隔）
+    allowed-origins: http://127.0.0.1:7144,http://localhost:7144
+  
   # 引擎服务配置
   engine:
     python-service:
@@ -99,6 +156,10 @@ app:
   upload:
     max-file-size: 100MB
     max-request-size: 100MB
+  
+  # 缓存配置
+  cache:
+    enabled: false  # 是否开启缓存，true则需要连接Redis，false则不使用缓存
 
 # 插件配置
 plugin:
@@ -117,6 +178,29 @@ plugin:
         - /api/error
         - /api/actuator/**
         - /error
+        - /ws/frontend
+        - /ws/exe/**
+  
+  # 引擎管理插件配置
+  engine-manager:
+    websocket:
+      frontend-path: /ws/frontend
+      # 注意：Spring WebSocket 使用 Ant-style 路径匹配，不支持 {exe_id} 语法
+      # 使用 /* 匹配 exe_id
+      engine-path: /ws/exe/*
+      # WebSocket 允许的跨域来源
+      # 注意：仿真引擎是本地程序，需要允许所有来源
+      allowed-origins:
+        - "*"
+        - http://127.0.0.1:7144
+        - http://localhost:7144
+      sockjs-enabled: false
+  
+  # 地图插件配置
+  map:
+    storage:
+      # 地图文件存储路径（开发环境使用相对路径，生产环境建议使用绝对路径）
+      base-path: ./maps
 
 # 日志配置
 logging:

@@ -3,10 +3,12 @@ package com.traffic.sim.plugin.map.service;
 import com.traffic.sim.common.dto.MapDTO;
 import com.traffic.sim.common.dto.MapInfoDTO;
 import com.traffic.sim.common.dto.MapUpdateRequest;
+import com.traffic.sim.common.dto.MapUploadResponse;
 import com.traffic.sim.common.dto.UserMapSpaceDTO;
 import com.traffic.sim.common.exception.BusinessException;
 import com.traffic.sim.common.response.PageResult;
 import com.traffic.sim.common.service.MapService;
+import com.traffic.sim.common.service.MapXmlPathCacheService;
 import com.traffic.sim.common.service.TokenInfo;
 import com.traffic.sim.common.util.RequestContext;
 import com.traffic.sim.plugin.map.client.PythonGrpcClient;
@@ -34,7 +36,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -54,6 +58,13 @@ public class MapServiceImpl implements MapService {
     private final MapPluginProperties mapProperties;
     private final MongoTemplate mongoTemplate;
     private final PythonGrpcClient pythonGrpcClient;
+    private final MapXmlPathCacheService xmlPathCacheService;
+    
+    /**
+     * 缓存用户最近上传的地图JSON数据
+     * key: userId, value: MapUploadResponse
+     */
+    private static final Map<Long, MapUploadResponse> userLatestMapCache = new ConcurrentHashMap<>();
     
     @Override
     @Transactional
@@ -79,6 +90,227 @@ public class MapServiceImpl implements MapService {
         
         MapEntity saved = mapRepository.save(mapEntity);
         return convertToDTO(saved);
+    }
+    
+    @Override
+    @Transactional
+    public MapUploadResponse uploadMapWithData(MultipartFile file, String name, 
+                                               String description, Integer status, Long userId) {
+        // 验证文件
+        validateFile(file);
+        
+        // 检查配额
+        quotaService.checkUserQuota(userId, file.getSize());
+        
+        try {
+            // 调用Python服务转换文件
+            PythonGrpcClient.ConvertFileResponse convertResponse = 
+                pythonGrpcClient.uploadAndConvertFile(file, userId.toString());
+            
+            if (!convertResponse.isSuccess()) {
+                return MapUploadResponse.fail("地图转换失败: " + convertResponse.getMessage());
+            }
+            
+            // 解析XML为JSON数据
+            Map<String, Object> mapJsonData = parseXmlToJson(convertResponse.getXmlData());
+            
+            // 保存原始文件
+            String storagePath = saveFile(file, userId);
+            
+            // 保存转换后的XML文件
+            String xmlStoragePath = null;
+            if (convertResponse.getXmlData() != null && convertResponse.getXmlData().length > 0) {
+                xmlStoragePath = saveXmlFile(convertResponse.getXmlData(), 
+                    convertResponse.getXmlFileName(), userId);
+            }
+            
+            // 创建地图实体（内部持久化，不返回mapId给前端）
+            MapEntity mapEntity = new MapEntity();
+            String mapName = name != null ? name : getMapNameFromFile(file.getOriginalFilename());
+            mapEntity.setName(mapName);
+            mapEntity.setDescription(description);
+            mapEntity.setFilePath(storagePath);
+            mapEntity.setFileName(file.getOriginalFilename());
+            mapEntity.setXmlFileName(convertResponse.getXmlFileName());
+            mapEntity.setOwnerId(userId);
+            mapEntity.setFileSize(file.getSize());
+            mapEntity.setStoragePath(xmlStoragePath != null ? xmlStoragePath : storagePath);
+            mapEntity.setStatus(status != null ? MapEntity.MapStatus.fromCode(status) : MapEntity.MapStatus.PRIVATE);
+            mapEntity.setMapId(UUID.randomUUID().toString());
+            
+            // 保存Python端的XML文件路径（用于仿真引擎）
+            if (convertResponse.getXmlFilePath() != null && !convertResponse.getXmlFilePath().isEmpty()) {
+                mapEntity.setXmlFilePath(convertResponse.getXmlFilePath());
+            }
+            
+            mapRepository.save(mapEntity);
+            
+            // 更新配额
+            quotaService.updateQuotaAfterUpload(userId, file.getSize());
+            
+            log.info("Map uploaded successfully: name={}, userId={}, mapId={}, xmlPath={}", 
+                mapName, userId, mapEntity.getMapId(), convertResponse.getXmlFilePath());
+            
+            // 缓存 mapId -> xmlFilePath 到 Redis
+            if (convertResponse.getXmlFilePath() != null && !convertResponse.getXmlFilePath().isEmpty()) {
+                xmlPathCacheService.cacheXmlPath(mapEntity.getMapId(), convertResponse.getXmlFilePath());
+            }
+            
+            // 构建响应（包含mapId，供前端后续使用）
+            MapUploadResponse response = MapUploadResponse.success(mapJsonData, mapEntity.getMapId());
+            
+            // 缓存用户最近上传的地图数据，供 get_map_json 接口使用
+            userLatestMapCache.put(userId, response);
+            
+            return response;
+            
+        } catch (IOException e) {
+            log.error("Failed to save file", e);
+            return MapUploadResponse.fail("文件保存失败: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to upload map", e);
+            return MapUploadResponse.fail("上传失败: " + e.getMessage());
+        }
+    }
+    
+    @Override
+    public MapUploadResponse getLatestMapJson(Long userId) {
+        MapUploadResponse cached = userLatestMapCache.get(userId);
+        if (cached != null) {
+            log.debug("Returning cached map data for userId: {}", userId);
+            return cached;
+        }
+        
+        // 如果缓存中没有，返回错误响应
+        log.warn("No cached map data found for userId: {}", userId);
+        return MapUploadResponse.fail("暂无地图数据，请先上传地图文件");
+    }
+    
+    /**
+     * 解析XML数据为JSON Map
+     */
+    private Map<String, Object> parseXmlToJson(byte[] xmlData) {
+        if (xmlData == null || xmlData.length == 0) {
+            return new HashMap<>();
+        }
+        
+        try {
+            String xmlContent = new String(xmlData, "UTF-8");
+            
+            // 使用简单的XML解析
+            javax.xml.parsers.DocumentBuilderFactory factory = 
+                javax.xml.parsers.DocumentBuilderFactory.newInstance();
+            javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
+            org.w3c.dom.Document doc = builder.parse(
+                new java.io.ByteArrayInputStream(xmlData));
+            
+            // 转换为Map
+            return xmlDocumentToMap(doc.getDocumentElement());
+        } catch (Exception e) {
+            log.error("Failed to parse XML to JSON", e);
+            // 返回包含XML原始内容的Map
+            Map<String, Object> result = new HashMap<>();
+            result.put("rawXml", new String(xmlData));
+            return result;
+        }
+    }
+    
+    /**
+     * 将XML Document转换为Map
+     * 注意：当元素只有文本内容时，直接返回文本字符串
+     */
+    private Object xmlElementToValue(org.w3c.dom.Element element) {
+        // 检查是否有子元素
+        org.w3c.dom.NodeList children = element.getChildNodes();
+        boolean hasChildElements = false;
+        String textContent = null;
+        
+        for (int i = 0; i < children.getLength(); i++) {
+            org.w3c.dom.Node child = children.item(i);
+            if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                hasChildElements = true;
+                break;
+            } else if (child.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                String text = child.getTextContent().trim();
+                if (!text.isEmpty()) {
+                    textContent = text;
+                }
+            }
+        }
+        
+        // 检查是否有属性
+        org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
+        boolean hasAttributes = attributes != null && attributes.getLength() > 0;
+        
+        // 如果没有子元素且没有属性，只有文本内容，直接返回文本
+        if (!hasChildElements && !hasAttributes && textContent != null) {
+            return textContent;
+        }
+        
+        // 否则返回Map结构
+        return xmlDocumentToMap(element);
+    }
+    
+    /**
+     * 将XML Document转换为Map
+     */
+    private Map<String, Object> xmlDocumentToMap(org.w3c.dom.Element element) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        
+        // 添加属性
+        org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
+        if (attributes != null && attributes.getLength() > 0) {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                org.w3c.dom.Node attr = attributes.item(i);
+                result.put(attr.getNodeName(), attr.getNodeValue());
+            }
+        }
+        
+        // 处理子元素
+        org.w3c.dom.NodeList children = element.getChildNodes();
+        Map<String, java.util.List<Object>> childMap = new LinkedHashMap<>();
+        
+        for (int i = 0; i < children.getLength(); i++) {
+            org.w3c.dom.Node child = children.item(i);
+            if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                org.w3c.dom.Element childElement = (org.w3c.dom.Element) child;
+                String childName = childElement.getNodeName();
+                // 使用 xmlElementToValue 智能判断返回类型
+                Object childValue = xmlElementToValue(childElement);
+                
+                childMap.computeIfAbsent(childName, k -> new java.util.ArrayList<>()).add(childValue);
+            }
+        }
+        
+        // 将子元素添加到结果
+        for (Map.Entry<String, java.util.List<Object>> entry : childMap.entrySet()) {
+            java.util.List<Object> values = entry.getValue();
+            if (values.size() == 1) {
+                result.put(entry.getKey(), values.get(0));
+            } else {
+                result.put(entry.getKey(), values);
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 统计元素数量
+     */
+    private int countElements(Map<String, Object> mapData, String... keys) {
+        if (mapData == null) return 0;
+        
+        for (String key : keys) {
+            Object value = mapData.get(key);
+            if (value instanceof java.util.List) {
+                return ((java.util.List<?>) value).size();
+            } else if (value instanceof Map) {
+                // 单个元素
+                return 1;
+            }
+        }
+        return 0;
     }
     
     @Override
@@ -379,6 +611,34 @@ public class MapServiceImpl implements MapService {
         quotaService.checkUserQuota(userId, fileSize);
     }
     
+    @Override
+    public String getXmlFilePathByMapId(String mapId) {
+        if (mapId == null || mapId.isEmpty()) {
+            log.warn("mapId is null or empty");
+            return null;
+        }
+        
+        // 1. 先从Redis缓存获取
+        String cachedPath = xmlPathCacheService.getXmlPath(mapId);
+        if (cachedPath != null) {
+            log.debug("Cache hit for mapId {}: {}", mapId, cachedPath);
+            return cachedPath;
+        }
+        
+        // 2. 缓存未命中，查询数据库
+        MapEntity mapEntity = mapRepository.findByMapId(mapId).orElse(null);
+        if (mapEntity != null && mapEntity.getXmlFilePath() != null) {
+            String xmlFilePath = mapEntity.getXmlFilePath();
+            // 回填Redis缓存
+            xmlPathCacheService.cacheXmlPath(mapId, xmlFilePath);
+            log.info("Found xml path from database for mapId {}: {}", mapId, xmlFilePath);
+            return xmlFilePath;
+        }
+        
+        log.warn("No xml path found for mapId: {}", mapId);
+        return null;
+    }
+    
     // ========== 私有辅助方法 ==========
     
     /**
@@ -421,21 +681,28 @@ public class MapServiceImpl implements MapService {
     
     /**
      * 保存文件
+     * 使用 Files.copy 替代 transferTo，避免相对路径问题
      */
     private String saveFile(MultipartFile file, Long userId) throws IOException {
         String basePath = mapProperties.getStorage().getBasePath();
-        String userPath = basePath + File.separator + userId;
+        
+        // 确保使用绝对路径
+        Path baseDir = Paths.get(basePath).toAbsolutePath();
+        Path userDir = baseDir.resolve(String.valueOf(userId));
         
         // 创建用户目录
-        Path userDir = Paths.get(userPath);
         Files.createDirectories(userDir);
         
         // 生成文件名
-        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+        String originalFilename = file.getOriginalFilename();
+        String fileName = UUID.randomUUID().toString() + "_" + 
+            (originalFilename != null ? originalFilename : "upload.txt");
         Path filePath = userDir.resolve(fileName);
         
-        // 保存文件
-        file.transferTo(filePath.toFile());
+        // 使用 Files.copy 保存文件（更可靠，避免 transferTo 的路径问题）
+        try (InputStream inputStream = file.getInputStream()) {
+            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        }
         
         return filePath.toString();
     }
@@ -445,10 +712,12 @@ public class MapServiceImpl implements MapService {
      */
     private String saveXmlFile(byte[] xmlData, String xmlFileName, Long userId) throws IOException {
         String basePath = mapProperties.getStorage().getBasePath();
-        String userPath = basePath + File.separator + userId;
+        
+        // 确保使用绝对路径
+        Path baseDir = Paths.get(basePath).toAbsolutePath();
+        Path userDir = baseDir.resolve(String.valueOf(userId));
         
         // 创建用户目录
-        Path userDir = Paths.get(userPath);
         Files.createDirectories(userDir);
         
         // 生成文件名

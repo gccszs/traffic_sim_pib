@@ -40,3 +40,5 @@ cache/
 *.swo
 *~
 
+# front-end
+frontend/

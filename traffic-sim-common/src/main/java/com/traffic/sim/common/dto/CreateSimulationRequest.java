@@ -16,15 +16,7 @@ public class CreateSimulationRequest implements Serializable {
     
     private static final long serialVersionUID = 1L;
     
-    /** 仿真名称 */
-    private String name;
-    
-    /** 地图XML文件名 */
-    private String mapXmlName;
-    
-    /** 地图XML文件路径 */
-    private String mapXmlPath;
-    
+
     /** 仿真配置信息 */
     private SimInfoDTO simInfo;
     
@@ -41,10 +33,13 @@ public class CreateSimulationRequest implements Serializable {
         /** 仿真名称 */
         private String name;
         
-        /** 地图XML文件名 */
+        /** 地图ID（前端传入，用于查询地图文件路径） */
+        private String mapId;
+
+//        /** 地图XML文件名 */
         private String mapXmlName;
         
-        /** 地图XML文件路径 */
+        /** 地图XML文件路径（内部使用，由后端根据 mapId 查询填充） */
         private String mapXmlPath;
         
         /** OD矩阵配置 */

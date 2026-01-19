@@ -1,6 +1,7 @@
 package com.traffic.sim.plugin.replay.service;
 
-import com.traffic.sim.plugin.replay.dto.ReplayDataDTO;
+import com.traffic.sim.common.dto.ReplayDataDTO;
+import com.traffic.sim.common.service.ReplayDataPersistence;
 import com.traffic.sim.plugin.replay.document.ReplayDataDocument;
 import com.traffic.sim.plugin.replay.repository.ReplayDataRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,18 +12,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * 回放数据服务
  * 负责MongoDB中回放数据的存储和查询
+ * 实现 ReplayDataPersistence 接口，供其他模块（如 plugin-engine-manager）调用
  * 
  * @author traffic-sim
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ReplayDataService {
+public class ReplayDataService implements ReplayDataPersistence {
     
     private final ReplayDataRepository replayDataRepository;
     
@@ -35,8 +38,8 @@ public class ReplayDataService {
      * @param statistics 统计数据
      */
     public void saveReplayData(String taskId, Long step, 
-                               java.util.Map<String, Object> simData,
-                               java.util.Map<String, Object> statistics) {
+                               Map<String, Object> simData,
+                               Map<String, Object> statistics) {
         ReplayDataDocument document = new ReplayDataDocument();
         document.setTaskId(taskId);
         document.setStep(step);

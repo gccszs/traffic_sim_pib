@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package com.traffic.sim.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.traffic.sim.plugin.simulation.grpc.proto";
+option java_outer_classname = "PythonServiceProto";
+
+// Python服务接口定义 - 用于仿真引擎管理和插件管理
+service PythonService {
+  // 初始化仿真引擎
+  rpc CreateSimeng(CreateSimengRequest) returns (ApiResponse);
+
+  // 绿信比控制
+  rpc ControlGreenRatio(GreenRatioControlRequest) returns (ApiResponse);
+
+  // 测试连接
+  rpc TestConnection(Empty) returns (TestResponse);
+
+  // ========== 插件管理接口 ==========
+  
+  // 获取所有插件信息
+  rpc GetPluginInfo(GetPluginInfoRequest) returns (GetPluginInfoResponse);
+  
+  // 上传插件
+  rpc UploadPlugin(UploadPluginRequest) returns (ApiResponse);
+  
+  // 更新插件信息
+  rpc UpdatePluginInfo(UpdatePluginInfoRequest) returns (ApiResponse);
+}
+
+// 创建仿真引擎请求
+message CreateSimengRequest {
+  SimInfo simInfo = 1;
+  repeated ControlView controlViews = 2;
+  string userId = 3;
+}
+
+message SimInfo {
+  string name = 1;
+  string mapXmlName = 2;
+  string mapXmlPath = 3;
+  FixedOD fixedOd = 4;
+}
+
+message FixedOD {
+  repeated OriginOD od = 1;
+  repeated SignalGroup sg = 2;
+}
+
+message OriginOD {
+  string originId = 1;
+  repeated Destination dist = 2;
+}
+
+message Destination {
+  string destId = 1;
+  double rate = 2;
+}
+
+message SignalGroup {
+  int32 crossId = 1;
+  int32 cycleTime = 2;
+  int32 ewStraight = 3;
+  int32 snStraight = 4;
+  int32 snLeft = 5;
+}
+
+message ControlView {
+  bool usePlugin = 1;
+  string activePlugin = 2;
+}
+
+// 响应消息
+message ApiResponse {
+  string res = 1;
+  string msg = 2;
+  string data = 3;
+}
+
+message TestResponse {
+  bool connected = 1;
+  string message = 2;
+}
+
+// 绿信比控制请求
+message GreenRatioControlRequest {
+  int32 greenRatio = 1;  // 绿信比值（整数，0-100，表示百分比）
+}
+
+message Empty {}
+
+// ========== 插件管理消息定义 ==========
+
+// 获取插件信息请求
+message GetPluginInfoRequest {
+  string pluginName = 1;  // 可选，为空则获取所有插件
+}
+
+// 插件信息
+message PluginInfo {
+  string name = 1;           // 插件名称（目录名）
+  string manifestJson = 2;   // 插件描述文件内容（JSON字符串）
+}
+
+// 获取插件信息响应
+message GetPluginInfoResponse {
+  string res = 1;
+  string msg = 2;
+  repeated PluginInfo plugins = 3;
+}
+
+// 上传插件请求
+message UploadPluginRequest {
+  string fileName = 1;     // 文件名
+  bytes fileContent = 2;   // 文件内容（zip包）
+}
+
+// 更新插件信息请求
+message UpdatePluginInfoRequest {
+  string pluginName = 1;
+  string updateInfosJson = 2;  // 更新内容（JSON字符串）
+  bool applyDisk = 3;          // 是否写入磁盘
+}

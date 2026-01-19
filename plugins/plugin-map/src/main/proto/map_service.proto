@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package com.traffic.sim.plugin.map.grpc;
+
+option java_multiple_files = true;
+option java_package = "com.traffic.sim.plugin.map.grpc";
+option java_outer_classname = "MapServiceProto";
+
+// 地图转换服务
+// 对应 Python 服务 MapConvertService (端口 50052)
+service MapConvertService {
+  // 转换地图文件 - 将 OSM/TXT 文件转换为 XML 格式
+  rpc ConvertMap(ConvertMapRequest) returns (ConvertMapResponse);
+
+  // 预览地图 - 快速获取地图统计信息
+  rpc PreviewMap(PreviewMapRequest) returns (PreviewMapResponse);
+}
+
+// 转换地图请求
+message ConvertMapRequest {
+  bytes file_content = 1;   // 文件内容（二进制）
+  string file_name = 2;     // 文件名（包含扩展名，如 map.osm, map.txt）
+  string user_id = 3;       // 用户ID
+}
+
+// 转换地图响应
+message ConvertMapResponse {
+  bool success = 1;               // 是否成功
+  string message = 2;             // 消息（成功或错误信息）
+  bytes xml_data = 3;             // 转换后的XML数据
+  string xml_file_name = 4;       // XML文件名
+  string conversion_method = 5;   // 使用的转换方法（old/new）
+  string xml_file_path = 6;       // Python端保存的XML文件路径（用于仿真引擎）
+}
+
+// 预览地图请求
+message PreviewMapRequest {
+  bytes file_content = 1;   // 文件内容（二进制）
+  string file_name = 2;     // 文件名
+  string user_id = 3;       // 用户ID
+}
+
+// 预览地图响应
+message PreviewMapResponse {
+  bool success = 1;             // 是否成功
+  string message = 2;           // 消息
+  string preview_data = 3;      // 预览数据（JSON格式）
+  int32 road_count = 4;         // 道路数量
+  int32 intersection_count = 5; // 交叉口数量
+}
