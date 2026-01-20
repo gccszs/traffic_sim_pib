@@ -199,8 +199,8 @@ public class SimulationPythonGrpcClient {
                         for (CreateSimulationRequest.DestinationDTO dest : originOD.getDist()) {
                             Destination destination = 
                                 Destination.newBuilder()
-                                    .setDestId(dest.getDestId())
-                                    .setRate(dest.getRate() != null ? dest.getRate() : 0.0)
+                                    .setDestId(dest.getDest())
+                                    .setRate(dest.getPercent() != null ? dest.getPercent() : 0.0)
                                     .build();
                             originBuilder.addDist(destination);
                         }

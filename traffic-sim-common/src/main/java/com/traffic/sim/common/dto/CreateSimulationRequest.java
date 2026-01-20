@@ -4,7 +4,6 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 创建仿真请求DTO
@@ -58,6 +57,7 @@ public class CreateSimulationRequest implements Serializable {
         
         /** 信号灯组配置 */
         private List<SignalGroupDTO> sg;
+
     }
     
     /**
@@ -82,10 +82,10 @@ public class CreateSimulationRequest implements Serializable {
         private static final long serialVersionUID = 1L;
         
         /** 目的地ID */
-        private String destId;
+        private String dest;
         
         /** 流量比例 */
-        private Double rate;
+        private Double percent;
     }
     
     /**

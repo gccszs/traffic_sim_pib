@@ -1,5 +1,6 @@
 package com.traffic.sim.common.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,6 +12,7 @@ import java.util.Map;
  * @author traffic-sim
  */
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)  // 忽略 null 值字段
 public class WebSocketInfo implements Serializable {
     
     private static final long serialVersionUID = 1L;

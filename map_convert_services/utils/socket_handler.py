@@ -34,8 +34,11 @@ async def handle_frontend_message(websocket, cookie_id, data):
 
 
 async def handle_backend_message(websocket, cookie_id, data):
-    """处理Java后端的控制消息"""
+    """处理来自仿真引擎的消息（这些消息原本是要转发给前端的）"""
+    from ..shared_state import enqueue_forward_message
+    
     ope = data.get('ope', '')
+    message_type = data.get('type', 'frontend')  # 默认为frontend，即需要转发给前端的消息
 
     if ope == 'hello':
         # 响应Java后端的握手
@@ -45,7 +48,7 @@ async def handle_backend_message(websocket, cookie_id, data):
             "time": time.time()
         }
         await websocket.send_json(hi_msg)
-        print(f"Sent hi message to Java backend for session: {cookie_id}")
+        print(f"Sent hi message to simulation engine for session: {cookie_id}")
 
     elif ope == 'status_check':
         # 状态检查
@@ -56,6 +59,15 @@ async def handle_backend_message(websocket, cookie_id, data):
             "data": {"status": "running"}  # 根据实际状态调整
         }
         await websocket.send_json(status_msg)
+
+    elif message_type == 'frontend':
+        # 这是从仿真引擎发来的需要转发给前端的消息（如仿真数据）
+        # 添加到转发队列，后续由定时任务或其他机制转发给Java后端
+        try:
+            enqueue_forward_message(cookie_id, data)
+            print(f"Queued engine message for Java backend forwarding - session: {cookie_id}, operation: {ope}")
+        except Exception as e:
+            print(f"Error queuing engine message: {e}")
 
     else:
         print(f"Unknown backend operation: {ope}")
@@ -134,3 +146,35 @@ async def handle_other_operations(websocket, cookie_id, data):
         "data": {"session_id": cookie_id, "result": "success"}
     }
     await websocket.send_json(response_msg)
+
+
+async def send_message_to_simengine(user_id: str, message: dict):
+    """
+    Send a message to a specific simulation engine via its WebSocket connection.
+    This is used to forward gRPC commands from Java backend to the simulation engine.
+    
+    Args:
+        user_id: The user/session ID corresponding to the simulation engine
+        message: The message to send to the simulation engine
+    
+    Returns:
+        bool: True if message was sent successfully, False otherwise
+    """
+    from shared_state import get_simulation_info
+    
+    sim_info = get_simulation_info(user_id)
+    
+    if sim_info and sim_info.simeng_connection:
+        try:
+            await sim_info.simeng_connection.send_json(message)
+            print(f"Message sent to simulation engine {user_id}: {message}")
+            return True
+        except Exception as e:
+            print(f"Error sending message to simulation engine {user_id}: {e}")
+            # Clean up broken connection
+            sim_info.simeng_connection = None
+            sim_info.simeng_init_ok = False
+            return False
+    else:
+        print(f"No active WebSocket connection found for simulation engine {user_id}")
+        return False

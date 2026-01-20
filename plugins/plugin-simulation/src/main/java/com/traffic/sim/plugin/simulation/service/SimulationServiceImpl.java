@@ -51,6 +51,16 @@ public class SimulationServiceImpl implements SimulationService {
     public SimulationTaskDTO createSimulation(CreateSimulationRequest request, String userId, String taskId) {
         log.info("Creating simulation task: userId={}, sessionId={}, mapId={}", 
             userId, taskId, request.getSimInfo().getMapId());
+        
+        // 打印 fixedOd 信息
+        if (request.getSimInfo().getFixedOd() != null) {
+            log.info("FixedOd data: od count={}, sg count={}", 
+                request.getSimInfo().getFixedOd().getOd() != null ? request.getSimInfo().getFixedOd().getOd().size() : 0,
+                request.getSimInfo().getFixedOd().getSg() != null ? request.getSimInfo().getFixedOd().getSg().size() : 0);
+        } else {
+            log.warn("FixedOd is NULL in request!");
+        }
+        
         String xmlMapName = UUID.randomUUID().toString().replace("-","");
         request.getSimInfo().setMapXmlName(xmlMapName);
         

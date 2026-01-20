@@ -47,8 +47,8 @@ LOG_HOME = settings.log_home
 # 客户端Socket IP
 client_socket_ip = settings.client_socket_ip
 
-# 存储仿真实例信息
-id_infos = defaultdict(SimInfo)
+# Import shared simulation info
+from shared_state import id_infos
 
 
 class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
@@ -171,10 +171,13 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
             # 使用实际的地图文件名称，而不是map_xml_name（mapId）
             actual_map_filename = Path(cur_user_sim_xml_path).name
             arg_roadfile = f"--road={actual_map_filename}"
-            # 引擎直接连接 Java 后端的 WebSocket，使用 Java 后端端口 3822
-            backend_host = settings.backend_host
-            backend_port = 3822
-
+            
+            # 引擎直接连接 Java 后端的 WebSocket（不再通过 Python 中介）
+            backend_host = settings.backend_host  # Java 后端地址
+            backend_port = settings.backend_port  # Java 后端 WebSocket 端口 (3822)
+            
+            # 注意：不使用 --ws= 参数，让引擎自己构建 WebSocket URL
+            # 引擎会自动连接到 ws://{ip}:{port}/ws/exe/{user_id}
             sim_cmd = [
                 './SimEngPI/SimulationEngine.exe',
                 '--log=0',
@@ -182,7 +185,7 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
                 arg_simfile,
                 arg_roadfile,
                 f'--ip={backend_host}',
-                f'--port={backend_port}',  # Java后端端口 3822
+                f'--port={backend_port}',  # Java 后端端口
                 arg_plugin   # 使用正确的插件参数
             ]
             
@@ -236,12 +239,13 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
             green_ratio = request.greenRatio
             logger.info(f"ControlGreenRatio request - green_ratio: {green_ratio}")
             
-            # TODO: 实现实际的绿信比控制逻辑
-            # 这里需要与正在运行的仿真引擎通信
+            # 当前实现：返回成功，但实际的控制逻辑需要根据具体需求实现
+            # 在实际应用中，可能需要某种机制来关联仿真任务ID和控制命令
+            # 但现在我们只是返回成功，表示gRPC调用成功
             
             return python_service_pb2.ApiResponse(
                 res="ERR_OK",
-                msg=f"Green ratio set to {green_ratio}",
+                msg=f"Green ratio control request received: {green_ratio}",
                 data=str(green_ratio)
             )
 
@@ -304,6 +308,7 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
         """生成 OD XML 内容"""
         # 转换为 JSON 格式
         convert_od_json = self._convert_fixed_od(fixed_od)
+        logger.info(f"Converted OD JSON: {json.dumps(convert_od_json, ensure_ascii=False)}")
         
         # 调整格式
         correct_origin_fmt = {"orgin": []}
@@ -316,10 +321,14 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
             correct_signal_fmt["signal"].append(signal)
         convert_od_json['sg'] = correct_signal_fmt
         
+        logger.info(f"Adjusted OD JSON: {json.dumps(convert_od_json, ensure_ascii=False)}")
+        
         # JSON 转 XML
         od_content = json_to_xml(convert_od_json)
         if od_content.startswith("<?xml"):
             od_content = "\n".join(od_content.splitlines()[1:])
+        
+        logger.info(f"OD XML before replacement (first 500 chars): {od_content[:500]}")
         
         # 替换命名
         replace_dict = {
@@ -343,6 +352,8 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
         
         for old, new in replace_dict.items():
             od_content = od_content.replace(old, new)
+        
+        logger.info(f"Final OD XML (first 500 chars): {od_content[:500]}")
         
         return od_content
 
@@ -527,3 +538,5 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
                 msg=str(e),
                 data=""
             )
+
+

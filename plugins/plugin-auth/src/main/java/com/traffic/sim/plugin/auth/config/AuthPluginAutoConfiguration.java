@@ -33,7 +33,9 @@ public class AuthPluginAutoConfiguration implements WebMvcConfigurer {
                 "/swagger-ui.html",
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
-                "/error"
+                "/error",
+                "/ws/frontend",      // 排除前端 WebSocket
+                "/ws/exe/**"         // 排除引擎 WebSocket
             );
         
         // 注册权限拦截器（在认证拦截器之后执行）
@@ -44,7 +46,9 @@ public class AuthPluginAutoConfiguration implements WebMvcConfigurer {
                 "/swagger-ui.html",
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
-                "/error"
+                "/error",
+                "/ws/frontend",      // 排除前端 WebSocket
+                "/ws/exe/**"         // 排除引擎 WebSocket
             );
     }
 }

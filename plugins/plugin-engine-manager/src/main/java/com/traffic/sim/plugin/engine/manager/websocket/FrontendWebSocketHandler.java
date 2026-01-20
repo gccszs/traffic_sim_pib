@@ -44,13 +44,39 @@ public class FrontendWebSocketHandler implements WebSocketHandler {
         String sessionId = extractSessionId(session);
         log.info("Frontend WebSocket connected: {}", sessionId);
         
+        // 设置会话超时时间为 30 分钟
+        try {
+            if (session instanceof org.springframework.web.socket.adapter.standard.StandardWebSocketSession) {
+                org.springframework.web.socket.adapter.standard.StandardWebSocketSession standardSession = 
+                    (org.springframework.web.socket.adapter.standard.StandardWebSocketSession) session;
+                standardSession.getNativeSession().setMaxIdleTimeout(1800000); // 30 分钟
+                log.info("Set WebSocket session idle timeout to 1800000ms for frontend session: {}", sessionId);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to set session timeout: {}", e.getMessage());
+        }
+        
         SimInfo simInfo = sessionService.getSessionInfo(sessionId);
         if (simInfo != null) {
             simInfo.setFrontendConnection(session);
+            simInfo.setFrontendInitOk(true);
             sessionService.updateSessionInfo(sessionId, simInfo);
+            log.info("Frontend connected to existing session: {}", sessionId);
+            
+            // 如果引擎已经初始化，通知前端
+            if (simInfo.isEngineInitialized()) {
+                WebSocketInfo engOkMsg = new WebSocketInfo("frontend", "eng_ok", System.currentTimeMillis());
+                sendMessageToFrontend(sessionId, engOkMsg);
+                log.info("Notified frontend that engine is ready for session: {}", sessionId);
+            }
         } else {
-            log.warn("Session not found for frontend connection: {}", sessionId);
-            session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Invalid session ID"));
+            // Session 还不存在，创建一个临时的 SimInfo 并保存连接
+            // 等待 /simulation/create 调用时会更新这个 Session
+            log.info("Session not found, creating placeholder for frontend connection: {}", sessionId);
+            SimInfo newSimInfo = new SimInfo();
+            newSimInfo.setFrontendConnection(session);
+            newSimInfo.setFrontendInitOk(true);
+            sessionService.updateSessionInfo(sessionId, newSimInfo);
         }
     }
     
@@ -72,9 +98,21 @@ public class FrontendWebSocketHandler implements WebSocketHandler {
             
             if ("eng".equals(wsMessage.getType())) {
                 // 转发给引擎
+                log.debug("Frontend sending message to engine: ope={}, sessionId={}", wsMessage.getOpe(), sessionId);
+                if (simInfo != null) {
+                    log.debug("SimInfo state: engineInitialized={}, engineConnection={}, engineConnectionOpen={}", 
+                        simInfo.isEngineInitialized(), 
+                        simInfo.getSimengConnection() != null,
+                        simInfo.getSimengConnection() != null && simInfo.getSimengConnection().isOpen());
+                }
+                
                 if (simInfo != null && simInfo.isEngineInitialized() && engineWebSocketHandler != null) {
                     engineWebSocketHandler.forwardToEngine(sessionId, wsMessage);
                 } else {
+                    log.warn("Cannot forward to engine: simInfo={}, engineInit={}, handler={}", 
+                        simInfo != null, 
+                        simInfo != null && simInfo.isEngineInitialized(), 
+                        engineWebSocketHandler != null);
                     sendErrorMessage(session, "Engine not initialized");
                 }
             } else if ("backend".equals(wsMessage.getType())) {
@@ -143,20 +181,21 @@ public class FrontendWebSocketHandler implements WebSocketHandler {
     }
     
     /**
-     * 从Cookie中提取session ID
+     * 从URL路径中提取session ID
+     * URL格式: /ws/frontend/{exeId}
      */
     private String extractSessionId(WebSocketSession session) {
-        // 从Cookie中获取id字段
-        String cookieHeader = session.getHandshakeHeaders().getFirst("Cookie");
-        if (cookieHeader != null) {
-            String[] cookies = cookieHeader.split(";");
-            for (String cookie : cookies) {
-                String[] parts = cookie.trim().split("=");
-                if (parts.length == 2 && "id".equals(parts[0].trim())) {
-                    return parts[1].trim();
-                }
-            }
+        String path = session.getUri().getPath();
+        log.debug("Extracting session ID from path: {}", path);
+        String[] parts = path.split("/");
+        log.debug("Path parts: {}", String.join(", ", parts));
+        // 路径格式: /ws/frontend/{exeId}
+        if (parts.length >= 4) {
+            String sessionId = parts[3];
+            log.debug("Extracted session ID: {}", sessionId);
+            return sessionId;
         }
+        log.warn("Failed to extract session ID from path: {}", path);
         return null;
     }
     

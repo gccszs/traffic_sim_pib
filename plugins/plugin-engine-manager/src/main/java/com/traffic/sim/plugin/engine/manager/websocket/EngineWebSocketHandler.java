@@ -59,6 +59,23 @@ public class EngineWebSocketHandler implements WebSocketHandler {
         String exeId = extractExeId(session);
         log.info("Engine WebSocket connected: {}", exeId);
         
+        // 设置会话超时时间为 30 分钟（1800000 毫秒）
+        session.setTextMessageSizeLimit(1024 * 1024); // 1MB
+        session.setBinaryMessageSizeLimit(1024 * 1024); // 1MB
+        
+        // 尝试设置超时时间（如果底层实现支持）
+        try {
+            // 对于 Tomcat WebSocket，需要通过 NativeWebSocketSession 访问
+            if (session instanceof org.springframework.web.socket.adapter.standard.StandardWebSocketSession) {
+                org.springframework.web.socket.adapter.standard.StandardWebSocketSession standardSession = 
+                    (org.springframework.web.socket.adapter.standard.StandardWebSocketSession) session;
+                standardSession.getNativeSession().setMaxIdleTimeout(1800000); // 30 分钟
+                log.info("Set WebSocket session idle timeout to 1800000ms for session: {}", exeId);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to set session timeout: {}", e.getMessage());
+        }
+        
         SimInfo simInfo = sessionService.getSessionInfo(exeId);
         if (simInfo != null) {
             simInfo.setSimengConnection(session);
@@ -191,10 +208,17 @@ public class EngineWebSocketHandler implements WebSocketHandler {
             simInfo.setSimengInitOk(true);
             sessionService.updateSessionInfo(exeId, simInfo);
             
-            // 发送响应
-            WebSocketInfo response = new WebSocketInfo("backend", "hi", System.currentTimeMillis());
+            // 发送响应 - type 应该是 "eng"（发给引擎的消息）
+            WebSocketInfo response = new WebSocketInfo("eng", "hi", System.currentTimeMillis());
             sendMessageToEngine(exeId, response);
             log.info("Engine initialized for session: {}", exeId);
+            
+            // 向前端发送引擎初始化完毕的消息（如果前端已经连接）
+            if (simInfo.isFrontendInitialized() && frontendWebSocketHandler != null) {
+                WebSocketInfo engOkMsg = new WebSocketInfo("frontend", "eng_ok", System.currentTimeMillis());
+                frontendWebSocketHandler.sendMessageToFrontend(exeId, engOkMsg);
+                log.info("Notified frontend that engine is ready for session: {}", exeId);
+            }
         }
     }
     
@@ -221,16 +245,30 @@ public class EngineWebSocketHandler implements WebSocketHandler {
      */
     private void sendMessageToEngine(String exeId, WebSocketInfo message) {
         SimInfo simInfo = sessionService.getSessionInfo(exeId);
-        if (simInfo != null && simInfo.getSimengConnection() != null) {
-            WebSocketSession session = simInfo.getSimengConnection();
-            if (session.isOpen()) {
-                try {
-                    String json = objectMapper.writeValueAsString(message);
-                    session.sendMessage(new TextMessage(json));
-                } catch (Exception e) {
-                    log.error("Failed to send message to engine for session: {}", exeId, e);
-                }
+        
+        if (simInfo == null) {
+            log.error("Cannot send message: SimInfo is null for session: {}", exeId);
+            return;
+        }
+        
+        if (simInfo.getSimengConnection() == null) {
+            log.error("Cannot send message: Engine connection is null for session: {}", exeId);
+            return;
+        }
+        
+        WebSocketSession session = simInfo.getSimengConnection();
+        
+        if (session.isOpen()) {
+            try {
+                String json = objectMapper.writeValueAsString(message);
+                log.info("Sending JSON to engine [{}]: {}", exeId, json);  // 输出实际的 JSON
+                session.sendMessage(new TextMessage(json));
+                log.info("Successfully sent message to engine: ope={}, session={}", message.getOpe(), exeId);
+            } catch (Exception e) {
+                log.error("Failed to send message to engine for session: {}, error: {}", exeId, e.getMessage(), e);
             }
+        } else {
+            log.error("Cannot send message: Engine session is closed for session: {}", exeId);
         }
     }
     
@@ -239,7 +277,7 @@ public class EngineWebSocketHandler implements WebSocketHandler {
      */
     private void sendErrorMessage(WebSocketSession session, String errorMessage) {
         try {
-            WebSocketInfo errorMsg = new WebSocketInfo("backend", "err", System.currentTimeMillis());
+            WebSocketInfo errorMsg = new WebSocketInfo("eng", "err", System.currentTimeMillis());
             Map<String, Object> data = Map.of("message", errorMessage);
             errorMsg.setData(data);
             String json = objectMapper.writeValueAsString(errorMsg);
