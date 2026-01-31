@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14python_service.proto\x12\x14\x63om.traffic.sim.grpc\"\x8e\x01\n\x13\x43reateSimengRequest\x12.\n\x07simInfo\x18\x01 \x01(\x0b\x32\x1d.com.traffic.sim.grpc.SimInfo\x12\x37\n\x0c\x63ontrolViews\x18\x02 \x03(\x0b\x32!.com.traffic.sim.grpc.ControlView\x12\x0e\n\x06userId\x18\x03 \x01(\t\"o\n\x07SimInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x12\n\nmapXmlName\x18\x02 \x01(\t\x12\x12\n\nmapXmlPath\x18\x03 \x01(\t\x12.\n\x07\x66ixedOd\x18\x04 \x01(\x0b\x32\x1d.com.traffic.sim.grpc.FixedOD\"d\n\x07\x46ixedOD\x12*\n\x02od\x18\x01 \x03(\x0b\x32\x1e.com.traffic.sim.grpc.OriginOD\x12-\n\x02sg\x18\x02 \x03(\x0b\x32!.com.traffic.sim.grpc.SignalGroup\"M\n\x08OriginOD\x12\x10\n\x08originId\x18\x01 \x01(\t\x12/\n\x04\x64ist\x18\x02 \x03(\x0b\x32!.com.traffic.sim.grpc.Destination\"+\n\x0b\x44\x65stination\x12\x0e\n\x06\x64\x65stId\x18\x01 \x01(\t\x12\x0c\n\x04rate\x18\x02 \x01(\x01\"i\n\x0bSignalGroup\x12\x0f\n\x07\x63rossId\x18\x01 \x01(\x05\x12\x11\n\tcycleTime\x18\x02 \x01(\x05\x12\x12\n\newStraight\x18\x03 \x01(\x05\x12\x12\n\nsnStraight\x18\x04 \x01(\x05\x12\x0e\n\x06snLeft\x18\x05 \x01(\x05\"6\n\x0b\x43ontrolView\x12\x11\n\tusePlugin\x18\x01 \x01(\x08\x12\x14\n\x0c\x61\x63tivePlugin\x18\x02 \x01(\t\"5\n\x0b\x41piResponse\x12\x0b\n\x03res\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\t\"2\n\x0cTestResponse\x12\x11\n\tconnected\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\".\n\x18GreenRatioControlRequest\x12\x12\n\ngreenRatio\x18\x01 \x01(\x05\"\x07\n\x05\x45mpty\"*\n\x14GetPluginInfoRequest\x12\x12\n\npluginName\x18\x01 \x01(\t\"0\n\nPluginInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0cmanifestJson\x18\x02 \x01(\t\"d\n\x15GetPluginInfoResponse\x12\x0b\n\x03res\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x31\n\x07plugins\x18\x03 \x03(\x0b\x32 .com.traffic.sim.grpc.PluginInfo\"<\n\x13UploadPluginRequest\x12\x10\n\x08\x66ileName\x18\x01 \x01(\t\x12\x13\n\x0b\x66ileContent\x18\x02 \x01(\x0c\"Y\n\x17UpdatePluginInfoRequest\x12\x12\n\npluginName\x18\x01 \x01(\t\x12\x17\n\x0fupdateInfosJson\x18\x02 \x01(\t\x12\x11\n\tapplyDisk\x18\x03 \x01(\x08\x32\xd6\x04\n\rPythonService\x12\\\n\x0c\x43reateSimeng\x12).com.traffic.sim.grpc.CreateSimengRequest\x1a!.com.traffic.sim.grpc.ApiResponse\x12\x66\n\x11\x43ontrolGreenRatio\x12..com.traffic.sim.grpc.GreenRatioControlRequest\x1a!.com.traffic.sim.grpc.ApiResponse\x12Q\n\x0eTestConnection\x12\x1b.com.traffic.sim.grpc.Empty\x1a\".com.traffic.sim.grpc.TestResponse\x12h\n\rGetPluginInfo\x12*.com.traffic.sim.grpc.GetPluginInfoRequest\x1a+.com.traffic.sim.grpc.GetPluginInfoResponse\x12\\\n\x0cUploadPlugin\x12).com.traffic.sim.grpc.UploadPluginRequest\x1a!.com.traffic.sim.grpc.ApiResponse\x12\x64\n\x10UpdatePluginInfo\x12-.com.traffic.sim.grpc.UpdatePluginInfoRequest\x1a!.com.traffic.sim.grpc.ApiResponseBD\n,com.traffic.sim.plugin.simulation.grpc.protoB\x12PythonServiceProtoP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14python_service.proto\x12\x14\x63om.traffic.sim.grpc\"\x8e\x01\n\x13\x43reateSimengRequest\x12.\n\x07simInfo\x18\x01 \x01(\x0b\x32\x1d.com.traffic.sim.grpc.SimInfo\x12\x37\n\x0c\x63ontrolViews\x18\x02 \x03(\x0b\x32!.com.traffic.sim.grpc.ControlView\x12\x0e\n\x06userId\x18\x03 \x01(\t\"o\n\x07SimInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x12\n\nmapXmlName\x18\x02 \x01(\t\x12\x12\n\nmapXmlPath\x18\x03 \x01(\t\x12.\n\x07\x66ixedOd\x18\x04 \x01(\x0b\x32\x1d.com.traffic.sim.grpc.FixedOD\"\xf6\x01\n\x07\x46ixedOD\x12\x0f\n\x07roadNum\x18\x01 \x01(\x05\x12\x0f\n\x07laneNum\x18\x02 \x01(\x05\x12\x15\n\rcontrollerNum\x18\x03 \x01(\x05\x12\x13\n\x0b\x66ollowModel\x18\x04 \x01(\x05\x12\x17\n\x0f\x63hangeLaneModel\x18\x05 \x01(\x05\x12)\n\x05\x66lows\x18\x06 \x03(\x0b\x32\x1a.com.traffic.sim.grpc.Flow\x12*\n\x02od\x18\x07 \x03(\x0b\x32\x1e.com.traffic.sim.grpc.OriginOD\x12-\n\x02sg\x18\x08 \x03(\x0b\x32!.com.traffic.sim.grpc.SignalGroup\"E\n\x04\x46low\x12\x0e\n\x06roadId\x18\x01 \x01(\x05\x12\x0e\n\x06policy\x18\x02 \x01(\x05\x12\x0e\n\x06\x64\x65mand\x18\x03 \x01(\x05\x12\r\n\x05\x65xtra\x18\x04 \x01(\x05\"M\n\x08OriginOD\x12\x10\n\x08originId\x18\x01 \x01(\t\x12/\n\x04\x64ist\x18\x02 \x03(\x0b\x32!.com.traffic.sim.grpc.Destination\"+\n\x0b\x44\x65stination\x12\x0e\n\x06\x64\x65stId\x18\x01 \x01(\t\x12\x0c\n\x04rate\x18\x02 \x01(\x01\"i\n\x0bSignalGroup\x12\x0f\n\x07\x63rossId\x18\x01 \x01(\x05\x12\x11\n\tcycleTime\x18\x02 \x01(\x05\x12\x12\n\newStraight\x18\x03 \x01(\x05\x12\x12\n\nsnStraight\x18\x04 \x01(\x05\x12\x0e\n\x06snLeft\x18\x05 \x01(\x05\"6\n\x0b\x43ontrolView\x12\x11\n\tusePlugin\x18\x01 \x01(\x08\x12\x14\n\x0c\x61\x63tivePlugin\x18\x02 \x01(\t\"5\n\x0b\x41piResponse\x12\x0b\n\x03res\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\t\"2\n\x0cTestResponse\x12\x11\n\tconnected\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\".\n\x18GreenRatioControlRequest\x12\x12\n\ngreenRatio\x18\x01 \x01(\x05\"\x07\n\x05\x45mpty\"*\n\x14GetPluginInfoRequest\x12\x12\n\npluginName\x18\x01 \x01(\t\"0\n\nPluginInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0cmanifestJson\x18\x02 \x01(\t\"d\n\x15GetPluginInfoResponse\x12\x0b\n\x03res\x18\x01 \x01(\t\x12\x0b\n\x03msg\x18\x02 \x01(\t\x12\x31\n\x07plugins\x18\x03 \x03(\x0b\x32 .com.traffic.sim.grpc.PluginInfo\"<\n\x13UploadPluginRequest\x12\x10\n\x08\x66ileName\x18\x01 \x01(\t\x12\x13\n\x0b\x66ileContent\x18\x02 \x01(\x0c\"Y\n\x17UpdatePluginInfoRequest\x12\x12\n\npluginName\x18\x01 \x01(\t\x12\x17\n\x0fupdateInfosJson\x18\x02 \x01(\t\x12\x11\n\tapplyDisk\x18\x03 \x01(\x08\x32\xd6\x04\n\rPythonService\x12\\\n\x0c\x43reateSimeng\x12).com.traffic.sim.grpc.CreateSimengRequest\x1a!.com.traffic.sim.grpc.ApiResponse\x12\x66\n\x11\x43ontrolGreenRatio\x12..com.traffic.sim.grpc.GreenRatioControlRequest\x1a!.com.traffic.sim.grpc.ApiResponse\x12Q\n\x0eTestConnection\x12\x1b.com.traffic.sim.grpc.Empty\x1a\".com.traffic.sim.grpc.TestResponse\x12h\n\rGetPluginInfo\x12*.com.traffic.sim.grpc.GetPluginInfoRequest\x1a+.com.traffic.sim.grpc.GetPluginInfoResponse\x12\\\n\x0cUploadPlugin\x12).com.traffic.sim.grpc.UploadPluginRequest\x1a!.com.traffic.sim.grpc.ApiResponse\x12\x64\n\x10UpdatePluginInfo\x12-.com.traffic.sim.grpc.UpdatePluginInfoRequest\x1a!.com.traffic.sim.grpc.ApiResponseBD\n,com.traffic.sim.plugin.simulation.grpc.protoB\x12PythonServiceProtoP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,34 +36,36 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CREATESIMENGREQUEST']._serialized_end=189
   _globals['_SIMINFO']._serialized_start=191
   _globals['_SIMINFO']._serialized_end=302
-  _globals['_FIXEDOD']._serialized_start=304
-  _globals['_FIXEDOD']._serialized_end=404
-  _globals['_ORIGINOD']._serialized_start=406
-  _globals['_ORIGINOD']._serialized_end=483
-  _globals['_DESTINATION']._serialized_start=485
-  _globals['_DESTINATION']._serialized_end=528
-  _globals['_SIGNALGROUP']._serialized_start=530
-  _globals['_SIGNALGROUP']._serialized_end=635
-  _globals['_CONTROLVIEW']._serialized_start=637
-  _globals['_CONTROLVIEW']._serialized_end=691
-  _globals['_APIRESPONSE']._serialized_start=693
-  _globals['_APIRESPONSE']._serialized_end=746
-  _globals['_TESTRESPONSE']._serialized_start=748
-  _globals['_TESTRESPONSE']._serialized_end=798
-  _globals['_GREENRATIOCONTROLREQUEST']._serialized_start=800
-  _globals['_GREENRATIOCONTROLREQUEST']._serialized_end=846
-  _globals['_EMPTY']._serialized_start=848
-  _globals['_EMPTY']._serialized_end=855
-  _globals['_GETPLUGININFOREQUEST']._serialized_start=857
-  _globals['_GETPLUGININFOREQUEST']._serialized_end=899
-  _globals['_PLUGININFO']._serialized_start=901
-  _globals['_PLUGININFO']._serialized_end=949
-  _globals['_GETPLUGININFORESPONSE']._serialized_start=951
-  _globals['_GETPLUGININFORESPONSE']._serialized_end=1051
-  _globals['_UPLOADPLUGINREQUEST']._serialized_start=1053
-  _globals['_UPLOADPLUGINREQUEST']._serialized_end=1113
-  _globals['_UPDATEPLUGININFOREQUEST']._serialized_start=1115
-  _globals['_UPDATEPLUGININFOREQUEST']._serialized_end=1204
-  _globals['_PYTHONSERVICE']._serialized_start=1207
-  _globals['_PYTHONSERVICE']._serialized_end=1805
+  _globals['_FIXEDOD']._serialized_start=305
+  _globals['_FIXEDOD']._serialized_end=551
+  _globals['_FLOW']._serialized_start=553
+  _globals['_FLOW']._serialized_end=622
+  _globals['_ORIGINOD']._serialized_start=624
+  _globals['_ORIGINOD']._serialized_end=701
+  _globals['_DESTINATION']._serialized_start=703
+  _globals['_DESTINATION']._serialized_end=746
+  _globals['_SIGNALGROUP']._serialized_start=748
+  _globals['_SIGNALGROUP']._serialized_end=853
+  _globals['_CONTROLVIEW']._serialized_start=855
+  _globals['_CONTROLVIEW']._serialized_end=909
+  _globals['_APIRESPONSE']._serialized_start=911
+  _globals['_APIRESPONSE']._serialized_end=964
+  _globals['_TESTRESPONSE']._serialized_start=966
+  _globals['_TESTRESPONSE']._serialized_end=1016
+  _globals['_GREENRATIOCONTROLREQUEST']._serialized_start=1018
+  _globals['_GREENRATIOCONTROLREQUEST']._serialized_end=1064
+  _globals['_EMPTY']._serialized_start=1066
+  _globals['_EMPTY']._serialized_end=1073
+  _globals['_GETPLUGININFOREQUEST']._serialized_start=1075
+  _globals['_GETPLUGININFOREQUEST']._serialized_end=1117
+  _globals['_PLUGININFO']._serialized_start=1119
+  _globals['_PLUGININFO']._serialized_end=1167
+  _globals['_GETPLUGININFORESPONSE']._serialized_start=1169
+  _globals['_GETPLUGININFORESPONSE']._serialized_end=1269
+  _globals['_UPLOADPLUGINREQUEST']._serialized_start=1271
+  _globals['_UPLOADPLUGINREQUEST']._serialized_end=1331
+  _globals['_UPDATEPLUGININFOREQUEST']._serialized_start=1333
+  _globals['_UPDATEPLUGININFOREQUEST']._serialized_end=1422
+  _globals['_PYTHONSERVICE']._serialized_start=1425
+  _globals['_PYTHONSERVICE']._serialized_end=2023
 # @@protoc_insertion_point(module_scope)

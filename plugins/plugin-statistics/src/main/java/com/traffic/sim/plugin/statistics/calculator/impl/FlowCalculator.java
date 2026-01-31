@@ -57,7 +57,7 @@ public class FlowCalculator implements StatisticsCalculator {
             }
         }
         
-        // 计算平均流量
+        // 计算平均流量（当前步的车辆数，不转换为小时流量）
         double flowRdAve = roadFlow.isEmpty() ? 0.0 : 
             roadFlow.values().stream().mapToInt(Integer::intValue).average().orElse(0.0);
         double flowLaAve = laneFlow.isEmpty() ? 0.0 : 
@@ -65,15 +65,10 @@ public class FlowCalculator implements StatisticsCalculator {
         double flowCrossAve = crossFlow.isEmpty() ? 0.0 : 
             crossFlow.values().stream().mapToInt(Integer::intValue).average().orElse(0.0);
         
-        // 转换为每小时流量
-        flowRdAve = UnitConverter.flowToPerHour(flowRdAve);
-        flowLaAve = UnitConverter.flowToPerHour(flowLaAve);
-        flowCrossAve = UnitConverter.flowToPerHour(flowCrossAve);
-        
         StatisticsResult result = new StatisticsResult();
-        result.set("flow_rd_ave", flowRdAve);
-        result.set("flow_la_ave", flowLaAve);
-        result.set("flow_cross_ave", flowCrossAve);
+        result.set("flow_RD_ave", flowRdAve);  // 匹配前端期望的字段名
+        result.set("flow_LA_ave", flowLaAve);  // 匹配前端期望的字段名
+        result.set("flow_ave", flowCrossAve);  // 交叉口平均流量
         
         // 存储详细流量数据到custom字段
         Map<String, Object> flowDetails = new HashMap<>();
@@ -81,6 +76,9 @@ public class FlowCalculator implements StatisticsCalculator {
         flowDetails.put("laneFlow", laneFlow);
         flowDetails.put("crossFlow", crossFlow);
         result.set("flow_details", flowDetails);
+        
+        log.info("Flow calculation: flow_RD_ave={}, flow_LA_ave={}, flow_ave={}", 
+            flowRdAve, flowLaAve, flowCrossAve);
         
         return result;
     }
@@ -107,7 +105,7 @@ public class FlowCalculator implements StatisticsCalculator {
     
     @Override
     public List<String> getCalculatedFields() {
-        return Arrays.asList("flow_rd_ave", "flow_la_ave", "flow_cross_ave", "flow_details");
+        return Arrays.asList("flow_RD_ave", "flow_LA_ave", "flow_ave", "flow_details");
     }
 }
 

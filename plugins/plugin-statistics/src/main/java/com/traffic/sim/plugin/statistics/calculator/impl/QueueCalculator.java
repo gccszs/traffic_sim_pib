@@ -29,8 +29,17 @@ public class QueueCalculator implements StatisticsCalculator {
                                      StatisticsContext context) {
         var vehicles = currentStep.getVehicles();
         
+        StatisticsResult result = new StatisticsResult();
+        
         if (vehicles.isEmpty()) {
-            return StatisticsResult.empty();
+            log.debug("No vehicles for queue calculation");
+            result.set("queue_length_min", 0.0);
+            result.set("queue_length_max", 0.0);
+            result.set("queue_length_ave", 0.0);
+            result.set("queue_time_min", 0.0);
+            result.set("queue_time_max", 0.0);
+            result.set("queue_time_ave", 0.0);
+            return result;
         }
         
         List<Double> queueLengths = new ArrayList<>();
@@ -52,8 +61,6 @@ public class QueueCalculator implements StatisticsCalculator {
             }
         }
         
-        StatisticsResult result = new StatisticsResult();
-        
         if (!queueLengths.isEmpty()) {
             double queueLengthMin = queueLengths.stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
             double queueLengthMax = queueLengths.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
@@ -62,6 +69,9 @@ public class QueueCalculator implements StatisticsCalculator {
             result.set("queue_length_min", queueLengthMin);
             result.set("queue_length_max", queueLengthMax);
             result.set("queue_length_ave", queueLengthAve);
+            
+            log.info("Queue length calculation: count={}, min={}, max={}, ave={}", 
+                queueLengths.size(), queueLengthMin, queueLengthMax, queueLengthAve);
         } else {
             result.set("queue_length_min", 0.0);
             result.set("queue_length_max", 0.0);
@@ -76,6 +86,9 @@ public class QueueCalculator implements StatisticsCalculator {
             result.set("queue_time_min", queueTimeMin);
             result.set("queue_time_max", queueTimeMax);
             result.set("queue_time_ave", queueTimeAve);
+            
+            log.info("Queue time calculation: count={}, min={}, max={}, ave={}", 
+                queueTimes.size(), queueTimeMin, queueTimeMax, queueTimeAve);
         } else {
             result.set("queue_time_min", 0.0);
             result.set("queue_time_max", 0.0);

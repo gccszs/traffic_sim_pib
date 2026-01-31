@@ -25,6 +25,16 @@ public class StatisticsBuffer {
     private List<Integer> outFlowHistory = new ArrayList<>();
     
     /**
+     * 累积进入车辆总数
+     */
+    private int totalInFlow = 0;
+    
+    /**
+     * 累积离开车辆总数
+     */
+    private int totalOutFlow = 0;
+    
+    /**
      * 窗口大小（默认100步）
      */
     private int windowSize = 100;
@@ -34,6 +44,7 @@ public class StatisticsBuffer {
      */
     public void addInFlow(int flow) {
         inFlowHistory.add(flow);
+        totalInFlow += flow;  // 累加总数
         if (inFlowHistory.size() > windowSize) {
             inFlowHistory.remove(0);
         }
@@ -44,9 +55,24 @@ public class StatisticsBuffer {
      */
     public void addOutFlow(int flow) {
         outFlowHistory.add(flow);
+        totalOutFlow += flow;  // 累加总数
         if (outFlowHistory.size() > windowSize) {
             outFlowHistory.remove(0);
         }
+    }
+    
+    /**
+     * 获取累积进入车辆总数
+     */
+    public int getTotalInFlow() {
+        return totalInFlow;
+    }
+    
+    /**
+     * 获取累积离开车辆总数
+     */
+    public int getTotalOutFlow() {
+        return totalOutFlow;
     }
     
     /**

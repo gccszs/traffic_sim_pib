@@ -53,7 +53,9 @@ public class StatisticsServiceImpl implements StatisticsService {
             
             // 4. 执行所有计算器
             StatisticsResult result = new StatisticsResult();
-            for (StatisticsCalculator calculator : calculatorRegistry.getAll()) {
+            List<StatisticsCalculator> calculators = calculatorRegistry.getAll();
+            
+            for (StatisticsCalculator calculator : calculators) {
                 try {
                     StatisticsResult calcResult = calculator.calculate(
                         currentStep, previousStep, context);
@@ -128,9 +130,37 @@ public class StatisticsServiceImpl implements StatisticsService {
         // 从结果中提取数据
         Map<String, Object> resultData = result.getData();
         if (resultData != null) {
+            // 基本统计
             data.setVehicleCount(getInteger(resultData, "car_number"));
             data.setAverageSpeed(getDouble(resultData, "speed_ave"));
+            data.setMinSpeed(getDouble(resultData, "speed_min"));
+            data.setMaxSpeed(getDouble(resultData, "speed_max"));
+            data.setAverageAcceleration(getDouble(resultData, "acc_ave"));
+            data.setMinAcceleration(getDouble(resultData, "acc_min"));
+            data.setMaxAcceleration(getDouble(resultData, "acc_max"));
+            data.setVehiclesIn(getInteger(resultData, "car_in"));
+            data.setVehiclesOut(getInteger(resultData, "car_out"));
+            data.setLowSpeedCount(getInteger(resultData, "low_speed"));
             data.setCongestionIndex(getDouble(resultData, "jam_index"));
+            
+            // 全局统计
+            data.setTotalVehiclesIn(getInteger(resultData, "cars_in"));
+            data.setTotalVehiclesOut(getInteger(resultData, "cars_out"));
+            data.setMinQueueLength(getDouble(resultData, "queue_length_min"));
+            data.setMaxQueueLength(getDouble(resultData, "queue_length_max"));
+            data.setAverageQueueLength(getDouble(resultData, "queue_length_ave"));
+            data.setMinQueueTime(getDouble(resultData, "queue_time_min"));
+            data.setMaxQueueTime(getDouble(resultData, "queue_time_max"));
+            data.setAverageQueueTime(getDouble(resultData, "queue_time_ave"));
+            data.setMaxStopCount(getInteger(resultData, "stop_max"));
+            data.setMinStopCount(getInteger(resultData, "stop_min"));
+            data.setAverageStopCount(getDouble(resultData, "stop_ave"));
+            data.setMaxDelay(getDouble(resultData, "delay_max"));
+            data.setMinDelay(getDouble(resultData, "delay_min"));
+            data.setAverageDelay(getDouble(resultData, "delay_ave"));
+            data.setAverageCrossFlow(getDouble(resultData, "flow_ave"));
+            data.setAverageRoadFlow(getDouble(resultData, "flow_RD_ave"));
+            data.setAverageLaneFlow(getDouble(resultData, "flow_LA_ave"));
             
             // 设置自定义字段
             data.setCustom(resultData);

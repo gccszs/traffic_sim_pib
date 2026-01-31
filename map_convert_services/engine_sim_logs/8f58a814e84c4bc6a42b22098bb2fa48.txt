@@ -1,0 +1,388 @@
+启动命令: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services\SimEngPI\SimulationEngine.exe --log=0 --sid=test --sfile=8f58a814e84c4bc6a42b22098bb2fa48 --road=map_14d350dc.xml --ip=localhost --port=3822 --noplugin
+工作目录: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services
+输出模式: file
+启动时间: 2026-01-22 23:05:40
+平台: win32
+--------------------------------------------------------------------------------
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][info]	[34m[+] Init BLog Over![0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][info]	[34m[+] SetWorkDir: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services\SimEngPI[0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][info]	[34m[+] Set SimID test Over![0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][info]	[34m[+] Set SimFiles Path: 8f58a814e84c4bc6a42b22098bb2fa48 Over![0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][info]	[34m[+] Use RoadNetwork File: 8f58a814e84c4bc6a42b22098bb2fa48\map_14d350dc.xml[0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][info]	[34m[+] Use OD File: 8f58a814e84c4bc6a42b22098bb2fa48\od.xml[0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][info]	[34m[-] Launch as no plug-in![0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][info]	[34m[+] Base Initialization Complete![0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][debug]	[32m[#] Connected to localhost:3822/ws/exe/8f58a814e84c4bc6a42b22098bb2fa48[0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][info]	[34m[+] Connect websocket to backend ok...[0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"hi","time":1769094341165}[0m
+[23:05:41] [STDERR] [2026-01-22 23:05:41|0x00006c2c][info]	[34m[+] Init backend manager ok![0m
+进程已启动，PID: 2784
+[23:05:45] [STDERR] [2026-01-22 23:05:45|0x00006c2c][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"setdelay","time":1769094345707,"data":{"Delay":32}}[0m
+[23:05:45] [STDERR] [2026-01-22 23:05:45|0x00006c2c][info]	[34m[*] Set New Delay: 32[0m
+[23:05:45] [STDERR] [2026-01-22 23:05:45|0x00006c2c][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1769094345642, "data":{"result": "setdelay_ok"}}[0m
+[23:05:47] [STDERR] [2026-01-22 23:05:47|0x00006c2c][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"setdelay","time":1769094347401,"data":{"Delay":11}}[0m
+[23:05:47] [STDERR] [2026-01-22 23:05:47|0x00006c2c][info]	[34m[*] Set New Delay: 11[0m
+[23:05:47] [STDERR] [2026-01-22 23:05:47|0x00006c2c][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1769094347336, "data":{"result": "setdelay_ok"}}[0m
+[23:05:48] [STDERR] [2026-01-22 23:05:48|0x00006c2c][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"setmaxstep","time":1769094348279,"data":{"Step":10}}[0m
+[23:05:48] [STDERR] [2026-01-22 23:05:48|0x00006c2c][info]	[34m[+] Set Max Sim Step: 10[0m
+[23:05:48] [STDERR] [2026-01-22 23:05:48|0x00006c2c][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1769094348215, "data":{"result": "setmaxstep_ok"}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00006c2c][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"start","time":1769094349363}[0m
+[23:05:49] [STDOUT] Config Path(WebParam): 8f58a814e84c4bc6a42b22098bb2fa48\od.xml
+[23:05:49] [STDOUT] G_MarginalPoint_Number:9
+[23:05:49] [STDOUT] G_BaseLine_Number:13
+[23:05:49] [STDOUT] G_Cross_Number:4
+[23:05:49] [STDOUT] G_Link_Number:26
+[23:05:49] [STDOUT] G_Lane_Number:104
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00006c2c][info]	[34m[*] Start(Resume) Sim[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00006c2c][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1769094349329, "data":{"result": "start_ok"}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349341, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":0, "link_id":3, "lane_id":1, "cell_id":0, "x":1565.97, "y":806.34, "speed":14, "router":"3 13 19 23"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349356, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":1, "link_id":5, "lane_id":0, "cell_id":0, "x":2292.74, "y":911.173, "speed":14, "router":"5 2"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349371, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":2, "link_id":7, "lane_id":2, "cell_id":0, "x":2301.94, "y":1690.95, "speed":14, "router":"7 6"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349386, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":3, "link_id":9, "lane_id":0, "cell_id":0, "x":961.997, "y":912.471, "speed":14, "router":"9 0 6"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349402, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":4, "link_id":10, "lane_id":1, "cell_id":0, "x":262.41, "y":1306, "speed":14, "router":"10 0 4"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349417, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":5, "link_id":15, "lane_id":3, "cell_id":0, "x":1515.35, "y":2334.73, "speed":14, "router":"15 12 1 8"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349432, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":6, "link_id":17, "lane_id":3, "cell_id":0, "x":1959.24, "y":2095.75, "speed":14, "router":"17 14"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349448, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":7, "link_id":22, "lane_id":0, "cell_id":0, "x":258.53, "y":2115, "speed":14, "router":"22 18 14"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349464, "data":{"pos":"produce_veh", "step_num": 0, "result":[{"id":8, "link_id":25, "lane_id":0, "cell_id":0, "x":978, "y":2508, "speed":14, "router":"25 18 16"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349480, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":14, "x":1570.52, "y":819.597, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349495, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":5, "lane_id":0, "cell_id":14, "x":2281.21, "y":919.153, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349511, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":7, "lane_id":2, "cell_id":14, "x":2290.87, "y":1682.35, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349527, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":14, "x":961.916, "y":926.472, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349542, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":10, "lane_id":1, "cell_id":14, "x":276.411, "y":1306.09, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349558, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":15, "lane_id":3, "cell_id":14, "x":1518.24, "y":2321.01, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349573, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":17, "lane_id":3, "cell_id":14, "x":1945.56, "y":2092.66, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349589, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":22, "lane_id":0, "cell_id":14, "x":272.551, "y":2114.91, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349606, "data":{"pos":"veh_run", "step_num": 0, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":25, "lane_id":0, "cell_id":14, "x":978, "y":2494, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349621, "data":{"pos":"controller_run", "step_num": 0, "result":{ "cross_id":7, "phases": [{"id":0, "color":"G", "x":950.003, "y":1254.5},
+[23:05:49] [STDERR] {"id":1, "color":"R", "x":960.003, "y":1254.5},
+[23:05:49] [STDERR] {"id":2, "color":"G", "x":930.003, "y":1254.5},
+[23:05:49] [STDERR] {"id":3, "color":"R", "x":924.5, "y":1310},
+[23:05:49] [STDERR] {"id":4, "color":"R", "x":924.5, "y":1300},
+[23:05:49] [STDERR] {"id":5, "color":"R", "x":924.5, "y":1330}] }}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349636, "data":{"pos":"controller_run", "step_num": 0, "result":{ "cross_id":10, "phases": [{"id":0, "color":"G", "x":1540.68, "y":1995.5},
+[23:05:49] [STDERR] {"id":1, "color":"R", "x":1550.31, "y":1998.18},
+[23:05:49] [STDERR] {"id":2, "color":"G", "x":1521.4, "y":1990.15},
+[23:05:49] [STDERR] {"id":3, "color":"R", "x":1505.53, "y":2039.33},
+[23:05:49] [STDERR] {"id":4, "color":"R", "x":1508.17, "y":2029.68},
+[23:05:49] [STDERR] {"id":5, "color":"R", "x":1500.27, "y":2058.62}] }}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349651, "data":{"pos":"controller_run", "step_num": 0, "result":{ "cross_id":11, "phases": [{"id":0, "color":"G", "x":957.995, "y":2065.5},
+[23:05:49] [STDERR] {"id":1, "color":"R", "x":967.995, "y":2065.5},
+[23:05:49] [STDERR] {"id":2, "color":"G", "x":937.995, "y":2065.5},
+[23:05:49] [STDERR] {"id":3, "color":"R", "x":932.499, "y":2121},
+[23:05:49] [STDERR] {"id":4, "color":"R", "x":932.499, "y":2111},
+[23:05:49] [STDERR] {"id":5, "color":"R", "x":932.499, "y":2141}] }}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349651, "data":{ "pos":"sim_one_step", "over_step:":0, "next_step":1 }}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349666, "data":{"pos":"produce_veh", "step_num": 1, "result":[{"id":9, "link_id":7, "lane_id":0, "cell_id":0, "x":2289.67, "y":1706.74, "speed":14, "router":"7 13 19 24"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349682, "data":{"pos":"veh_run", "step_num": 1, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":28, "x":1575.07, "y":832.854, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349697, "data":{"pos":"veh_run", "step_num": 1, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":5, "lane_id":0, "cell_id":28, "x":2269.68, "y":927.132, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349712, "data":{"pos":"veh_run", "step_num": 1, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":7, "lane_id":2, "cell_id":28, "x":2279.8, "y":1673.75, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349727, "data":{"pos":"veh_run", "step_num": 1, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":28, "x":961.834, "y":940.473, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349743, "data":{"pos":"veh_run", "step_num": 1, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":10, "lane_id":1, "cell_id":28, "x":290.413, "y":1306.17, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349758, "data":{"pos":"veh_run", "step_num": 1, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":15, "lane_id":3, "cell_id":28, "x":1521.13, "y":2307.29, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349774, "data":{"pos":"veh_run", "step_num": 1, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":17, "lane_id":3, "cell_id":28, "x":1931.88, "y":2089.56, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349789, "data":{"pos":"veh_run", "step_num": 1, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":22, "lane_id":0, "cell_id":28, "x":286.571, "y":2114.83, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349804, "data":{"pos":"veh_run", "step_num": 1, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":25, "lane_id":0, "cell_id":28, "x":978, "y":2480, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349820, "data":{"pos":"veh_run", "step_num": 1, "result":{"id":9, "in_network":true, "in_cross":false, "link_id":7, "lane_id":0, "cell_id":14, "x":2278.62, "y":1698.16, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349835, "data":{"pos":"controller_run", "step_num": 1, "result":{ "cross_id":7, "phases": [{"id":0, "color":"G", "x":950.003, "y":1254.5},
+[23:05:49] [STDERR] {"id":1, "color":"R", "x":960.003, "y":1254.5},
+[23:05:49] [STDERR] {"id":2, "color":"G", "x":930.003, "y":1254.5},
+[23:05:49] [STDERR] {"id":3, "color":"R", "x":924.5, "y":1310},
+[23:05:49] [STDERR] {"id":4, "color":"R", "x":924.5, "y":1300},
+[23:05:49] [STDERR] {"id":5, "color":"R", "x":924.5, "y":1330}] }}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349851, "data":{"pos":"controller_run", "step_num": 1, "result":{ "cross_id":10, "phases": [{"id":0, "color":"G", "x":1540.68, "y":1995.5},
+[23:05:49] [STDERR] {"id":1, "color":"R", "x":1550.31, "y":1998.18},
+[23:05:49] [STDERR] {"id":2, "color":"G", "x":1521.4, "y":1990.15},
+[23:05:49] [STDERR] {"id":3, "color":"R", "x":1505.53, "y":2039.33},
+[23:05:49] [STDERR] {"id":4, "color":"R", "x":1508.17, "y":2029.68},
+[23:05:49] [STDERR] {"id":5, "color":"R", "x":1500.27, "y":2058.62}] }}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349866, "data":{"pos":"controller_run", "step_num": 1, "result":{ "cross_id":11, "phases": [{"id":0, "color":"G", "x":957.995, "y":2065.5},
+[23:05:49] [STDERR] {"id":1, "color":"R", "x":967.995, "y":2065.5},
+[23:05:49] [STDERR] {"id":2, "color":"G", "x":937.995, "y":2065.5},
+[23:05:49] [STDERR] {"id":3, "color":"R", "x":932.499, "y":2121},
+[23:05:49] [STDERR] {"id":4, "color":"R", "x":932.499, "y":2111},
+[23:05:49] [STDERR] {"id":5, "color":"R", "x":932.499, "y":2141}] }}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349866, "data":{ "pos":"sim_one_step", "over_step:":1, "next_step":2 }}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349882, "data":{"pos":"produce_veh", "step_num": 2, "result":[{"id":10, "link_id":3, "lane_id":0, "cell_id":0, "x":1575.43, "y":803.096, "speed":14, "router":"3 13 16"}]}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349897, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":42, "x":1579.62, "y":846.111, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349913, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":5, "lane_id":0, "cell_id":42, "x":2258.15, "y":935.111, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349928, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":7, "lane_id":2, "cell_id":42, "x":2268.73, "y":1665.16, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349944, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":42, "x":961.752, "y":954.474, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349960, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":10, "lane_id":1, "cell_id":42, "x":304.415, "y":1306.26, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349976, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":15, "lane_id":3, "cell_id":42, "x":1524.02, "y":2293.57, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:49] [STDERR] [2026-01-22 23:05:49|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094349992, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":17, "lane_id":2, "cell_id":42, "x":1916.05, "y":2096.23, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350007, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":22, "lane_id":1, "cell_id":28, "x":286.627, "y":2124.83, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350023, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":25, "lane_id":1, "cell_id":28, "x":988, "y":2480, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350039, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":9, "in_network":true, "in_cross":false, "link_id":7, "lane_id":0, "cell_id":28, "x":2267.56, "y":1689.57, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350054, "data":{"pos":"veh_run", "step_num": 2, "result":{"id":10, "in_network":true, "in_cross":false, "link_id":3, "lane_id":0, "cell_id":14, "x":1579.98, "y":816.358, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350069, "data":{"pos":"controller_run", "step_num": 2, "result":{ "cross_id":7, "phases": [{"id":0, "color":"G", "x":950.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":960.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":930.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":924.5, "y":1310},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":924.5, "y":1300},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":924.5, "y":1330}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350085, "data":{"pos":"controller_run", "step_num": 2, "result":{ "cross_id":10, "phases": [{"id":0, "color":"G", "x":1540.68, "y":1995.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":1550.31, "y":1998.18},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":1521.4, "y":1990.15},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":1505.53, "y":2039.33},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":1508.17, "y":2029.68},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":1500.27, "y":2058.62}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350100, "data":{"pos":"controller_run", "step_num": 2, "result":{ "cross_id":11, "phases": [{"id":0, "color":"G", "x":957.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":967.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":937.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":932.499, "y":2121},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":932.499, "y":2111},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":932.499, "y":2141}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350100, "data":{ "pos":"sim_one_step", "over_step:":2, "next_step":3 }}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350116, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":56, "x":1584.16, "y":859.368, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350132, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":5, "lane_id":0, "cell_id":56, "x":2246.62, "y":943.091, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350147, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":7, "lane_id":2, "cell_id":56, "x":2257.66, "y":1656.56, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350163, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":56, "x":961.671, "y":968.476, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350179, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":10, "lane_id":1, "cell_id":56, "x":318.417, "y":1306.34, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350194, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":15, "lane_id":3, "cell_id":56, "x":1526.91, "y":2279.85, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350210, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":17, "lane_id":2, "cell_id":56, "x":1902.39, "y":2093.14, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350226, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":22, "lane_id":1, "cell_id":42, "x":300.646, "y":2124.75, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350241, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":25, "lane_id":2, "cell_id":28, "x":998, "y":2480, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350257, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":9, "in_network":true, "in_cross":false, "link_id":7, "lane_id":0, "cell_id":42, "x":2256.5, "y":1680.98, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350272, "data":{"pos":"veh_run", "step_num": 3, "result":{"id":10, "in_network":true, "in_cross":false, "link_id":3, "lane_id":0, "cell_id":28, "x":1584.53, "y":829.62, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350288, "data":{"pos":"controller_run", "step_num": 3, "result":{ "cross_id":7, "phases": [{"id":0, "color":"G", "x":950.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":960.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":930.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":924.5, "y":1310},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":924.5, "y":1300},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":924.5, "y":1330}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350303, "data":{"pos":"controller_run", "step_num": 3, "result":{ "cross_id":10, "phases": [{"id":0, "color":"G", "x":1540.68, "y":1995.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":1550.31, "y":1998.18},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":1521.4, "y":1990.15},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":1505.53, "y":2039.33},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":1508.17, "y":2029.68},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":1500.27, "y":2058.62}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350319, "data":{"pos":"controller_run", "step_num": 3, "result":{ "cross_id":11, "phases": [{"id":0, "color":"G", "x":957.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":967.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":937.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":932.499, "y":2121},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":932.499, "y":2111},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":932.499, "y":2141}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350319, "data":{ "pos":"sim_one_step", "over_step:":3, "next_step":4 }}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350334, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":70, "x":1588.71, "y":872.624, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350350, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":5, "lane_id":0, "cell_id":70, "x":2235.09, "y":951.07, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350366, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":7, "lane_id":2, "cell_id":70, "x":2246.6, "y":1647.96, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350381, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":70, "x":961.589, "y":982.477, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350397, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":10, "lane_id":1, "cell_id":70, "x":332.419, "y":1306.43, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350413, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":15, "lane_id":3, "cell_id":70, "x":1529.8, "y":2266.12, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350428, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":17, "lane_id":2, "cell_id":70, "x":1888.73, "y":2090.05, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350444, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":22, "lane_id":1, "cell_id":56, "x":314.665, "y":2124.66, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350459, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":25, "lane_id":2, "cell_id":42, "x":998, "y":2466, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350474, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":9, "in_network":true, "in_cross":false, "link_id":7, "lane_id":0, "cell_id":56, "x":2245.44, "y":1672.39, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350490, "data":{"pos":"veh_run", "step_num": 4, "result":{"id":10, "in_network":true, "in_cross":false, "link_id":3, "lane_id":0, "cell_id":42, "x":1589.08, "y":842.883, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350505, "data":{"pos":"controller_run", "step_num": 4, "result":{ "cross_id":7, "phases": [{"id":0, "color":"G", "x":950.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":960.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":930.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":924.5, "y":1310},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":924.5, "y":1300},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":924.5, "y":1330}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350520, "data":{"pos":"controller_run", "step_num": 4, "result":{ "cross_id":10, "phases": [{"id":0, "color":"G", "x":1540.68, "y":1995.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":1550.31, "y":1998.18},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":1521.4, "y":1990.15},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":1505.53, "y":2039.33},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":1508.17, "y":2029.68},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":1500.27, "y":2058.62}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350536, "data":{"pos":"controller_run", "step_num": 4, "result":{ "cross_id":11, "phases": [{"id":0, "color":"G", "x":957.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":967.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":937.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":932.499, "y":2121},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":932.499, "y":2111},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":932.499, "y":2141}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350536, "data":{ "pos":"sim_one_step", "over_step:":4, "next_step":5 }}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350551, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":84, "x":1593.26, "y":885.881, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350566, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":5, "lane_id":0, "cell_id":84, "x":2223.55, "y":959.049, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350582, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":7, "lane_id":2, "cell_id":84, "x":2235.53, "y":1639.36, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350597, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":84, "x":961.507, "y":996.478, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350612, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":10, "lane_id":1, "cell_id":84, "x":346.421, "y":1306.51, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350627, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":15, "lane_id":3, "cell_id":84, "x":1532.69, "y":2252.4, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350643, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":17, "lane_id":1, "cell_id":84, "x":1872.75, "y":2096.68, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350658, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":22, "lane_id":1, "cell_id":70, "x":328.684, "y":2124.58, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350674, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":25, "lane_id":2, "cell_id":56, "x":998, "y":2452, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350689, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":9, "in_network":true, "in_cross":false, "link_id":7, "lane_id":0, "cell_id":70, "x":2234.39, "y":1663.8, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350704, "data":{"pos":"veh_run", "step_num": 5, "result":{"id":10, "in_network":true, "in_cross":false, "link_id":3, "lane_id":0, "cell_id":56, "x":1593.63, "y":856.145, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350720, "data":{"pos":"controller_run", "step_num": 5, "result":{ "cross_id":7, "phases": [{"id":0, "color":"G", "x":950.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":960.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":930.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":924.5, "y":1310},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":924.5, "y":1300},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":924.5, "y":1330}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350735, "data":{"pos":"controller_run", "step_num": 5, "result":{ "cross_id":10, "phases": [{"id":0, "color":"G", "x":1540.68, "y":1995.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":1550.31, "y":1998.18},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":1521.4, "y":1990.15},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":1505.53, "y":2039.33},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":1508.17, "y":2029.68},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":1500.27, "y":2058.62}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350750, "data":{"pos":"controller_run", "step_num": 5, "result":{ "cross_id":11, "phases": [{"id":0, "color":"G", "x":957.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":967.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":937.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":932.499, "y":2121},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":932.499, "y":2111},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":932.499, "y":2141}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350751, "data":{ "pos":"sim_one_step", "over_step:":5, "next_step":6 }}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350765, "data":{"pos":"produce_veh", "step_num": 6, "result":[{"id":11, "link_id":22, "lane_id":2, "cell_id":0, "x":258.649, "y":2135, "speed":14, "router":"22 18 12 4"}]}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350781, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":98, "x":1597.8, "y":899.138, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350797, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":5, "lane_id":0, "cell_id":98, "x":2212.02, "y":967.029, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350813, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":7, "lane_id":2, "cell_id":98, "x":2224.46, "y":1630.77, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350828, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":98, "x":961.426, "y":1010.48, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350843, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":10, "lane_id":1, "cell_id":98, "x":360.423, "y":1306.59, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350860, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":15, "lane_id":3, "cell_id":98, "x":1535.58, "y":2238.68, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350875, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":17, "lane_id":1, "cell_id":98, "x":1859.07, "y":2093.59, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350890, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":22, "lane_id":1, "cell_id":84, "x":342.703, "y":2124.5, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350906, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":25, "lane_id":3, "cell_id":56, "x":1008, "y":2452, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350921, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":9, "in_network":true, "in_cross":false, "link_id":7, "lane_id":0, "cell_id":84, "x":2223.33, "y":1655.21, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350937, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":10, "in_network":true, "in_cross":false, "link_id":3, "lane_id":0, "cell_id":70, "x":1598.18, "y":869.407, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350952, "data":{"pos":"veh_run", "step_num": 6, "result":{"id":11, "in_network":true, "in_cross":false, "link_id":22, "lane_id":2, "cell_id":14, "x":272.666, "y":2134.91, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350967, "data":{"pos":"controller_run", "step_num": 6, "result":{ "cross_id":7, "phases": [{"id":0, "color":"G", "x":950.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":960.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":930.003, "y":1254.5},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":924.5, "y":1310},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":924.5, "y":1300},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":924.5, "y":1330}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350983, "data":{"pos":"controller_run", "step_num": 6, "result":{ "cross_id":10, "phases": [{"id":0, "color":"G", "x":1540.68, "y":1995.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":1550.31, "y":1998.18},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":1521.4, "y":1990.15},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":1505.53, "y":2039.33},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":1508.17, "y":2029.68},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":1500.27, "y":2058.62}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350998, "data":{"pos":"controller_run", "step_num": 6, "result":{ "cross_id":11, "phases": [{"id":0, "color":"G", "x":957.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":1, "color":"R", "x":967.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":2, "color":"G", "x":937.995, "y":2065.5},
+[23:05:50] [STDERR] {"id":3, "color":"R", "x":932.499, "y":2121},
+[23:05:50] [STDERR] {"id":4, "color":"R", "x":932.499, "y":2111},
+[23:05:50] [STDERR] {"id":5, "color":"R", "x":932.499, "y":2141}] }}}[0m
+[23:05:50] [STDERR] [2026-01-22 23:05:50|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094350998, "data":{ "pos":"sim_one_step", "over_step:":6, "next_step":7 }}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351014, "data":{"pos":"produce_veh", "step_num": 7, "result":[{"id":12, "link_id":25, "lane_id":2, "cell_id":0, "x":998, "y":2508, "speed":14, "router":"25 18 12 2"}]}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351029, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":112, "x":1602.35, "y":912.395, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351044, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":5, "lane_id":0, "cell_id":112, "x":2200.49, "y":975.008, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351060, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":7, "lane_id":2, "cell_id":112, "x":2213.39, "y":1622.17, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351075, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":112, "x":961.344, "y":1024.48, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351091, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":10, "lane_id":1, "cell_id":112, "x":374.425, "y":1306.68, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351107, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":15, "lane_id":2, "cell_id":112, "x":1528.67, "y":2223.05, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351123, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":17, "lane_id":1, "cell_id":112, "x":1845.4, "y":2090.49, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351139, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":22, "lane_id":1, "cell_id":98, "x":356.722, "y":2124.42, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351155, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":25, "lane_id":3, "cell_id":70, "x":1008, "y":2438, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351169, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":9, "in_network":true, "in_cross":false, "link_id":7, "lane_id":0, "cell_id":98, "x":2212.27, "y":1646.62, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351184, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":10, "in_network":true, "in_cross":false, "link_id":3, "lane_id":0, "cell_id":84, "x":1602.73, "y":882.67, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351200, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":11, "in_network":true, "in_cross":false, "link_id":22, "lane_id":2, "cell_id":28, "x":286.684, "y":2134.83, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351215, "data":{"pos":"veh_run", "step_num": 7, "result":{"id":12, "in_network":true, "in_cross":false, "link_id":25, "lane_id":2, "cell_id":14, "x":998, "y":2494, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351231, "data":{"pos":"controller_run", "step_num": 7, "result":{ "cross_id":7, "phases": [{"id":0, "color":"G", "x":950.003, "y":1254.5},
+[23:05:51] [STDERR] {"id":1, "color":"R", "x":960.003, "y":1254.5},
+[23:05:51] [STDERR] {"id":2, "color":"G", "x":930.003, "y":1254.5},
+[23:05:51] [STDERR] {"id":3, "color":"R", "x":924.5, "y":1310},
+[23:05:51] [STDERR] {"id":4, "color":"R", "x":924.5, "y":1300},
+[23:05:51] [STDERR] {"id":5, "color":"R", "x":924.5, "y":1330}] }}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351247, "data":{"pos":"controller_run", "step_num": 7, "result":{ "cross_id":10, "phases": [{"id":0, "color":"G", "x":1540.68, "y":1995.5},
+[23:05:51] [STDERR] {"id":1, "color":"R", "x":1550.31, "y":1998.18},
+[23:05:51] [STDERR] {"id":2, "color":"G", "x":1521.4, "y":1990.15},
+[23:05:51] [STDERR] {"id":3, "color":"R", "x":1505.53, "y":2039.33},
+[23:05:51] [STDERR] {"id":4, "color":"R", "x":1508.17, "y":2029.68},
+[23:05:51] [STDERR] {"id":5, "color":"R", "x":1500.27, "y":2058.62}] }}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351262, "data":{"pos":"controller_run", "step_num": 7, "result":{ "cross_id":11, "phases": [{"id":0, "color":"G", "x":957.995, "y":2065.5},
+[23:05:51] [STDERR] {"id":1, "color":"R", "x":967.995, "y":2065.5},
+[23:05:51] [STDERR] {"id":2, "color":"G", "x":937.995, "y":2065.5},
+[23:05:51] [STDERR] {"id":3, "color":"R", "x":932.499, "y":2121},
+[23:05:51] [STDERR] {"id":4, "color":"R", "x":932.499, "y":2111},
+[23:05:51] [STDERR] {"id":5, "color":"R", "x":932.499, "y":2141}] }}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351262, "data":{ "pos":"sim_one_step", "over_step:":7, "next_step":8 }}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351278, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":126, "x":1606.9, "y":925.652, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351293, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":5, "lane_id":0, "cell_id":126, "x":2188.96, "y":982.987, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351309, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":7, "lane_id":2, "cell_id":126, "x":2202.32, "y":1613.57, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351325, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":126, "x":961.262, "y":1038.48, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351340, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":10, "lane_id":1, "cell_id":126, "x":388.427, "y":1306.76, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351356, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":15, "lane_id":2, "cell_id":126, "x":1531.55, "y":2209.35, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351372, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":17, "lane_id":1, "cell_id":126, "x":1831.72, "y":2087.39, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351387, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":22, "lane_id":1, "cell_id":112, "x":370.741, "y":2124.33, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351402, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":25, "lane_id":3, "cell_id":84, "x":1008, "y":2424, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351418, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":9, "in_network":true, "in_cross":false, "link_id":7, "lane_id":1, "cell_id":98, "x":2218.37, "y":1638.7, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351434, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":10, "in_network":true, "in_cross":false, "link_id":3, "lane_id":0, "cell_id":98, "x":1607.28, "y":895.932, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351450, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":11, "in_network":true, "in_cross":false, "link_id":22, "lane_id":2, "cell_id":42, "x":300.702, "y":2134.75, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351466, "data":{"pos":"veh_run", "step_num": 8, "result":{"id":12, "in_network":true, "in_cross":false, "link_id":25, "lane_id":3, "cell_id":14, "x":1008, "y":2494, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351482, "data":{"pos":"controller_run", "step_num": 8, "result":{ "cross_id":7, "phases": [{"id":0, "color":"G", "x":950.003, "y":1254.5},
+[23:05:51] [STDERR] {"id":1, "color":"R", "x":960.003, "y":1254.5},
+[23:05:51] [STDERR] {"id":2, "color":"G", "x":930.003, "y":1254.5},
+[23:05:51] [STDERR] {"id":3, "color":"R", "x":924.5, "y":1310},
+[23:05:51] [STDERR] {"id":4, "color":"R", "x":924.5, "y":1300},
+[23:05:51] [STDERR] {"id":5, "color":"R", "x":924.5, "y":1330}] }}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351497, "data":{"pos":"controller_run", "step_num": 8, "result":{ "cross_id":10, "phases": [{"id":0, "color":"G", "x":1540.68, "y":1995.5},
+[23:05:51] [STDERR] {"id":1, "color":"R", "x":1550.31, "y":1998.18},
+[23:05:51] [STDERR] {"id":2, "color":"G", "x":1521.4, "y":1990.15},
+[23:05:51] [STDERR] {"id":3, "color":"R", "x":1505.53, "y":2039.33},
+[23:05:51] [STDERR] {"id":4, "color":"R", "x":1508.17, "y":2029.68},
+[23:05:51] [STDERR] {"id":5, "color":"R", "x":1500.27, "y":2058.62}] }}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351513, "data":{"pos":"controller_run", "step_num": 8, "result":{ "cross_id":11, "phases": [{"id":0, "color":"G", "x":957.995, "y":2065.5},
+[23:05:51] [STDERR] {"id":1, "color":"R", "x":967.995, "y":2065.5},
+[23:05:51] [STDERR] {"id":2, "color":"G", "x":937.995, "y":2065.5},
+[23:05:51] [STDERR] {"id":3, "color":"R", "x":932.499, "y":2121},
+[23:05:51] [STDERR] {"id":4, "color":"R", "x":932.499, "y":2111},
+[23:05:51] [STDERR] {"id":5, "color":"R", "x":932.499, "y":2141}] }}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351513, "data":{ "pos":"sim_one_step", "over_step:":8, "next_step":9 }}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351528, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":0, "in_network":true, "in_cross":false, "link_id":3, "lane_id":1, "cell_id":140, "x":1611.45, "y":938.909, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351544, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":1, "in_network":true, "in_cross":false, "link_id":5, "lane_id":0, "cell_id":140, "x":2177.43, "y":990.967, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351559, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":2, "in_network":true, "in_cross":false, "link_id":7, "lane_id":2, "cell_id":140, "x":2191.25, "y":1604.97, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351574, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":3, "in_network":true, "in_cross":false, "link_id":9, "lane_id":0, "cell_id":140, "x":961.181, "y":1052.48, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351589, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":4, "in_network":true, "in_cross":false, "link_id":10, "lane_id":1, "cell_id":140, "x":402.429, "y":1306.85, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351604, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":5, "in_network":true, "in_cross":false, "link_id":15, "lane_id":2, "cell_id":140, "x":1534.44, "y":2195.65, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351621, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":6, "in_network":true, "in_cross":false, "link_id":17, "lane_id":1, "cell_id":140, "x":1818.04, "y":2084.3, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351636, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":7, "in_network":true, "in_cross":false, "link_id":22, "lane_id":1, "cell_id":126, "x":384.76, "y":2124.25, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351651, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":8, "in_network":true, "in_cross":false, "link_id":25, "lane_id":3, "cell_id":98, "x":1008, "y":2410, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351667, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":9, "in_network":true, "in_cross":false, "link_id":7, "lane_id":1, "cell_id":112, "x":2207.3, "y":1630.1, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351683, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":10, "in_network":true, "in_cross":false, "link_id":3, "lane_id":0, "cell_id":112, "x":1611.83, "y":909.194, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351698, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":11, "in_network":true, "in_cross":false, "link_id":22, "lane_id":2, "cell_id":56, "x":314.72, "y":2134.66, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351713, "data":{"pos":"veh_run", "step_num": 9, "result":{"id":12, "in_network":true, "in_cross":false, "link_id":25, "lane_id":3, "cell_id":28, "x":1008, "y":2480, "cur_spd":14, "last_spd":14}}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351729, "data":{"pos":"controller_run", "step_num": 9, "result":{ "cross_id":7, "phases": [{"id":0, "color":"G", "x":950.003, "y":1254.5},
+[23:05:51] [STDERR] {"id":1, "color":"R", "x":960.003, "y":1254.5},
+[23:05:51] [STDERR] {"id":2, "color":"G", "x":930.003, "y":1254.5},
+[23:05:51] [STDERR] {"id":3, "color":"R", "x":924.5, "y":1310},
+[23:05:51] [STDERR] {"id":4, "color":"R", "x":924.5, "y":1300},
+[23:05:51] [STDERR] {"id":5, "color":"R", "x":924.5, "y":1330}] }}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351744, "data":{"pos":"controller_run", "step_num": 9, "result":{ "cross_id":10, "phases": [{"id":0, "color":"G", "x":1540.68, "y":1995.5},
+[23:05:51] [STDERR] {"id":1, "color":"R", "x":1550.31, "y":1998.18},
+[23:05:51] [STDERR] {"id":2, "color":"G", "x":1521.4, "y":1990.15},
+[23:05:51] [STDERR] {"id":3, "color":"R", "x":1505.53, "y":2039.33},
+[23:05:51] [STDERR] {"id":4, "color":"R", "x":1508.17, "y":2029.68},
+[23:05:51] [STDERR] {"id":5, "color":"R", "x":1500.27, "y":2058.62}] }}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351760, "data":{"pos":"controller_run", "step_num": 9, "result":{ "cross_id":11, "phases": [{"id":0, "color":"G", "x":957.995, "y":2065.5},
+[23:05:51] [STDERR] {"id":1, "color":"R", "x":967.995, "y":2065.5},
+[23:05:51] [STDERR] {"id":2, "color":"G", "x":937.995, "y":2065.5},
+[23:05:51] [STDERR] {"id":3, "color":"R", "x":932.499, "y":2121},
+[23:05:51] [STDERR] {"id":4, "color":"R", "x":932.499, "y":2111},
+[23:05:51] [STDERR] {"id":5, "color":"R", "x":932.499, "y":2141}] }}}[0m
+[23:05:51] [STDERR] [2026-01-22 23:05:51|0x00004b4c][info]	[34m[*] Send: {"type":"frontend", "ope":"simdata", "time":1769094351761, "data":{ "pos":"sim_one_step", "over_step:":9, "next_step":10 }}[0m
+[23:05:53] [STDERR] [2026-01-22 23:05:53|0x00006c2c][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"stop","time":1769094353135}[0m
+[23:05:53] [STDERR] [2026-01-22 23:05:53|0x00006c2c][debug]	[32m[#] Connected closed: localhost:3822/ws/exe/8f58a814e84c4bc6a42b22098bb2fa48[0m
+[23:05:53] [STDERR] [2026-01-22 23:05:53|0x00006c2c][info]	[34m[-] connect websocket to backend close...[0m
+[23:05:53] [STDERR] [2026-01-22 23:05:53|0x00006c2c][debug]	[32m[#] EXIT![0m
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] 3030CSimuFun::Add_Conflict: generate too many conflicts
+[23:05:53] [STDOUT] Dest lane can not be nothing

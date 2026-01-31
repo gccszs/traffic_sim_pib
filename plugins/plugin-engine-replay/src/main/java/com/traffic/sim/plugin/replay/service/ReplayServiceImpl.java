@@ -3,20 +3,27 @@ package com.traffic.sim.plugin.replay.service;
 import com.traffic.sim.common.dto.ReplayDataDTO;
 import com.traffic.sim.common.exception.BusinessException;
 import com.traffic.sim.common.response.PageResult;
+import com.traffic.sim.common.service.SimulationService;
 import com.traffic.sim.plugin.replay.config.ReplayPluginProperties;
 import com.traffic.sim.plugin.replay.dto.*;
 import com.traffic.sim.plugin.replay.entity.ReplayTask;
 import com.traffic.sim.plugin.replay.repository.ReplayTaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -33,6 +40,10 @@ public class ReplayServiceImpl implements ReplayService {
     private final ReplayTaskRepository replayTaskRepository;
     private final ReplayDataService replayDataService;
     private final ReplayPluginProperties properties;
+    private final MongoTemplate mongoTemplate;
+    
+    @Autowired(required = false)
+    private SimulationService simulationService;
     
     @Override
     @Transactional
@@ -114,6 +125,52 @@ public class ReplayServiceImpl implements ReplayService {
         // 从MongoDB获取回放数据
         return replayDataService.getReplayData(taskId, startStep, endStep);
     }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getReplayMapInfo(String simulationTaskId) {
+        // 直接从 MongoDB 的 map 集合查询地图数据
+        // 使用 taskId 作为查询条件
+        Query mapQuery = Query.query(Criteria.where("taskId").is(simulationTaskId));
+        
+        Map<String, Object> mapDocument = mongoTemplate.findOne(mapQuery, Map.class, "map");
+        
+        if (mapDocument == null) {
+            throw new BusinessException("未找到地图数据，simulationTaskId: " + simulationTaskId);
+        }
+        
+        log.info("Retrieved map info for simulation task: {}, mapId: {}", 
+                simulationTaskId, mapDocument.get("mapId"));
+        
+        return mapDocument;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getReplayInfo(String simulationTaskId) {
+        // 从 simulation_data 集合获取仿真数据统计信息
+        Query query = Query.query(Criteria.where("taskId").is(simulationTaskId));
+        Map<String, Object> simulationData = mongoTemplate.findOne(query, Map.class, "simulation_data");
+        
+        if (simulationData == null) {
+            throw new BusinessException("未找到仿真数据，simulationTaskId: " + simulationTaskId);
+        }
+        
+        // 构建回放信息
+        Map<String, Object> replayInfo = new HashMap<>();
+        replayInfo.put("simulationTaskId", simulationTaskId);
+        replayInfo.put("totalSteps", simulationData.get("totalSteps"));
+        replayInfo.put("startTime", simulationData.get("startTime"));
+        replayInfo.put("endTime", simulationData.get("endTime"));
+        replayInfo.put("userId", simulationData.get("userId"));
+        
+        log.info("Retrieved replay info for simulation task: {}, totalSteps: {}", 
+                simulationTaskId, simulationData.get("totalSteps"));
+        
+        return replayInfo;
+    }
+    
+    // ========== 以下是旧的回放任务管理方法，保留用于兼容 ==========
     
     @Override
     @Transactional
@@ -211,6 +268,163 @@ public class ReplayServiceImpl implements ReplayService {
         dto.setCreateTime(replayTask.getCreateTime());
         dto.setUpdateTime(replayTask.getUpdateTime());
         return dto;
+    }
+    
+    // ========== 回放历史记录管理方法实现 ==========
+    
+    @Override
+    public Page<ReplayTask> getReplayHistoryList(Long userId, int page, int size) {
+        log.info("Getting replay history list for user: {}, page: {}, size: {}", userId, page, size);
+        
+        Pageable pageable = PageRequest.of(page, size, 
+                Sort.by(Sort.Direction.DESC, "createTime"));
+        
+        Page<ReplayTask> replayTasks = replayTaskRepository.findByUserId(userId, pageable);
+        
+        log.info("Found {} replay history records for user: {}", replayTasks.getTotalElements(), userId);
+        
+        return replayTasks;
+    }
+    
+    @Override
+    public List<ReplayTask> getReplayHistoryBySimulationTask(String simulationTaskId) {
+        log.info("Getting replay history for simulation task: {}", simulationTaskId);
+        
+        List<ReplayTask> replayTasks = replayTaskRepository.findBySimulationTaskId(simulationTaskId);
+        
+        log.info("Found {} replay history records for simulation task: {}", 
+                replayTasks.size(), simulationTaskId);
+        
+        return replayTasks;
+    }
+    
+    @Override
+    public ReplayTask getReplayHistoryDetail(String replayTaskId) {
+        log.info("Getting replay history detail for: {}", replayTaskId);
+        
+        ReplayTask replayTask = replayTaskRepository.findById(replayTaskId)
+                .orElseThrow(() -> new BusinessException("回放任务不存在"));
+        
+        return replayTask;
+    }
+    
+    @Override
+    @Transactional
+    public void deleteReplayHistory(String replayTaskId, Long userId) {
+        log.info("Deleting replay history: {}, user: {}", replayTaskId, userId);
+        
+        // 验证权限
+        ReplayTask replayTask = replayTaskRepository.findByTaskIdAndUserId(replayTaskId, userId)
+                .orElseThrow(() -> new BusinessException("回放任务不存在或无权限"));
+        
+        // 删除记录
+        replayTaskRepository.delete(replayTask);
+        
+        log.info("Deleted replay history: {}", replayTaskId);
+    }
+    
+    @Override
+    public Map<String, Object> getReplayStats(Long userId) {
+        log.info("Getting replay stats for user: {}", userId);
+        
+        long totalCount = replayTaskRepository.countByUserId(userId);
+        
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalReplayCount", totalCount);
+        stats.put("userId", userId);
+        
+        log.info("User {} has {} replay records", userId, totalCount);
+        
+        return stats;
+    }
+    
+    @Override
+    @Transactional
+    public String createReplayHistory(String simulationTaskId, Long userId) {
+        log.info("Creating replay history for simulation task: {}, user: {}", simulationTaskId, userId);
+        
+        try {
+            String replayTaskId = UUID.randomUUID().toString().replace("-", "");
+            
+            ReplayTask replayTask = new ReplayTask();
+            replayTask.setTaskId(replayTaskId);
+            replayTask.setSimulationTaskId(simulationTaskId);
+            replayTask.setName("回放-" + simulationTaskId.substring(0, Math.min(8, simulationTaskId.length())));
+            replayTask.setStatus(ReplayTask.ReplayStatus.CREATED.getCode());
+            replayTask.setCurrentStep(0L);
+            replayTask.setTotalSteps(0L);
+            replayTask.setPlaybackSpeed(1.0);
+            replayTask.setUserId(userId != null ? userId : 0L);
+            
+            replayTaskRepository.save(replayTask);
+            
+            log.info("Created replay history: replayTaskId={}, simulationTaskId={}, userId={}", 
+                    replayTaskId, simulationTaskId, userId);
+            
+            return replayTaskId;
+        } catch (Exception e) {
+            log.error("Failed to create replay history for simulationTaskId: {}", simulationTaskId, e);
+            // 返回一个临时ID，避免影响回放功能
+            return "temp-" + UUID.randomUUID().toString().replace("-", "");
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void updateReplayHistoryStatus(String replayTaskId, String status, Long currentStep) {
+        if (replayTaskId == null || replayTaskId.startsWith("temp-")) {
+            return;
+        }
+        
+        try {
+            replayTaskRepository.findById(replayTaskId).ifPresent(task -> {
+                task.setStatus(status);
+                task.setCurrentStep(currentStep);
+                replayTaskRepository.save(task);
+                log.debug("Updated replay history status: replayTaskId={}, status={}, currentStep={}", 
+                        replayTaskId, status, currentStep);
+            });
+        } catch (Exception e) {
+            log.error("Failed to update replay history status: replayTaskId={}", replayTaskId, e);
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void updateReplayHistoryTotalSteps(String replayTaskId, Long totalSteps) {
+        if (replayTaskId == null || replayTaskId.startsWith("temp-")) {
+            return;
+        }
+        
+        try {
+            replayTaskRepository.findById(replayTaskId).ifPresent(task -> {
+                task.setTotalSteps(totalSteps);
+                replayTaskRepository.save(task);
+                log.info("Updated replay history total steps: replayTaskId={}, totalSteps={}", 
+                        replayTaskId, totalSteps);
+            });
+        } catch (Exception e) {
+            log.error("Failed to update replay history total steps: replayTaskId={}", replayTaskId, e);
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void updateReplayHistorySpeed(String replayTaskId, Double speed) {
+        if (replayTaskId == null || replayTaskId.startsWith("temp-")) {
+            return;
+        }
+        
+        try {
+            replayTaskRepository.findById(replayTaskId).ifPresent(task -> {
+                task.setPlaybackSpeed(speed);
+                replayTaskRepository.save(task);
+                log.debug("Updated replay history speed: replayTaskId={}, speed={}", 
+                        replayTaskId, speed);
+            });
+        } catch (Exception e) {
+            log.error("Failed to update replay history speed: replayTaskId={}", replayTaskId, e);
+        }
     }
 }
 

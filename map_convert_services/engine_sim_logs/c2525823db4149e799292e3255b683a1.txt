@@ -1,0 +1,22 @@
+启动命令: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services\SimEngPI\SimulationEngine.exe --log=0 --sid=ff --sfile=c2525823db4149e799292e3255b683a1 --road=map_b6f8aecc.xml --ip=localhost --port=3822 --noplugin
+工作目录: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services
+输出模式: file
+启动时间: 2026-01-21 23:23:04
+平台: win32
+--------------------------------------------------------------------------------
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][info]	[34m[+] Init BLog Over![0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][info]	[34m[+] SetWorkDir: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services\SimEngPI[0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][info]	[34m[+] Set SimID ff Over![0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][info]	[34m[+] Set SimFiles Path: c2525823db4149e799292e3255b683a1 Over![0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][info]	[34m[+] Use RoadNetwork File: c2525823db4149e799292e3255b683a1\map_b6f8aecc.xml[0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][info]	[34m[+] Use OD File: c2525823db4149e799292e3255b683a1\od.xml[0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][info]	[34m[-] Launch as no plug-in![0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][info]	[34m[+] Base Initialization Complete![0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][debug]	[32m[#] Connected to localhost:3822/ws/exe/c2525823db4149e799292e3255b683a1[0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][info]	[34m[+] Connect websocket to backend ok...[0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"hi","time":1769008985095}[0m
+[23:23:05] [STDERR] [2026-01-21 23:23:05|0x00006944][info]	[34m[+] Init backend manager ok![0m
+进程已启动，PID: 35828
+[23:24:57] [STDERR] [2026-01-21 23:24:57|0x00006944][error]	[31m[!] Error in receive_text: End of file [asio.misc:2][0m
+[23:24:57] [STDERR] [2026-01-21 23:24:57|0x00006944][error]	[31m[!] ws recv msg is empty! something went wrong...[0m
+[23:24:57] [STDERR] [2026-01-21 23:24:57|0x00006944][error]	[31m[!] Error in close: 由于线程退出或应用程序请求，已中止 I/O 操作。 [system:995 at D:\Works\GraduationDesign\SimEngPI\vcpkg_installed\x64-windows\x64-windows\include\boost\beast\websocket\impl\stream_impl.hpp:355:13 in function 'bool __cdecl boost::beast::websocket::stream<class boost::asio::basic_stream_socket<class boost::asio::ip::tcp,class boost::asio::any_io_executor>,1>::impl_type::check_stop_now(class boost::system::error_code &)'][0m

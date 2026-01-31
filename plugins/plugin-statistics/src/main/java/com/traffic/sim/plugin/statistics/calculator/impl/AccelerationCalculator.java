@@ -25,8 +25,13 @@ public class AccelerationCalculator implements StatisticsCalculator {
                                      StatisticsContext context) {
         var vehicles = currentStep.getVehicles();
         
+        StatisticsResult result = new StatisticsResult();
+        
         if (vehicles.isEmpty()) {
-            return StatisticsResult.empty();
+            result.set("acc_min", 0.0);
+            result.set("acc_max", 0.0);
+            result.set("acc_ave", 0.0);
+            return result;
         }
         
         double accSum = 0.0;
@@ -47,14 +52,16 @@ public class AccelerationCalculator implements StatisticsCalculator {
         }
         
         if (validCount == 0) {
-            return StatisticsResult.empty();
+            result.set("acc_min", 0.0);
+            result.set("acc_max", 0.0);
+            result.set("acc_ave", 0.0);
+            return result;
         }
         
         double accAve = accSum / validCount;
         
-        StatisticsResult result = new StatisticsResult();
-        result.set("acc_min", accMin == Double.MAX_VALUE ? 0 : accMin);
-        result.set("acc_max", accMax == Double.MIN_VALUE ? 0 : accMax);
+        result.set("acc_min", accMin);
+        result.set("acc_max", accMax);
         result.set("acc_ave", accAve);
         
         return result;

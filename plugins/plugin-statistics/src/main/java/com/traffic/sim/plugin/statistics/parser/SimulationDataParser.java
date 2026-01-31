@@ -30,8 +30,11 @@ public class SimulationDataParser {
             SimulationStepData stepData = new SimulationStepData();
             stepData.setRawData(rawData);
             
-            // 提取步数
+            // 提取步数 - 尝试多个可能的字段名
             Object stepObj = rawData.get("step");
+            if (stepObj == null) {
+                stepObj = rawData.get("over_step:");
+            }
             if (stepObj instanceof Number) {
                 stepData.setStep(((Number) stepObj).longValue());
             }
@@ -66,19 +69,54 @@ public class SimulationDataParser {
     private List<SimulationStepData.Vehicle> parseVehicles(Map<String, Object> rawData) {
         List<SimulationStepData.Vehicle> vehicles = new ArrayList<>();
         
+        // 尝试多个可能的字段名
         Object vehiclesObj = rawData.get("vehicles");
+        if (vehiclesObj == null) {
+            vehiclesObj = rawData.get("cars");
+        }
+        if (vehiclesObj == null) {
+            vehiclesObj = rawData.get("car");
+        }
+        
         if (vehiclesObj instanceof List) {
             List<Map<String, Object>> vehicleList = (List<Map<String, Object>>) vehiclesObj;
+            
             for (Map<String, Object> vehicleMap : vehicleList) {
                 SimulationStepData.Vehicle vehicle = new SimulationStepData.Vehicle();
                 
                 vehicle.setId(getInteger(vehicleMap, "id"));
-                vehicle.setSpeed(getDouble(vehicleMap, "speed"));
-                vehicle.setAcceleration(getDouble(vehicleMap, "acceleration"));
+                
+                // 尝试获取速度 - 优先 speed，然后 cur_spd
+                Double speed = getDouble(vehicleMap, "speed");
+                if (speed == null) {
+                    speed = getDouble(vehicleMap, "cur_spd");
+                }
+                vehicle.setSpeed(speed);
+                
+                // 尝试获取加速度
+                Double acceleration = getDouble(vehicleMap, "acceleration");
+                if (acceleration == null) {
+                    acceleration = getDouble(vehicleMap, "acc");
+                }
+                vehicle.setAcceleration(acceleration);
+                
                 vehicle.setX(getDouble(vehicleMap, "x"));
                 vehicle.setY(getDouble(vehicleMap, "y"));
-                vehicle.setRoadId(getInteger(vehicleMap, "roadId"));
-                vehicle.setLaneId(getInteger(vehicleMap, "laneId"));
+                
+                // 尝试获取道路ID
+                Integer roadId = getInteger(vehicleMap, "roadId");
+                if (roadId == null) {
+                    roadId = getInteger(vehicleMap, "link_id");
+                }
+                vehicle.setRoadId(roadId);
+                
+                // 尝试获取车道ID
+                Integer laneId = getInteger(vehicleMap, "laneId");
+                if (laneId == null) {
+                    laneId = getInteger(vehicleMap, "lane_id");
+                }
+                vehicle.setLaneId(laneId);
+                
                 vehicle.setType(getString(vehicleMap, "type"));
                 
                 // 保留原始属性

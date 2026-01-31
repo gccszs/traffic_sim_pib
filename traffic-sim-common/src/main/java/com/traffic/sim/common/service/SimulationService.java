@@ -15,13 +15,33 @@ import java.util.Map;
 public interface SimulationService {
     
     /**
-     * 创建仿真任务
+     * 准备仿真任务（生成taskId并创建session）
+     * 
+     * @param taskId 任务ID（由Controller生成）
+     * @param userId 用户ID
+     */
+    void prepareSimulation(String taskId, String userId);
+    
+    /**
+     * 启动仿真引擎
+     * 
+     * @param request 创建仿真请求
+     * @param userId 用户ID
+     * @param taskId 任务ID（由prepare接口生成）
+     * @return 仿真任务DTO
+     */
+    SimulationTaskDTO startSimulation(CreateSimulationRequest request, String userId, String taskId);
+    
+    /**
+     * 创建仿真任务（兼容旧接口，内部调用prepare和start）
      * 
      * @param request 创建仿真请求
      * @param userId 用户ID
      * @param sessionId 会话ID
      * @return 仿真任务DTO
+     * @deprecated 请使用 prepareSimulation 和 startSimulation 两步流程
      */
+    @Deprecated
     SimulationTaskDTO createSimulation(CreateSimulationRequest request, String userId, String sessionId);
     
     /**

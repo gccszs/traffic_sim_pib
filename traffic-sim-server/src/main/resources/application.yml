@@ -212,6 +212,18 @@ plugin:
     storage:
       # 地图文件存储路径（开发环境使用相对路径，生产环境建议使用绝对路径）
       base-path: ./maps
+  
+  # 回放插件配置
+  replay:
+    sse:
+      # SSE 回放基础延迟时间（毫秒）
+      # 每推送一步数据的基础延迟，实际延迟 = base-delay-ms / speed
+      # 例如：base-delay-ms=100, speed=2.0, 实际延迟=50ms
+      base-delay-ms: 100
+      # SSE 连接超时时间（毫秒）
+      timeout-ms: 1800000  # 30分钟
+      # 暂停时的状态检查间隔（毫秒）
+      pause-check-interval-ms: 100
 
 # 日志配置
 logging:

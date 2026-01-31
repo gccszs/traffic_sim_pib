@@ -1,0 +1,23 @@
+启动命令: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services\SimEngPI\SimulationEngine.exe --log=0 --sid=ee --sfile=f8540ca95ddc487bb9e6433291306a51 --road=map_e674b58a.xml --ip=localhost --port=3822 --noplugin
+工作目录: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services
+输出模式: file
+启动时间: 2026-01-22 17:17:08
+平台: win32
+--------------------------------------------------------------------------------
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][info]	[34m[+] Init BLog Over![0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][info]	[34m[+] SetWorkDir: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services\SimEngPI[0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][info]	[34m[+] Set SimID ee Over![0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][info]	[34m[+] Set SimFiles Path: f8540ca95ddc487bb9e6433291306a51 Over![0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][info]	[34m[+] Use RoadNetwork File: f8540ca95ddc487bb9e6433291306a51\map_e674b58a.xml[0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][info]	[34m[+] Use OD File: f8540ca95ddc487bb9e6433291306a51\od.xml[0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][info]	[34m[-] Launch as no plug-in![0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][info]	[34m[+] Base Initialization Complete![0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][debug]	[32m[#] Connected to localhost:3822/ws/exe/f8540ca95ddc487bb9e6433291306a51[0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][info]	[34m[+] Connect websocket to backend ok...[0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"hi","time":1769073432670}[0m
+[17:17:12] [STDERR] [2026-01-22 17:17:12|0x00005f84][info]	[34m[+] Init backend manager ok![0m
+进程已启动，PID: 18520
+[17:17:52] [STDERR] [2026-01-22 17:17:52|0x00005f84][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"stop","time":1769073471634}[0m
+[17:17:52] [STDERR] [2026-01-22 17:17:52|0x00005f84][debug]	[32m[#] Connected closed: localhost:3822/ws/exe/f8540ca95ddc487bb9e6433291306a51[0m
+[17:17:52] [STDERR] [2026-01-22 17:17:52|0x00005f84][info]	[34m[-] connect websocket to backend close...[0m
+[17:17:52] [STDERR] [2026-01-22 17:17:52|0x00005f84][debug]	[32m[#] EXIT![0m

@@ -44,8 +44,21 @@ message SimInfo {
 }
 
 message FixedOD {
-  repeated OriginOD od = 1;
-  repeated SignalGroup sg = 2;
+  int32 roadNum = 1;
+  int32 laneNum = 2;
+  int32 controllerNum = 3;
+  int32 followModel = 4;
+  int32 changeLaneModel = 5;
+  repeated Flow flows = 6;
+  repeated OriginOD od = 7;
+  repeated SignalGroup sg = 8;
+}
+
+message Flow {
+  int32 roadId = 1;
+  int32 policy = 2;
+  int32 demand = 3;
+  int32 extra = 4;
 }
 
 message OriginOD {
@@ -61,9 +74,10 @@ message Destination {
 message SignalGroup {
   int32 crossId = 1;
   int32 cycleTime = 2;
-  int32 ewStraight = 3;
-  int32 snStraight = 4;
+  int32 ewLeft = 3;
+  int32 ewStraight = 4;
   int32 snLeft = 5;
+  int32 snStraight = 6;
 }
 
 message ControlView {
