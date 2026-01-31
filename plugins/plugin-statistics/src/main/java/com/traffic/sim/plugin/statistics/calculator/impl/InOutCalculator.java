@@ -52,11 +52,8 @@ public class InOutCalculator implements StatisticsCalculator {
         // 当前车辆总数
         int carNumber = currentVehicles.size();
         
-        // 计算拥堵指数
-        double roadCapacity = context.getRoadCapacity() != null ? 
-            context.getRoadCapacity() : 1000.0; // 默认容量
-        double jamIndex = roadCapacity > 0 ? 
-            (carNumber * 100.0 / roadCapacity) : 0.0;
+        // 计算拥堵指数（基于速度和密度的综合指标）
+        double jamIndex = calculateCongestionIndex(currentVehicles, context);
         
         StatisticsResult result = new StatisticsResult();
         result.set("car_number", carNumber);
@@ -64,18 +61,66 @@ public class InOutCalculator implements StatisticsCalculator {
         result.set("car_out", carOut);
         result.set("jam_index", jamIndex);
         
-        // 计算累计流量（转换为小时流量）
+        // 计算累计流量（累积总数，不转换为小时流量）
         var buffer = context.getBuffer();
         buffer.addOutFlow(carOut);
         buffer.addInFlow(carIn);
         
-        double carsInPerHour = UnitConverter.flowToPerHour(buffer.getAverageInFlow());
-        double carsOutPerHour = UnitConverter.flowToPerHour(buffer.getAverageOutFlow());
+        // 获取累积总数
+        int totalCarsIn = buffer.getTotalInFlow();
+        int totalCarsOut = buffer.getTotalOutFlow();
         
-        result.set("global_cars_in", carsInPerHour);
-        result.set("global_cars_out", carsOutPerHour);
+        result.set("cars_in", totalCarsIn);  // 累积进入车辆总数
+        result.set("cars_out", totalCarsOut);  // 累积离开车辆总数
         
         return result;
+    }
+    
+    /**
+     * 计算拥堵指数（基于速度的简化算法）
+     * 返回值范围：0-1（前端显示时会乘以100）
+     * 0 = 完全畅通，1 = 严重拥堵
+     */
+    private double calculateCongestionIndex(List<SimulationStepData.Vehicle> vehicles, 
+                                           StatisticsContext context) {
+        if (vehicles.isEmpty()) {
+            return 0.0;
+        }
+        
+        // 计算平均速度（m/s）
+        double totalSpeed = 0.0;
+        int validSpeedCount = 0;
+        
+        for (var vehicle : vehicles) {
+            Double speed = vehicle.getSpeed();
+            if (speed != null && speed >= 0) {
+                totalSpeed += speed;
+                validSpeedCount++;
+            }
+        }
+        
+        if (validSpeedCount == 0) {
+            return 0.0;
+        }
+        
+        double averageSpeed = totalSpeed / validSpeedCount;
+        
+        // 基于速度的拥堵指数
+        // 自由流速度为14 m/s（约50 km/h，城市道路典型值）
+        double freeFlowSpeed = 14.0; // m/s
+        
+        // 拥堵指数 = 1 - (实际速度 / 自由流速度)
+        // 当速度 = 自由流速度时，拥堵指数 = 0（畅通）
+        // 当速度 = 0时，拥堵指数 = 1（完全拥堵）
+        double jamIndex = 1.0 - (averageSpeed / freeFlowSpeed);
+        
+        // 限制在0-1之间
+        jamIndex = Math.min(1.0, Math.max(0.0, jamIndex));
+        
+        log.debug("Congestion calculation: carNumber={}, avgSpeed={} m/s ({} km/h), freeFlowSpeed={} m/s, jamIndex={}", 
+            vehicles.size(), averageSpeed, averageSpeed * 3.6, freeFlowSpeed, jamIndex);
+        
+        return jamIndex;
     }
     
     @Override
@@ -86,7 +131,7 @@ public class InOutCalculator implements StatisticsCalculator {
     @Override
     public List<String> getCalculatedFields() {
         return Arrays.asList("car_number", "car_in", "car_out", 
-                           "jam_index", "global_cars_in", "global_cars_out");
+                           "jam_index", "cars_in", "cars_out");
     }
 }
 

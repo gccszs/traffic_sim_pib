@@ -19,11 +19,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-        format_sql: true
+        format_sql: false
 
   # MongoDB配置
   data:
@@ -66,11 +66,19 @@ spring:
 server:
   port: 3822
   servlet:
-    context-path: /api
+    # 暂时注释掉 context-path，测试 WebSocket 是否能工作
+    # context-path: /api
     encoding:
       charset: UTF-8
       enabled: true
       force: true
+  # Tomcat WebSocket 配置
+  tomcat:
+    connection-timeout: 60000  # 连接超时 60秒
+    max-connections: 10000
+    threads:
+      max: 200
+      min-spare: 10
 
 # SpringDoc OpenAPI配置
 springdoc:
@@ -136,7 +144,9 @@ app:
   # CORS 跨域配置
   cors:
     # 允许的跨域来源（多个用逗号分隔）
-    allowed-origins: http://127.0.0.1:7144,http://localhost:7144
+    # 开发环境：使用 * 允许所有来源
+    # 生产环境：指定具体的域名，如 http://192.168.1.100:7144,http://example.com
+    allowed-origins: "*"
   
   # 引擎服务配置
   engine:
@@ -168,25 +178,26 @@ plugin:
       enabled: false
     interceptor:
       exclude-paths:
-        - /api/auth/login
-        - /api/auth/register
-        - /api/auth/captcha
-        - /api/auth/refresh
+        - /auth/login
+        - /auth/register
+        - /auth/captcha
+        - /auth/refresh
         - /swagger-ui/**
         - /swagger-ui.html
-        - /api/v3/api-docs/**
-        - /api/error
-        - /api/actuator/**
+        - /v3/api-docs/**
         - /error
+        - /actuator/**
         - /ws/frontend
         - /ws/exe/**
+        - /api/ws/frontend
+        - /api/ws/exe/**
   
   # 引擎管理插件配置
   engine-manager:
     websocket:
-      frontend-path: /ws/frontend
-      # 注意：Spring WebSocket 使用 Ant-style 路径匹配，不支持 {exe_id} 语法
-      # 使用 /* 匹配 exe_id
+      # 注意：Spring WebSocket 使用 Ant-style 路径匹配
+      # 使用 /* 匹配单层路径参数
+      frontend-path: /ws/frontend/*
       engine-path: /ws/exe/*
       # WebSocket 允许的跨域来源
       # 注意：仿真引擎是本地程序，需要允许所有来源
@@ -201,6 +212,18 @@ plugin:
     storage:
       # 地图文件存储路径（开发环境使用相对路径，生产环境建议使用绝对路径）
       base-path: ./maps
+  
+  # 回放插件配置
+  replay:
+    sse:
+      # SSE 回放基础延迟时间（毫秒）
+      # 每推送一步数据的基础延迟，实际延迟 = base-delay-ms / speed
+      # 例如：base-delay-ms=100, speed=2.0, 实际延迟=50ms
+      base-delay-ms: 100
+      # SSE 连接超时时间（毫秒）
+      timeout-ms: 1800000  # 30分钟
+      # 暂停时的状态检查间隔（毫秒）
+      pause-check-interval-ms: 100
 
 # 日志配置
 logging:

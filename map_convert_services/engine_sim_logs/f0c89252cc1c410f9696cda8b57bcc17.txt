@@ -1,0 +1,28 @@
+启动命令: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services\SimEngPI\SimulationEngine.exe --log=0 --sid=rg --sfile=f0c89252cc1c410f9696cda8b57bcc17 --road=map_6d03a1a6.xml --ip=localhost --port=3822 --noplugin
+工作目录: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services
+输出模式: file
+启动时间: 2026-01-22 19:55:59
+平台: win32
+--------------------------------------------------------------------------------
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][info]	[34m[+] Init BLog Over![0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][info]	[34m[+] SetWorkDir: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services\SimEngPI[0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][info]	[34m[+] Set SimID rg Over![0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][info]	[34m[+] Set SimFiles Path: f0c89252cc1c410f9696cda8b57bcc17 Over![0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][info]	[34m[+] Use RoadNetwork File: f0c89252cc1c410f9696cda8b57bcc17\map_6d03a1a6.xml[0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][info]	[34m[+] Use OD File: f0c89252cc1c410f9696cda8b57bcc17\od.xml[0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][info]	[34m[-] Launch as no plug-in![0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][info]	[34m[+] Base Initialization Complete![0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][debug]	[32m[#] Connected to localhost:3822/ws/exe/f0c89252cc1c410f9696cda8b57bcc17[0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][info]	[34m[+] Connect websocket to backend ok...[0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"hi","time":1769082959349}[0m
+[19:55:59] [STDERR] [2026-01-22 19:55:59|0x00000ee8][info]	[34m[+] Init backend manager ok![0m
+进程已启动，PID: 21248
+[19:56:04] [STDERR] [2026-01-22 19:56:04|0x00000ee8][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"setdelay","time":1769082963969,"data":{"Delay":53}}[0m
+[19:56:04] [STDERR] [2026-01-22 19:56:04|0x00000ee8][info]	[34m[*] Set New Delay: 53[0m
+[19:56:04] [STDERR] [2026-01-22 19:56:04|0x00000ee8][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1769082964265, "data":{"result": "setdelay_ok"}}[0m
+[19:56:05] [STDERR] [2026-01-22 19:56:05|0x00000ee8][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"setmaxstep","time":1769082964836,"data":{"Step":55}}[0m
+[19:56:05] [STDERR] [2026-01-22 19:56:05|0x00000ee8][info]	[34m[+] Set Max Sim Step: 55[0m
+[19:56:05] [STDERR] [2026-01-22 19:56:05|0x00000ee8][info]	[34m[*] Send: {"type":"frontend", "ope":"handleope", "time":1769082965128, "data":{"result": "setmaxstep_ok"}}[0m
+[20:18:59] [STDERR] [2026-01-22 20:18:59|0x00000ee8][error]	[31m[!] Error in receive_text: 远程主机强迫关闭了一个现有的连接。 [system:10054][0m
+[20:18:59] [STDERR] [2026-01-22 20:18:59|0x00000ee8][error]	[31m[!] ws recv msg is empty! something went wrong...[0m
+[20:18:59] [STDERR] [2026-01-22 20:18:59|0x00000ee8][error]	[31m[!] Error in close: 由于线程退出或应用程序请求，已中止 I/O 操作。 [system:995 at D:\Works\GraduationDesign\SimEngPI\vcpkg_installed\x64-windows\x64-windows\include\boost\beast\websocket\impl\stream_impl.hpp:355:13 in function 'bool __cdecl boost::beast::websocket::stream<class boost::asio::basic_stream_socket<class boost::asio::ip::tcp,class boost::asio::any_io_executor>,1>::impl_type::check_stop_now(class boost::system::error_code &)'][0m

@@ -1,0 +1,138 @@
+{
+    "simInfo": {
+        "name": "ff",
+        "map_json": {
+            "Demand": [
+                {
+                    "Time": 0,
+                    "Value": 5
+                }
+            ],
+            "MarginalPoint": [
+                {
+                    "Object_ID": 0,
+                    "Object_Type": "M",
+                    "Object_Label": "M0",
+                    "x": 1580,
+                    "y": 801,
+                    "Road_ID": 4
+                }
+            ],
+            "Cross": [
+                {
+                    "Cross_Type": 3,
+                    "Object_ID": 0,
+                    "Object_Type": "C",
+                    "Object_Label": "C0",
+                    "Cross_Id": 1,
+                    "Cross_Radius": 50,
+                    "Connected_Segment_Number": 5,
+                    "x": 1748,
+                    "y": 1297
+                }
+            ],
+            "Link": [
+                {
+                    "Object_ID": 0,
+                    "Object_Type": "R",
+                    "Object_Label": "R0",
+                    "Road_ID": 2,
+                    "Lane_Number": 4,
+                    "Guidance_or_Not": 0,
+                    "Detector_Location": {
+                        "One": 0,
+                        "Two": 29,
+                        "Three": -11
+                    },
+                    "Link_Start": {
+                        "Object_Type": "C",
+                        "Object_ID": 1
+                    },
+                    "Link_End": {
+                        "Object_Type": "C",
+                        "Object_ID": 0
+                    },
+                    "Is_Origin": 0,
+                    "Is_Dest": 0,
+                    "Is_Curve": 0,
+                    "Limited_Speed": 14,
+                    "Path_ID": 0
+                }
+            ],
+            "Lane": [
+                {
+                    "Link_ID": 0,
+                    "Lane_ID": 0,
+                    "Left_Turn": 1,
+                    "Straight_Turn": 0,
+                    "Right_Turn": 0
+                }
+            ],
+            "Controller": [
+                {
+                    "Cross_ID": 1,
+                    "Cycle_Time": 200,
+                    "Phase_Number": 6,
+                    "Phase": [
+                        {
+                            "Phase_ID": 0,
+                            "Direction": 1,
+                            "Green_Percent": 25,
+                            "Green_Start_Time_Percent": 25,
+                            "Connect_Link_ID": {
+                                "A": 9,
+                                "B": 21
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Baseline": [
+                {
+                    "Path_ID": 0,
+                    "Point_Count": 2,
+                    "Points": "1005 1295,1625 1298,"
+                }
+            ]
+        },
+        "map_pic": "data:image/png;base64,base64编码",
+        "fixed_od": {
+            "road_num": 13,
+            "lane_num": 4,
+            "controller_num": 3,
+            "follow_model": 1,
+            "change_lane_model": 1,
+            "flows": [
+                {
+                    "road_id": 3,
+                    "policy": 1,
+                    "demand": 5,
+                    "extra": 1
+                }
+            ],
+            "od": [
+                {
+                    "orgin_id": 3,
+                    "dist": [
+                        {
+                            "dest": 2,
+                            "percent": 0.1111111111111111
+                        }
+                    ]
+                } 
+            ],
+            "sg": [
+                {
+                    "cross_id": 1,
+                    "cycle_time": 60,
+                    "ew_left": 15,
+                    "ew_straight": 15,
+                    "sn_left": 15,
+                    "sn_straight": 15
+                }
+            ]
+        },
+        "mapId": "22c26c1b-b766-4999-98f5-0f82434b06ad"
+    },
+    "controlViews": []
+}

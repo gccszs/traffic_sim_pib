@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Python服务gRPC客户端
@@ -96,10 +97,10 @@ public class SimulationPythonGrpcClient {
      * 创建仿真引擎
      * 
      * @param request 创建仿真请求
-     * @param userId 用户ID
+     * @param sessionId 会话ID（taskId），引擎将使用此ID连接WebSocket
      * @return API响应
      */
-    public ApiResponse createSimeng(CreateSimulationRequest request, String userId) {
+    public ApiResponse createSimeng(CreateSimulationRequest request, String sessionId) {
         // 如果gRPC未启用或不可用，返回兜底数据
         if (!isGrpcAvailable()) {
             log.warn("gRPC service is not available (enabled={}, stub={}), returning fallback response for createSimeng", 
@@ -109,7 +110,7 @@ public class SimulationPythonGrpcClient {
         }
         
         try {
-            CreateSimengRequest grpcRequest = convertToGrpcRequest(request, userId);
+            CreateSimengRequest grpcRequest = convertToGrpcRequest(request, sessionId);
             
             return convertFromGrpcResponse(blockingStub.createSimeng(grpcRequest));
         } catch (StatusRuntimeException e) {
@@ -173,9 +174,12 @@ public class SimulationPythonGrpcClient {
     
     /**
      * 转换为gRPC请求
+     * 
+     * @param request 创建仿真请求
+     * @param sessionId 会话ID（taskId），将作为userId字段传递给Python引擎
      */
     private CreateSimengRequest convertToGrpcRequest(
-            CreateSimulationRequest request, String userId) {
+            CreateSimulationRequest request, String sessionId) {
         
         // 构建SimInfo
         CreateSimulationRequest.SimInfoDTO simInfoDTO = request.getSimInfo();
@@ -188,21 +192,111 @@ public class SimulationPythonGrpcClient {
         if (simInfoDTO.getFixedOd() != null) {
             FixedOD.Builder fixedOdBuilder = FixedOD.newBuilder();
             
-            // 构建OD列表
-            if (simInfoDTO.getFixedOd().getOd() != null) {
-                for (CreateSimulationRequest.OriginODDTO originOD : simInfoDTO.getFixedOd().getOd()) {
-                    OriginOD.Builder originBuilder = 
-                        OriginOD.newBuilder()
-                            .setOriginId(originOD.getOriginId());
+            CreateSimulationRequest.FixedODDTO fixedOdDTO = simInfoDTO.getFixedOd();
+            
+            // 设置基本字段
+            if (fixedOdDTO.getRoadNum() != null) {
+                fixedOdBuilder.setRoadNum(fixedOdDTO.getRoadNum());
+            }
+            if (fixedOdDTO.getLaneNum() != null) {
+                fixedOdBuilder.setLaneNum(fixedOdDTO.getLaneNum());
+            }
+            if (fixedOdDTO.getControllerNum() != null) {
+                fixedOdBuilder.setControllerNum(fixedOdDTO.getControllerNum());
+            }
+            if (fixedOdDTO.getFollowModel() != null) {
+                fixedOdBuilder.setFollowModel(fixedOdDTO.getFollowModel());
+            }
+            if (fixedOdDTO.getChangeLaneModel() != null) {
+                fixedOdBuilder.setChangeLaneModel(fixedOdDTO.getChangeLaneModel());
+            }
+            
+            // 构建 flows 列表 - List<Map<String, Object>>
+            if (fixedOdDTO.getFlows() != null) {
+                log.info("Processing flows: count={}", fixedOdDTO.getFlows().size());
+                for (Map<String, Object> flowMap : fixedOdDTO.getFlows()) {
+                    com.traffic.sim.plugin.simulation.grpc.proto.Flow.Builder flowBuilder = 
+                        com.traffic.sim.plugin.simulation.grpc.proto.Flow.newBuilder();
                     
-                    if (originOD.getDist() != null) {
-                        for (CreateSimulationRequest.DestinationDTO dest : originOD.getDist()) {
-                            Destination destination = 
-                                Destination.newBuilder()
-                                    .setDestId(dest.getDestId())
-                                    .setRate(dest.getRate() != null ? dest.getRate() : 0.0)
-                                    .build();
-                            originBuilder.addDist(destination);
+                    if (flowMap.containsKey("roadId")) {
+                        Object roadIdObj = flowMap.get("roadId");
+                        flowBuilder.setRoadId(roadIdObj instanceof Number ? 
+                            ((Number) roadIdObj).intValue() : 0);
+                    } else if (flowMap.containsKey("road_id")) {
+                        Object roadIdObj = flowMap.get("road_id");
+                        flowBuilder.setRoadId(roadIdObj instanceof Number ? 
+                            ((Number) roadIdObj).intValue() : 0);
+                    }
+                    
+                    if (flowMap.containsKey("policy")) {
+                        Object policyObj = flowMap.get("policy");
+                        flowBuilder.setPolicy(policyObj instanceof Number ? 
+                            ((Number) policyObj).intValue() : 0);
+                    }
+                    
+                    if (flowMap.containsKey("demand")) {
+                        Object demandObj = flowMap.get("demand");
+                        flowBuilder.setDemand(demandObj instanceof Number ? 
+                            ((Number) demandObj).intValue() : 0);
+                    }
+                    
+                    if (flowMap.containsKey("extra")) {
+                        Object extraObj = flowMap.get("extra");
+                        flowBuilder.setExtra(extraObj instanceof Number ? 
+                            ((Number) extraObj).intValue() : 0);
+                    }
+                    
+                    fixedOdBuilder.addFlows(flowBuilder.build());
+                }
+            }
+            
+            // 构建OD列表 - 现在是 List<Map<String, Object>>
+            if (fixedOdDTO.getOd() != null) {
+                for (Map<String, Object> originODMap : fixedOdDTO.getOd()) {
+                    OriginOD.Builder originBuilder = OriginOD.newBuilder();
+                    
+                    // 从 Map 中提取 originId（支持多种命名格式）
+                    String originId = null;
+                    if (originODMap.containsKey("originId")) {
+                        originId = String.valueOf(originODMap.get("originId"));
+                    } else if (originODMap.containsKey("orginId")) {
+                        originId = String.valueOf(originODMap.get("orginId"));
+                    } else if (originODMap.containsKey("orgin_id")) {
+                        originId = String.valueOf(originODMap.get("orgin_id"));
+                    }
+                    
+                    if (originId != null && !originId.equals("null")) {
+                        originBuilder.setOriginId(originId);
+                        log.info("Processing origin: originId={}", originId);
+                    } else {
+                        log.warn("Origin ID is null or missing in map: {}", originODMap.keySet());
+                    }
+                    
+                    // 处理 dist 列表
+                    Object distObj = originODMap.get("dist");
+                    if (distObj instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<Map<String, Object>> distList = (List<Map<String, Object>>) distObj;
+                        for (Map<String, Object> destMap : distList) {
+                            Destination.Builder destBuilder = Destination.newBuilder();
+                            
+                            if (destMap.containsKey("destId")) {
+                                destBuilder.setDestId(String.valueOf(destMap.get("destId")));
+                            } else if (destMap.containsKey("dest")) {
+                                destBuilder.setDestId(String.valueOf(destMap.get("dest")));
+                            }
+                            
+                            if (destMap.containsKey("rate")) {
+                                Object rateObj = destMap.get("rate");
+                                destBuilder.setRate(rateObj instanceof Number ? 
+                                    ((Number) rateObj).doubleValue() : 0.0);
+                            } else if (destMap.containsKey("percent")) {
+                                Object percentObj = destMap.get("percent");
+                                destBuilder.setRate(percentObj instanceof Number ? 
+                                    ((Number) percentObj).doubleValue() : 0.0);
+                            }
+                            
+                            originBuilder.addDist(destBuilder.build());
                         }
                     }
                     
@@ -210,18 +304,73 @@ public class SimulationPythonGrpcClient {
                 }
             }
             
-            // 构建信号灯组列表
-            if (simInfoDTO.getFixedOd().getSg() != null) {
-                for (CreateSimulationRequest.SignalGroupDTO sg : simInfoDTO.getFixedOd().getSg()) {
-                    SignalGroup signalGroup = 
-                        SignalGroup.newBuilder()
-                            .setCrossId(sg.getCrossId() != null ? sg.getCrossId() : 0)
-                            .setCycleTime(sg.getCycleTime() != null ? sg.getCycleTime() : 0)
-                            .setEwStraight(sg.getEwStraight() != null ? sg.getEwStraight() : 0)
-                            .setSnStraight(sg.getSnStraight() != null ? sg.getSnStraight() : 0)
-                            .setSnLeft(sg.getSnLeft() != null ? sg.getSnLeft() : 0)
-                            .build();
-                    fixedOdBuilder.addSg(signalGroup);
+            // 构建信号灯组列表 - 现在是 List<Map<String, Object>>
+            if (fixedOdDTO.getSg() != null) {
+                for (Map<String, Object> sgMap : fixedOdDTO.getSg()) {
+                    SignalGroup.Builder sgBuilder = SignalGroup.newBuilder();
+                    
+                    if (sgMap.containsKey("crossId")) {
+                        Object crossIdObj = sgMap.get("crossId");
+                        sgBuilder.setCrossId(crossIdObj instanceof Number ? 
+                            ((Number) crossIdObj).intValue() : 0);
+                    } else if (sgMap.containsKey("cross_id")) {
+                        Object crossIdObj = sgMap.get("cross_id");
+                        sgBuilder.setCrossId(crossIdObj instanceof Number ? 
+                            ((Number) crossIdObj).intValue() : 0);
+                    }
+                    
+                    if (sgMap.containsKey("cycleTime")) {
+                        Object cycleTimeObj = sgMap.get("cycleTime");
+                        sgBuilder.setCycleTime(cycleTimeObj instanceof Number ? 
+                            ((Number) cycleTimeObj).intValue() : 0);
+                    } else if (sgMap.containsKey("cycle_time")) {
+                        Object cycleTimeObj = sgMap.get("cycle_time");
+                        sgBuilder.setCycleTime(cycleTimeObj instanceof Number ? 
+                            ((Number) cycleTimeObj).intValue() : 0);
+                    }
+                    
+                    if (sgMap.containsKey("ewStraight")) {
+                        Object ewStraightObj = sgMap.get("ewStraight");
+                        sgBuilder.setEwStraight(ewStraightObj instanceof Number ? 
+                            ((Number) ewStraightObj).intValue() : 0);
+                    } else if (sgMap.containsKey("ew_straight")) {
+                        Object ewStraightObj = sgMap.get("ew_straight");
+                        sgBuilder.setEwStraight(ewStraightObj instanceof Number ? 
+                            ((Number) ewStraightObj).intValue() : 0);
+                    }
+                    
+                    if (sgMap.containsKey("snStraight")) {
+                        Object snStraightObj = sgMap.get("snStraight");
+                        sgBuilder.setSnStraight(snStraightObj instanceof Number ? 
+                            ((Number) snStraightObj).intValue() : 0);
+                    } else if (sgMap.containsKey("sn_straight")) {
+                        Object snStraightObj = sgMap.get("sn_straight");
+                        sgBuilder.setSnStraight(snStraightObj instanceof Number ? 
+                            ((Number) snStraightObj).intValue() : 0);
+                    }
+                    
+                    if (sgMap.containsKey("snLeft")) {
+                        Object snLeftObj = sgMap.get("snLeft");
+                        sgBuilder.setSnLeft(snLeftObj instanceof Number ? 
+                            ((Number) snLeftObj).intValue() : 0);
+                    } else if (sgMap.containsKey("sn_left")) {
+                        Object snLeftObj = sgMap.get("sn_left");
+                        sgBuilder.setSnLeft(snLeftObj instanceof Number ? 
+                            ((Number) snLeftObj).intValue() : 0);
+                    }
+                    
+                    // 添加 ewLeft 字段支持
+                    if (sgMap.containsKey("ewLeft")) {
+                        Object ewLeftObj = sgMap.get("ewLeft");
+                        sgBuilder.setEwLeft(ewLeftObj instanceof Number ? 
+                            ((Number) ewLeftObj).intValue() : 0);
+                    } else if (sgMap.containsKey("ew_left")) {
+                        Object ewLeftObj = sgMap.get("ew_left");
+                        sgBuilder.setEwLeft(ewLeftObj instanceof Number ? 
+                            ((Number) ewLeftObj).intValue() : 0);
+                    }
+                    
+                    fixedOdBuilder.addSg(sgBuilder.build());
                 }
             }
             
@@ -245,7 +394,7 @@ public class SimulationPythonGrpcClient {
         return CreateSimengRequest.newBuilder()
             .setSimInfo(simInfoBuilder.build())
             .addAllControlViews(controlViews)
-            .setUserId(userId)
+            .setUserId(sessionId)  // 注意：proto字段名是userId，但实际传递的是sessionId（taskId）
             .build();
     }
     

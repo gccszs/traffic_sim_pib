@@ -1,0 +1,22 @@
+启动命令: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services\SimEngPI\SimulationEngine.exe --log=0 --sid=ef --sfile=b2e2583144c04df1a5bdb9cf356c607b --road=map_4e7d3cc7.xml --ip=localhost --port=3822 --noplugin
+工作目录: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services
+输出模式: file
+启动时间: 2026-01-21 23:29:49
+平台: win32
+--------------------------------------------------------------------------------
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][info]	[34m[+] Init BLog Over![0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][info]	[34m[+] SetWorkDir: D:\traffic_sim_bk\traffic_sim_pib\map_convert_services\SimEngPI[0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][info]	[34m[+] Set SimID ef Over![0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][info]	[34m[+] Set SimFiles Path: b2e2583144c04df1a5bdb9cf356c607b Over![0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][info]	[34m[+] Use RoadNetwork File: b2e2583144c04df1a5bdb9cf356c607b\map_4e7d3cc7.xml[0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][info]	[34m[+] Use OD File: b2e2583144c04df1a5bdb9cf356c607b\od.xml[0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][info]	[34m[-] Launch as no plug-in![0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][info]	[34m[+] Base Initialization Complete![0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][debug]	[32m[#] Connected to localhost:3822/ws/exe/b2e2583144c04df1a5bdb9cf356c607b[0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][info]	[34m[+] Connect websocket to backend ok...[0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][debug]	[32m[#] Recv Msg: {"type":"eng","ope":"hi","time":1769009390035}[0m
+[23:29:50] [STDERR] [2026-01-21 23:29:50|0x00003ac4][info]	[34m[+] Init backend manager ok![0m
+进程已启动，PID: 5380
+[23:59:51] [STDERR] [2026-01-21 23:59:51|0x00003ac4][error]	[31m[!] Error in receive_text: The WebSocket stream was gracefully closed at both endpoints [boost.beast.websocket:1 at D:\Works\GraduationDesign\SimEngPI\vcpkg_installed\x64-windows\x64-windows\include\boost\beast\websocket\impl\stream.hpp:365:9 in function 'void __cdecl boost::beast::websocket::stream<class boost::asio::basic_stream_socket<class boost::asio::ip::tcp,class boost::asio::any_io_executor>,1>::do_fail(unsigned short,class boost::system::error_code,class boost::system::error_code &)'][0m
+[23:59:51] [STDERR] [2026-01-21 23:59:51|0x00003ac4][error]	[31m[!] ws recv msg is empty! something went wrong...[0m
+[23:59:51] [STDERR] [2026-01-21 23:59:51|0x00003ac4][error]	[31m[!] Error in close: 由于线程退出或应用程序请求，已中止 I/O 操作。 [system:995 at D:\Works\GraduationDesign\SimEngPI\vcpkg_installed\x64-windows\x64-windows\include\boost\beast\websocket\impl\stream_impl.hpp:355:13 in function 'bool __cdecl boost::beast::websocket::stream<class boost::asio::basic_stream_socket<class boost::asio::ip::tcp,class boost::asio::any_io_executor>,1>::impl_type::check_stop_now(class boost::system::error_code &)'][0m

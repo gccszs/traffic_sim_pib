@@ -24,7 +24,7 @@ import java.util.UUID;
 
 /**
  * 仿真任务Controller
- * 
+ *
  * @author traffic-sim
  */
 @RestController
@@ -33,10 +33,10 @@ import java.util.UUID;
 @Slf4j
 @Tag(name = "仿真任务管理", description = "仿真任务的创建、查询和控制接口")
 public class SimulationController {
-    
+
     private final SimulationService simulationService;
     private final PluginService pluginService;
-    
+
     /**
      * 获取所有插件信息
      * GET /api/simulation/get_plugin_info
@@ -51,8 +51,8 @@ public class SimulationController {
         } catch (Exception e) {
             log.error("Failed to get plugin info", e);
             return ResponseEntity.internalServerError().body(Map.of(
-                "res", "ERR_SYSTEM",
-                "msg", e.getMessage()
+                    "res", "ERR_SYSTEM",
+                    "msg", e.getMessage()
             ));
         }
     }
@@ -71,8 +71,8 @@ public class SimulationController {
         } catch (Exception e) {
             log.error("Failed to get plugin info for: " + pluginName, e);
             return ResponseEntity.internalServerError().body(Map.of(
-                "res", "ERR_SYSTEM",
-                "msg", e.getMessage()
+                    "res", "ERR_SYSTEM",
+                    "msg", e.getMessage()
             ));
         }
     }
@@ -92,8 +92,8 @@ public class SimulationController {
         } catch (Exception e) {
             log.error("Failed to upload plugin", e);
             return ResponseEntity.internalServerError().body(Map.of(
-                "res", "ERR_SYSTEM",
-                "msg", e.getMessage()
+                    "res", "ERR_SYSTEM",
+                    "msg", e.getMessage()
             ));
         }
     }
@@ -111,48 +111,104 @@ public class SimulationController {
             String pluginName = (String) request.get("pluginName");
             Object updateInfosObj = request.get("updateInfos");
             Boolean applyDisk = (Boolean) request.getOrDefault("applyDisk", true);
-            
+
             // 将 updateInfos 转换为 List<Map<String, Object>>
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> updateInfos = (List<Map<String, Object>>) updateInfosObj;
-            
+
             Map<String, Object> result = pluginService.updatePluginInfo(pluginName, updateInfos, applyDisk);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Failed to update plugin info", e);
             return ResponseEntity.internalServerError().body(Map.of(
-                "res", "ERR_SYSTEM",
-                "msg", e.getMessage()
+                    "res", "ERR_SYSTEM",
+                    "msg", e.getMessage()
             ));
         }
     }
-    
+
     /**
-     * 创建仿真引擎
+     * 准备仿真任务（生成taskId并创建session）
      */
+    @PostMapping("/prepare")
+    @Operation(summary = "准备仿真任务", description = "生成taskId并创建session，返回taskId供前端连接WebSocket")
+    public ResponseEntity<ApiResponse<String>> prepareSimulation() {
+        String currentUserId = RequestContext.getCurrentUserId();
+        if (currentUserId == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error(ErrorCode.ERR_AUTH, "未认证"));
+        }
+
+        // 生成唯一的taskId
+        String taskId = UUID.randomUUID().toString().replace("-", "");
+        log.info("Preparing simulation task: userId={}, taskId={}", currentUserId, taskId);
+
+        try {
+            // 创建session，供前端和引擎连接WebSocket使用
+            simulationService.prepareSimulation(taskId, currentUserId);
+            return ResponseEntity.ok(ApiResponse.success("Task prepared successfully", taskId));
+        } catch (Exception e) {
+            log.error("Failed to prepare simulation", e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(ErrorCode.ERR_CREATE, e.getMessage()));
+        }
+    }
+
+    /**
+     * 启动仿真引擎
+     */
+    @PostMapping("/start")
+    @Operation(summary = "启动仿真引擎", description = "使用taskId启动仿真引擎（前端应先连接WebSocket）")
+    public ResponseEntity<ApiResponse<String>> startSimulation(
+            @RequestBody @Valid CreateSimulationRequest request,
+            @RequestParam String taskId) {
+        String currentUserId = RequestContext.getCurrentUserId();
+        if (currentUserId == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error(ErrorCode.ERR_AUTH, "未认证"));
+        }
+
+        log.info("Starting simulation engine: userId={}, taskId={}", currentUserId, taskId);
+
+        try {
+            SimulationTaskDTO task = simulationService.startSimulation(request, currentUserId, taskId);
+            return ResponseEntity.ok(ApiResponse.success("Simulation started successfully", task.getTaskId()));
+        } catch (Exception e) {
+            log.error("Failed to start simulation", e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(ErrorCode.ERR_CREATE, e.getMessage()));
+        }
+    }
+
+    /**
+     * 创建仿真引擎（兼容旧接口）
+     * @deprecated 请使用 /prepare 和 /start 两步流程
+     */
+    @Deprecated
     @PostMapping("/create")
-    @Operation(summary = "创建仿真任务", description = "创建新的仿真任务并初始化仿真引擎")
+    @Operation(summary = "创建仿真任务（已废弃）", description = "创建新的仿真任务并初始化仿真引擎。建议使用 /prepare 和 /start 两步流程")
     public ResponseEntity<ApiResponse<String>> createSimulation(
             @RequestBody @Valid CreateSimulationRequest request) {
         String currentUserId = RequestContext.getCurrentUserId();
         if (currentUserId == null) {
             return ResponseEntity.status(401).body(ApiResponse.error(ErrorCode.ERR_AUTH, "未认证"));
         }
-        
-        // 使用userId作为taskId，确保与Python gRPC服务的exe_id一致
-        String simTaskId = currentUserId;
-        log.info("Received create simulation request: userId={}, sessionId={}", currentUserId, simTaskId);
-        
+
+        // 生成唯一的taskId（每次创建都不同）
+        String simTaskId = UUID.randomUUID().toString().replace("-", "");
+        log.info("Received create simulation request (deprecated): userId={}, taskId={}", currentUserId, simTaskId);
+
         try {
-            SimulationTaskDTO task = simulationService.createSimulation(request, currentUserId, simTaskId);
+            // 准备
+            simulationService.prepareSimulation(simTaskId, currentUserId);
+            // 启动
+            SimulationTaskDTO task = simulationService.startSimulation(request, currentUserId, simTaskId);
             return ResponseEntity.ok(ApiResponse.success("Simulation created successfully", task.getTaskId()));
         } catch (Exception e) {
             log.error("Failed to create simulation", e);
             return ResponseEntity.badRequest()
-                .body(ApiResponse.error(ErrorCode.ERR_CREATE, e.getMessage()));
+                    .body(ApiResponse.error(ErrorCode.ERR_CREATE, e.getMessage()));
         }
     }
-    
+
     /**
      * 获取仿真任务列表
      */
@@ -161,17 +217,17 @@ public class SimulationController {
     public ResponseEntity<ApiResponse<PageResult<SimulationTaskDTO>>> getSimulationList(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        
+
         try {
             PageResult<SimulationTaskDTO> result = simulationService.getSimulationList(page, size);
             return ResponseEntity.ok(ApiResponse.success(result));
         } catch (Exception e) {
             log.error("Failed to get simulation list", e);
             return ResponseEntity.badRequest()
-                .body(ApiResponse.error(ErrorCode.ERR_UNKNOWN, e.getMessage()));
+                    .body(ApiResponse.error(ErrorCode.ERR_UNKNOWN, e.getMessage()));
         }
     }
-    
+
     /**
      * 获取仿真任务详情
      */
@@ -179,17 +235,17 @@ public class SimulationController {
     @Operation(summary = "获取仿真任务详情", description = "根据任务ID获取仿真任务详细信息")
     public ResponseEntity<ApiResponse<SimulationTaskDTO>> getSimulationTask(
             @PathVariable String taskId) {
-        
+
         try {
             SimulationTaskDTO task = simulationService.getSimulationTask(taskId);
             return ResponseEntity.ok(ApiResponse.success(task));
         } catch (Exception e) {
             log.error("Failed to get simulation task: {}", taskId, e);
             return ResponseEntity.badRequest()
-                .body(ApiResponse.error(ErrorCode.ERR_NOT_FOUND, e.getMessage()));
+                    .body(ApiResponse.error(ErrorCode.ERR_NOT_FOUND, e.getMessage()));
         }
     }
-    
+
     /**
      * 绿信比控制
      */
@@ -198,34 +254,34 @@ public class SimulationController {
     public ResponseEntity<ApiResponse<String>> controlGreenRatio(
             @RequestBody @Valid GreenRatioControlRequest request,
             @CookieValue(value = "id", required = false) String sessionId) {
-        
+
         String currentUserId = RequestContext.getCurrentUserId();
         if (currentUserId == null) {
             return ResponseEntity.status(401).body(ApiResponse.error(ErrorCode.ERR_AUTH, "未认证"));
         }
-        
-        log.info("Received green ratio control request: greenRatio={}, sessionId={}, userId={}", 
-            request.getGreenRatio(), sessionId, currentUserId);
-        
+
+        log.info("Received green ratio control request: greenRatio={}, sessionId={}, userId={}",
+                request.getGreenRatio(), sessionId, currentUserId);
+
         // 验证会话ID
         if (sessionId == null || sessionId.trim().isEmpty()) {
             return ResponseEntity.badRequest()
-                .body(ApiResponse.error(ErrorCode.ERR_AUTH, "Session ID is required"));
+                    .body(ApiResponse.error(ErrorCode.ERR_AUTH, "Session ID is required"));
         }
-        
+
         try {
             simulationService.controlGreenRatio(
-                request.getGreenRatio(), 
-                sessionId,
-                request.getSimulationInfo() != null ? 
-                    request.getSimulationInfo() : Collections.emptyMap()
+                    request.getGreenRatio(),
+                    sessionId,
+                    request.getSimulationInfo() != null ?
+                            request.getSimulationInfo() : Collections.emptyMap()
             );
-            
+
             return ResponseEntity.ok(ApiResponse.success("Green ratio updated successfully"));
         } catch (Exception e) {
             log.error("Failed to control green ratio", e);
             return ResponseEntity.badRequest()
-                .body(ApiResponse.error(ErrorCode.ERR_ENGINE, e.getMessage()));
+                    .body(ApiResponse.error(ErrorCode.ERR_ENGINE, e.getMessage()));
         }
     }
 }

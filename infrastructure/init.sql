@@ -136,15 +136,18 @@ DROP TABLE IF EXISTS `simulation_task`;
 CREATE TABLE `simulation_task` (
   `task_id` VARCHAR(64) NOT NULL COMMENT '任务ID',
   `name` VARCHAR(255) NOT NULL COMMENT '仿真名称',
-  `map_xml_name` VARCHAR(255) DEFAULT NULL COMMENT '地图XML文件名',
+  `map_xml_name` VARCHAR(255) DEFAULT NULL COMMENT '地图XML文件名（引擎内部使用的随机UUID）',
+  `map_id` VARCHAR(64) DEFAULT NULL COMMENT '用户地图ID（关联map表）',
+  `map_name` VARCHAR(255) DEFAULT NULL COMMENT '用户定义的地图名称（用于前端显示）',
   `map_xml_path` VARCHAR(500) DEFAULT NULL COMMENT '地图XML文件路径',
-  `sim_config` TEXT COMMENT '仿真配置（JSON）',
+  `sim_config` LONGTEXT COMMENT '仿真配置（JSON）',
   `status` VARCHAR(20) NOT NULL DEFAULT 'CREATED' COMMENT '状态：CREATED/RUNNING/PAUSED/STOPPED/FINISHED',
   `user_id` BIGINT(20) NOT NULL COMMENT '用户ID',
   `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`task_id`),
   KEY `idx_user_id` (`user_id`),
+  KEY `idx_map_id` (`map_id`),
   KEY `idx_status` (`status`),
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='仿真任务表';

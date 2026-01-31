@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # Java 后端配置 - 仿真引擎连接后端 WebSocket
     backend_host: str = Field(default="localhost", env="BACKEND_HOST")
     backend_port: int = Field(default=3822, env="BACKEND_PORT")
-    # 注意：Spring WebSocket 路径不受 servlet context-path 影响，所以这里为空
+    # 注意：Spring WebSocket 路径不受 servlet context-path 影响，直接使用配置的路径
     backend_ws_path: str = Field(default="", env="BACKEND_WS_PATH")
 
     # gRPC 服务配置

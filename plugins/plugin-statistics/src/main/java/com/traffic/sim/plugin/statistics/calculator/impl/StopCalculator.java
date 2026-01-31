@@ -29,8 +29,14 @@ public class StopCalculator implements StatisticsCalculator {
                                      StatisticsContext context) {
         var vehicles = currentStep.getVehicles();
         
+        StatisticsResult result = new StatisticsResult();
+        
         if (vehicles.isEmpty()) {
-            return StatisticsResult.empty();
+            log.debug("No vehicles for stop calculation");
+            result.set("stop_min", 0);
+            result.set("stop_max", 0);
+            result.set("stop_ave", 0.0);
+            return result;
         }
         
         List<Integer> stopCounts = new ArrayList<>();
@@ -49,8 +55,6 @@ public class StopCalculator implements StatisticsCalculator {
             }
         }
         
-        StatisticsResult result = new StatisticsResult();
-        
         if (!stopCounts.isEmpty()) {
             int stopMin = stopCounts.stream().mapToInt(Integer::intValue).min().orElse(0);
             int stopMax = stopCounts.stream().mapToInt(Integer::intValue).max().orElse(0);
@@ -59,6 +63,9 @@ public class StopCalculator implements StatisticsCalculator {
             result.set("stop_min", stopMin);
             result.set("stop_max", stopMax);
             result.set("stop_ave", stopAve);
+            
+            log.info("Stop calculation: count={}, min={}, max={}, ave={}", 
+                stopCounts.size(), stopMin, stopMax, stopAve);
         } else {
             result.set("stop_min", 0);
             result.set("stop_max", 0);

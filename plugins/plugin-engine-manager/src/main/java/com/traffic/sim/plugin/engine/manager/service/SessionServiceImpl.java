@@ -24,6 +24,16 @@ public class SessionServiceImpl implements SessionService {
     
     @Override
     public SimInfo createSession(String sessionId) {
+        // 检查是否已经存在（可能前端已经先连接了）
+        SimInfo existingSimInfo = sessionStore.get(sessionId);
+        if (existingSimInfo != null) {
+            log.info("Session already exists (frontend may have connected first): {}", sessionId);
+            // 保留已有的连接信息，只更新时间戳
+            existingSimInfo.setLastUpdateTime(System.currentTimeMillis());
+            return existingSimInfo;
+        }
+        
+        // 创建新的 Session
         SimInfo simInfo = new SimInfo();
         simInfo.setSessionId(sessionId);
         simInfo.setCreateTime(System.currentTimeMillis());

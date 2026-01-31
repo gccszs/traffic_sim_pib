@@ -205,7 +205,7 @@ async def map_file_upload(upload_file: UploadFile, user_id: str):
         )
 
 
-id_infos = defaultdict(SimInfo)  #用于存储认证ID和仿真实例信息的对应关系
+from shared_state import id_infos  # 用于存储认证ID和仿真实例信息的对应关系
 
 # 定义响应数据模型，对应Java的ApiResponse<String>
 class ApiResponse(BaseModel):
@@ -305,12 +305,20 @@ async def create_simeng(request: CreateSimengRequest):
         arg_sid = "--sid=" + cur_sim_name
         arg_simfile = "--sfile=" + user_id
         arg_roadfile = "--road=" + Path(id_infos[user_id].map_xml_path).name
-        # 引擎直接连接 Java 后端的 WebSocket，使用 Java 后端端口 3822
-        ws_url = "ws://localhost:3822/ws/exe/" + user_id  # 使用 user_id（taskId）作为 exe_id
-        sim_cmd = ['./SimEngPI/SimulationEngine.exe', '--log=0', arg_sid, arg_simfile, arg_roadfile, '--ip=localhost',
-                   '--port=3822', '--ws=' + ws_url, arg_plugin]  # 使用 Java 后端端口 3822
+        
+        # 引擎直接连接 Java 后端的 WebSocket（不再通过 Python 中介）
+        backend_host = settings.backend_host  # Java 后端地址
+        backend_port = settings.backend_port  # Java 后端 WebSocket 端口 (3822)
+        
+        # 构建 WebSocket URL：ws://backend_host:backend_port/ws/exe/{user_id}
+        ws_path = f"{settings.backend_ws_path}/ws/exe/{user_id}".lstrip('/')
+        ws_url = f"ws://{backend_host}:{backend_port}/{ws_path}"
+        
+        sim_cmd = ['./SimEngPI/SimulationEngine.exe', '--log=0', arg_sid, arg_simfile, arg_roadfile, 
+                   f'--ip={backend_host}', f'--port={backend_port}', '--ws=' + ws_url, arg_plugin]
         user_log_file = LOG_HOME + '' + user_id + '.txt'
         logger.info(f"Simulation command: {' '.join(sim_cmd)}")
+        logger.info(f"WebSocket URL: {ws_url}")
         logger.info(f"User log file: {user_log_file}")
         res = await RunExe(sim_cmd, log_file=user_log_file, output_mode="file")
         logger.info(f"Simulation engine started with result: {res}")
@@ -367,13 +375,37 @@ async def upload_plugin(file: UploadFile = File(...)):
 
 @app.websocket("/ws/exe/{exe_id}")
 async def exe_websocket(websocket: WebSocket, exe_id: str):
+    """
+    WebSocket 端点 - 已废弃，保留用于兼容性
+    
+    注意：在新架构中，引擎直接连接到 Java 后端的 WebSocket (端口 3822)，
+    不再连接到此 Python 服务的 WebSocket。
+    
+    此端点保留是为了：
+    1. 向后兼容（如果有旧版引擎仍在使用）
+    2. 测试和调试目的
+    
+    正常情况下，引擎应该连接到：ws://localhost:3822/ws/exe/{exe_id}
+    """
     cookie_id = exe_id
-    logger.info(f"WebSocket connection established - exe_id: {exe_id}")
+    logger.warning(f"[DEPRECATED] WebSocket connection to Python service - exe_id: {exe_id}")
+    logger.warning(f"[DEPRECATED] Engine should connect to Java backend at ws://localhost:3822/ws/exe/{exe_id}")
     await websocket.accept()
+    
+    # Store the WebSocket connection in the simulation info for later use
+    if exe_id in id_infos:
+        id_infos[exe_id].simeng_connection = websocket
+        id_infos[exe_id].simeng_init_ok = True
+        logger.info(f"Simulation engine connection stored for exe_id: {exe_id}")
+    else:
+        logger.warning(f"No simulation info found for exe_id: {exe_id}, creating new entry")
+        id_infos[exe_id].simeng_connection = websocket
+        id_infos[exe_id].simeng_init_ok = True
+    
     try:
         while True:
             data = await websocket.receive_json()
-            logger.debug(f"Received from Java backend: {data}")
+            logger.debug(f"Received from simulation engine: {data}")
 
             if data['type'] == 'frontend':
                 await handle_frontend_message(websocket, cookie_id, data)
@@ -384,8 +416,16 @@ async def exe_websocket(websocket: WebSocket, exe_id: str):
 
     except WebSocketDisconnect as e:
         logger.info(f"WebSocket connection closed: Code={e.code}, Reason={e.reason}")
+        # Clean up the connection reference when disconnected
+        if exe_id in id_infos:
+            id_infos[exe_id].simeng_connection = None
+            id_infos[exe_id].simeng_init_ok = False
     except Exception as e:
         logger.error(f"WebSocket error: {str(e)}", exc_info=True)
+        # Clean up the connection reference on error
+        if exe_id in id_infos:
+            id_infos[exe_id].simeng_connection = None
+            id_infos[exe_id].simeng_init_ok = False
 
 
 def get_current_timestamp_ms():

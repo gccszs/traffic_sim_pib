@@ -27,8 +27,14 @@ public class DelayCalculator implements StatisticsCalculator {
                                      StatisticsContext context) {
         var vehicles = currentStep.getVehicles();
         
+        StatisticsResult result = new StatisticsResult();
+        
         if (vehicles.isEmpty()) {
-            return StatisticsResult.empty();
+            log.debug("No vehicles for delay calculation");
+            result.set("delay_min", 0.0);
+            result.set("delay_max", 0.0);
+            result.set("delay_ave", 0.0);
+            return result;
         }
         
         List<Double> delays = new ArrayList<>();
@@ -41,8 +47,6 @@ public class DelayCalculator implements StatisticsCalculator {
             }
         }
         
-        StatisticsResult result = new StatisticsResult();
-        
         if (!delays.isEmpty()) {
             double delayMin = delays.stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
             double delayMax = delays.stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
@@ -51,6 +55,9 @@ public class DelayCalculator implements StatisticsCalculator {
             result.set("delay_min", delayMin);
             result.set("delay_max", delayMax);
             result.set("delay_ave", delayAve);
+            
+            log.info("Delay calculation: count={}, min={}, max={}, ave={}", 
+                delays.size(), delayMin, delayMax, delayAve);
         } else {
             result.set("delay_min", 0.0);
             result.set("delay_max", 0.0);

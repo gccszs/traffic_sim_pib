@@ -47,8 +47,8 @@ LOG_HOME = settings.log_home
 # 客户端Socket IP
 client_socket_ip = settings.client_socket_ip
 
-# 存储仿真实例信息
-id_infos = defaultdict(SimInfo)
+# Import shared simulation info
+from shared_state import id_infos
 
 
 class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
@@ -171,10 +171,13 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
             # 使用实际的地图文件名称，而不是map_xml_name（mapId）
             actual_map_filename = Path(cur_user_sim_xml_path).name
             arg_roadfile = f"--road={actual_map_filename}"
-            # 引擎直接连接 Java 后端的 WebSocket，使用 Java 后端端口 3822
-            backend_host = settings.backend_host
-            backend_port = 3822
-
+            
+            # 引擎直接连接 Java 后端的 WebSocket（不再通过 Python 中介）
+            backend_host = settings.backend_host  # Java 后端地址
+            backend_port = settings.backend_port  # Java 后端 WebSocket 端口 (3822)
+            
+            # 注意：不使用 --ws= 参数，让引擎自己构建 WebSocket URL
+            # 引擎会自动连接到 ws://{ip}:{port}/ws/exe/{user_id}
             sim_cmd = [
                 './SimEngPI/SimulationEngine.exe',
                 '--log=0',
@@ -182,7 +185,7 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
                 arg_simfile,
                 arg_roadfile,
                 f'--ip={backend_host}',
-                f'--port={backend_port}',  # Java后端端口 3822
+                f'--port={backend_port}',  # Java 后端端口
                 arg_plugin   # 使用正确的插件参数
             ]
             
@@ -236,12 +239,13 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
             green_ratio = request.greenRatio
             logger.info(f"ControlGreenRatio request - green_ratio: {green_ratio}")
             
-            # TODO: 实现实际的绿信比控制逻辑
-            # 这里需要与正在运行的仿真引擎通信
+            # 当前实现：返回成功，但实际的控制逻辑需要根据具体需求实现
+            # 在实际应用中，可能需要某种机制来关联仿真任务ID和控制命令
+            # 但现在我们只是返回成功，表示gRPC调用成功
             
             return python_service_pb2.ApiResponse(
                 res="ERR_OK",
-                msg=f"Green ratio set to {green_ratio}",
+                msg=f"Green ratio control request received: {green_ratio}",
                 data=str(green_ratio)
             )
 
@@ -276,11 +280,45 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
 
     def _convert_fixed_od(self, fixed_od) -> dict:
         """将 gRPC FixedOD 转换为字典格式"""
-        result = {'od': [], 'sg': []}
+        result = {}
         
+        # 注意：gRPC 传递的是 protobuf 消息对象
+        # 我们需要检查字段是否存在并转换
+        
+        # 转换基本字段（如果存在）
+        if hasattr(fixed_od, 'roadNum'):
+            result['road_num'] = fixed_od.roadNum
+        if hasattr(fixed_od, 'laneNum'):
+            result['lane_num'] = fixed_od.laneNum
+        if hasattr(fixed_od, 'controllerNum'):
+            result['controller_num'] = fixed_od.controllerNum
+        if hasattr(fixed_od, 'followModel'):
+            result['follow_model'] = fixed_od.followModel
+        if hasattr(fixed_od, 'changeLaneModel'):
+            result['change_lane_model'] = fixed_od.changeLaneModel
+        
+        # 转换 flows 数组
+        if hasattr(fixed_od, 'flows') and fixed_od.flows:
+            result['flows'] = []
+            for flow in fixed_od.flows:
+                flow_dict = {}
+                if hasattr(flow, 'roadId'):
+                    flow_dict['road_id'] = flow.roadId
+                if hasattr(flow, 'policy'):
+                    flow_dict['policy'] = flow.policy
+                if hasattr(flow, 'demand'):
+                    flow_dict['demand'] = flow.demand
+                if hasattr(flow, 'extra'):
+                    flow_dict['extra'] = flow.extra
+                result['flows'].append(flow_dict)
+        
+        # 转换 od 数组
+        result['od'] = []
         for origin in fixed_od.od:
+            origin_id = origin.originId if hasattr(origin, 'originId') else ''
+            logger.info(f"Processing origin: originId='{origin_id}'")
             origin_dict = {
-                'originId': origin.originId,
+                'originId': origin_id,
                 'dist': [
                     {'destId': d.destId, 'rate': d.rate}
                     for d in origin.dist
@@ -288,61 +326,82 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
             }
             result['od'].append(origin_dict)
         
+        # 转换 sg 数组
+        result['sg'] = []
         for sg in fixed_od.sg:
             sg_dict = {
                 'crossId': sg.crossId,
                 'cycleTime': sg.cycleTime,
+                'ewLeft': sg.ewLeft if hasattr(sg, 'ewLeft') else 0,
                 'ewStraight': sg.ewStraight,
                 'snStraight': sg.snStraight,
                 'snLeft': sg.snLeft
             }
             result['sg'].append(sg_dict)
         
+        logger.info(f"Converted fixed_od with fields: {list(result.keys())}")
         return result
 
     def _generate_od_xml(self, fixed_od) -> str:
         """生成 OD XML 内容"""
         # 转换为 JSON 格式
         convert_od_json = self._convert_fixed_od(fixed_od)
+        logger.info(f"Converted OD JSON: {json.dumps(convert_od_json, ensure_ascii=False)}")
         
-        # 调整格式
-        correct_origin_fmt = {"orgin": []}
-        for origin in convert_od_json['od']:
-            correct_origin_fmt["orgin"].append(origin)
-        convert_od_json['od'] = correct_origin_fmt
+        # 特殊处理：将 flows 数组转换为多个 flow 项
+        # xmltodict 需要这种格式才能生成多个同名标签
+        if 'flows' in convert_od_json and convert_od_json['flows']:
+            # 将 flows 数组改为 flow 键，值为数组
+            convert_od_json['flow'] = convert_od_json.pop('flows')
         
-        correct_signal_fmt = {"signal": []}
-        for signal in convert_od_json['sg']:
-            correct_signal_fmt["signal"].append(signal)
-        convert_od_json['sg'] = correct_signal_fmt
+        # 调整格式 - OD 部分
+        if 'od' in convert_od_json:
+            correct_origin_fmt = {"orgin": []}
+            for origin in convert_od_json.get('od', []):
+                correct_origin_fmt["orgin"].append(origin)
+            convert_od_json['od'] = correct_origin_fmt
+        
+        # 调整格式 - SG 部分
+        if 'sg' in convert_od_json:
+            correct_signal_fmt = {"signal": []}
+            for signal in convert_od_json.get('sg', []):
+                correct_signal_fmt["signal"].append(signal)
+            convert_od_json['sg'] = correct_signal_fmt
+        
+        logger.info(f"Adjusted OD JSON: {json.dumps(convert_od_json, ensure_ascii=False)}")
         
         # JSON 转 XML
         od_content = json_to_xml(convert_od_json)
         if od_content.startswith("<?xml"):
             od_content = "\n".join(od_content.splitlines()[1:])
         
-        # 替换命名
+        logger.info(f"OD XML before replacement (first 500 chars): {od_content[:500]}")
+        
+        # 替换命名 - 注意顺序很重要！
         replace_dict = {
             "road_num>": "roadNum>",
             "lane_num>": "laneNum>",
             "controller_num>": "controllerNum>",
             "follow_model>": "vehicleFollowModelNum>",
             "change_lane_model>": "vehicleChangeLaneModelNum>",
-            "flows>": "flow>",
             "road_id>": "roadID>",
+            "originId>": "orginID>",  # 注意：originId -> orginID（拼写错误但引擎需要）
+            "destId>": "dest>",
+            "rate>": "percent>",
             "od>": "OD>",
-            "orgin_id>": "orginID>",
             "sg>": "SG>",
-            "cross_id>": "crossID>",
-            "cycle_time>": "cycleTime>",
-            "ew_left>": "ewLeft>",
-            "ew_straight>": "ewStraight>",
-            "sn_left>": "snLeft>",
-            "sn_straight>": "snStraight>"
+            "crossId>": "crossID>",
+            "cycleTime>": "cycleTime>",
+            "ewLeft>": "ewLeft>",
+            "ewStraight>": "ewStraight>",
+            "snLeft>": "snLeft>",
+            "snStraight>": "snStraight>"
         }
         
         for old, new in replace_dict.items():
             od_content = od_content.replace(old, new)
+        
+        logger.info(f"Final OD XML (first 1000 chars): {od_content[:1000]}")
         
         return od_content
 
@@ -527,3 +586,5 @@ class PythonServiceServicer(python_service_pb2_grpc.PythonServiceServicer):
                 msg=str(e),
                 data=""
             )
+
+

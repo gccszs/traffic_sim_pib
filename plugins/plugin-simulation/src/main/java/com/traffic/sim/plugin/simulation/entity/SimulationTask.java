@@ -25,12 +25,18 @@ public class SimulationTask {
     private String name;
     
     @Column(name = "map_xml_name", length = 255)
-    private String mapXmlName;
+    private String mapXmlName;  // 引擎内部使用的随机UUID
+    
+    @Column(name = "map_id", length = 64)
+    private String mapId;  // 用户地图的ID
+    
+    @Column(name = "map_name", length = 255)
+    private String mapName;  // 用户地图的名称（用于前端显示）
     
     @Column(name = "map_xml_path", length = 500)
     private String mapXmlPath;
     
-    @Column(name = "sim_config", columnDefinition = "TEXT")
+    @Column(name = "sim_config", columnDefinition = "LONGTEXT")
     private String simConfig;
     
     @Column(name = "status", length = 20, nullable = false)

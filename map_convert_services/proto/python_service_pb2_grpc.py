@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from proto import python_service_pb2 as python__service__pb2
+from . import python_service_pb2 as python__service__pb2
 
 GRPC_GENERATED_VERSION = '1.76.0'
 GRPC_VERSION = grpc.__version__

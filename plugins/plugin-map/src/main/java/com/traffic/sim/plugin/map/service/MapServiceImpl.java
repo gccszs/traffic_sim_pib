@@ -124,7 +124,10 @@ public class MapServiceImpl implements MapService {
                     convertResponse.getXmlFileName(), userId);
             }
             
-            // 创建地图实体（内部持久化，不返回mapId给前端）
+            // 生成 mapId
+            String mapId = UUID.randomUUID().toString();
+            
+            // 创建地图实体（保存到 MySQL）
             MapEntity mapEntity = new MapEntity();
             String mapName = name != null ? name : getMapNameFromFile(file.getOriginalFilename());
             mapEntity.setName(mapName);
@@ -136,8 +139,10 @@ public class MapServiceImpl implements MapService {
             mapEntity.setFileSize(file.getSize());
             mapEntity.setStoragePath(xmlStoragePath != null ? xmlStoragePath : storagePath);
             mapEntity.setStatus(status != null ? MapEntity.MapStatus.fromCode(status) : MapEntity.MapStatus.PRIVATE);
-            mapEntity.setMapId(UUID.randomUUID().toString());
+            mapEntity.setMapId(mapId);
             
+            // 旧版 保存地图图片（Base64）到 MySQL
+
             // 保存Python端的XML文件路径（用于仿真引擎）
             if (convertResponse.getXmlFilePath() != null && !convertResponse.getXmlFilePath().isEmpty()) {
                 mapEntity.setXmlFilePath(convertResponse.getXmlFilePath());
@@ -145,19 +150,22 @@ public class MapServiceImpl implements MapService {
             
             mapRepository.save(mapEntity);
             
+            // 保存地图 JSON 数据到 MongoDB 的 map 集合
+            saveMapJsonToMongoDB(mapId, mapJsonData, mapName, userId);
+            
             // 更新配额
             quotaService.updateQuotaAfterUpload(userId, file.getSize());
             
             log.info("Map uploaded successfully: name={}, userId={}, mapId={}, xmlPath={}", 
-                mapName, userId, mapEntity.getMapId(), convertResponse.getXmlFilePath());
+                mapName, userId, mapId, convertResponse.getXmlFilePath());
             
             // 缓存 mapId -> xmlFilePath 到 Redis
             if (convertResponse.getXmlFilePath() != null && !convertResponse.getXmlFilePath().isEmpty()) {
-                xmlPathCacheService.cacheXmlPath(mapEntity.getMapId(), convertResponse.getXmlFilePath());
+                xmlPathCacheService.cacheXmlPath(mapId, convertResponse.getXmlFilePath());
             }
             
             // 构建响应（包含mapId，供前端后续使用）
-            MapUploadResponse response = MapUploadResponse.success(mapJsonData, mapEntity.getMapId());
+            MapUploadResponse response = MapUploadResponse.success(mapJsonData, mapId);
             
             // 缓存用户最近上传的地图数据，供 get_map_json 接口使用
             userLatestMapCache.put(userId, response);
@@ -637,6 +645,62 @@ public class MapServiceImpl implements MapService {
         
         log.warn("No xml path found for mapId: {}", mapId);
         return null;
+    }
+    
+    /**
+     * 保存地图 JSON 数据到 MongoDB
+     * 
+     * @param mapId 地图ID
+     * @param mapJsonData 地图JSON数据
+     * @param mapName 地图名称
+     * @param userId 用户ID
+     */
+    private void saveMapJsonToMongoDB(String mapId, Map<String, Object> mapJsonData, String mapName, Long userId) {
+        try {
+            // 构建 MongoDB 文档
+            Map<String, Object> document = new HashMap<>();
+            document.put("_id", mapId);  // 使用 mapId 作为 MongoDB 的 _id
+            document.put("mapId", mapId);
+            document.put("mapName", mapName);
+            document.put("userId", userId);
+            document.put("addition", mapJsonData);  // 地图 JSON 数据存储在 addition 字段
+            document.put("createdAt", System.currentTimeMillis());
+            document.put("updatedAt", System.currentTimeMillis());
+            
+            // 保存到 MongoDB 的 map 集合
+            mongoTemplate.save(document, "map");
+            
+            log.info("Saved map JSON data to MongoDB: mapId={}, dataSize={}", 
+                    mapId, mapJsonData.size());
+        } catch (Exception e) {
+            log.error("Failed to save map JSON to MongoDB for mapId: {}", mapId, e);
+            // 不抛出异常，避免影响主流程
+        }
+    }
+    
+    /**
+     * 从 MongoDB 获取地图 JSON 数据（用于回放）
+     * 
+     * @param mapId 地图ID
+     * @return 地图信息，包含 addition 字段
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getMapJsonFromMongoDB(String mapId) {
+        try {
+            Query query = Query.query(Criteria.where("_id").is(mapId));
+            Map<String, Object> mapDocument = mongoTemplate.findOne(query, Map.class, "map");
+            
+            if (mapDocument == null) {
+                log.warn("No map data found in MongoDB for mapId: {}", mapId);
+                return null;
+            }
+            
+            log.info("Retrieved map JSON data from MongoDB: mapId={}", mapId);
+            return mapDocument;
+        } catch (Exception e) {
+            log.error("Failed to get map JSON from MongoDB for mapId: {}", mapId, e);
+            return null;
+        }
     }
     
     // ========== 私有辅助方法 ==========

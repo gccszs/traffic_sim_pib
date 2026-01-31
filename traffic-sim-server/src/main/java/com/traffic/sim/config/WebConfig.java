@@ -24,8 +24,9 @@ public class WebConfig implements WebMvcConfigurer {
     /**
      * 允许的跨域来源列表
      * 可通过配置文件覆盖: app.cors.allowed-origins
+     * 支持通配符 * 表示允许所有来源（开发环境）
      */
-    @Value("${app.cors.allowed-origins:http://127.0.0.1:7144,http://localhost:7144}")
+    @Value("${app.cors.allowed-origins:*}")
     private String allowedOrigins;
     
     /**
@@ -33,15 +34,26 @@ public class WebConfig implements WebMvcConfigurer {
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        
-        registry.addMapping("/**")
-                .allowedOrigins(origins.toArray(new String[0]))
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
-                .allowedHeaders("*")
-                .exposedHeaders("Authorization", "Content-Type", "X-Requested-With")
-                .allowCredentials(true)
-                .maxAge(3600);
+        // 如果配置为 * 则允许所有来源
+        if ("*".equals(allowedOrigins.trim())) {
+            registry.addMapping("/**")
+                    .allowedOriginPatterns("*")  // 使用 allowedOriginPatterns 支持通配符
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                    .allowedHeaders("*")
+                    .exposedHeaders("Authorization", "Content-Type", "X-Requested-With")
+                    .allowCredentials(true)
+                    .maxAge(3600);
+        } else {
+            List<String> origins = Arrays.asList(allowedOrigins.split(","));
+            
+            registry.addMapping("/**")
+                    .allowedOrigins(origins.toArray(new String[0]))
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                    .allowedHeaders("*")
+                    .exposedHeaders("Authorization", "Content-Type", "X-Requested-With")
+                    .allowCredentials(true)
+                    .maxAge(3600);
+        }
     }
     
     /**
@@ -52,9 +64,14 @@ public class WebConfig implements WebMvcConfigurer {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         
-        // 允许的来源
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        origins.forEach(config::addAllowedOrigin);
+        // 如果配置为 * 则允许所有来源
+        if ("*".equals(allowedOrigins.trim())) {
+            config.addAllowedOriginPattern("*");  // 使用 allowedOriginPattern 支持通配符
+        } else {
+            // 允许的来源
+            List<String> origins = Arrays.asList(allowedOrigins.split(","));
+            origins.forEach(config::addAllowedOrigin);
+        }
         
         // 允许携带凭证（cookies, authorization headers）
         config.setAllowCredentials(true);
