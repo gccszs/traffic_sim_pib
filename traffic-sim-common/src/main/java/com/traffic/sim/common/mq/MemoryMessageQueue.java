@@ -7,25 +7,55 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
+/**
+ * 内存消息队列实现
+ * 基于JVM内存的消息队列，支持主题订阅、消息发布、延迟消息、广播等功能
+ * 采用BlockingQueue实现消费者阻塞等待，避免CPU空转
+ */
 @Slf4j
 public class MemoryMessageQueue implements MessageQueue {
 
-    private final Map<String, ConcurrentLinkedQueue<Message<?>>> normalQueues;
+    /** 普通消息队列：主题 -> 消息队列 */
+    private final Map<String, BlockingQueue<Message<?>>> normalQueues;
+
+    /** 延迟消息队列：按可消费时间排序的优先级队列 */
     private final PriorityBlockingQueue<DelayedMessageWrapper> delayedQueue;
+
+    /** 消费者列表：主题 -> 消费者列表 */
     private final Map<String, List<ConsumerHolder<?>>> consumers;
+
+    /** 消费者线程池：主题 -> 线程池 */
     private final Map<String, ExecutorService> consumerExecutors;
+
+    /** 队列统计：主题 -> 消息计数 */
     private final Map<String, AtomicLong> queueStats;
+
+    /** 延迟消息处理器线程池 */
     private final ScheduledExecutorService delayedMessageExecutor;
+
+    /** 消息发布线程池 */
     private final ExecutorService publishExecutor;
+
+    /** 默认队列容量，0表示无限制 */
     private final int defaultQueueCapacity;
+
+    /** 关闭标志 */
     private volatile boolean isShutdown;
 
+    /** 每次扫描延迟消息的最大数量 */
     private static final int MAX_DELAYED_MESSAGE_SCAN = 100;
 
+    /**
+     * 创建默认配置的内存消息队列（容量10000）
+     */
     public MemoryMessageQueue() {
         this(10000);
     }
 
+    /**
+     * 创建指定容量的内存消息队列
+     * @param defaultQueueCapacity 默认队列容量，0表示无限制
+     */
     public MemoryMessageQueue(int defaultQueueCapacity) {
         this.normalQueues = new ConcurrentHashMap<>();
         this.delayedQueue = new PriorityBlockingQueue<>(100,
@@ -49,6 +79,10 @@ public class MemoryMessageQueue implements MessageQueue {
         startDelayedMessageProcessor();
     }
 
+    /**
+     * 启动延迟消息处理器
+     * 每10ms扫描一次延迟队列，将到达可消费时间的消息投递到目标队列
+     */
     private void startDelayedMessageProcessor() {
         delayedMessageExecutor.scheduleAtFixedRate(() -> {
             if (isShutdown) {
@@ -106,9 +140,9 @@ public class MemoryMessageQueue implements MessageQueue {
             }
         }
 
-        ConcurrentLinkedQueue<Message<?>> queue = normalQueues.computeIfAbsent(topic, k -> {
+        BlockingQueue<Message<?>> queue = normalQueues.computeIfAbsent(topic, k -> {
             queueStats.put(k, new AtomicLong(0));
-            return new ConcurrentLinkedQueue<>();
+            return new LinkedBlockingQueue<>();
         });
 
         if (defaultQueueCapacity > 0 && queue.size() >= defaultQueueCapacity) {
@@ -166,14 +200,13 @@ public class MemoryMessageQueue implements MessageQueue {
             executor.submit(() -> {
                 while (!Thread.currentThread().isInterrupted() && !isShutdown) {
                     try {
-                        ConcurrentLinkedQueue<Message<?>> queue = normalQueues.get(topic);
+                        BlockingQueue<Message<?>> queue = normalQueues.get(topic);
                         if (queue != null) {
-                            Message<?> message = queue.poll();
+                            Message<?> message = queue.poll(100, TimeUnit.MILLISECONDS);
                             if (message != null) {
                                 dispatchToConsumer(holder, message);
                             }
                         }
-                        Thread.sleep(10);
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
@@ -187,6 +220,11 @@ public class MemoryMessageQueue implements MessageQueue {
         log.info("Subscribed {} threads to topic: {}", threads, topic);
     }
 
+    /**
+     * 分发消息给消费者
+     * @param holder 消费者持有者
+     * @param message 消息对象
+     */
     @SuppressWarnings("unchecked")
     private <T> void dispatchToConsumer(ConsumerHolder<T> holder, Message<T> message) {
         try {
@@ -198,6 +236,12 @@ public class MemoryMessageQueue implements MessageQueue {
         }
     }
 
+    /**
+     * 将消息分发给主题的消费者
+     * 广播消息会分发给所有消费者，普通消息使用哈希分发到单个消费者
+     * @param topic 主题名称
+     * @param message 消息对象
+     */
     @SuppressWarnings("unchecked")
     private void dispatchMessage(String topic, Message<?> message) {
         List<ConsumerHolder<?>> topicConsumers = consumers.get(topic);
@@ -252,7 +296,7 @@ public class MemoryMessageQueue implements MessageQueue {
 
     @Override
     public long getQueueSize(String topic) {
-        ConcurrentLinkedQueue<Message<?>> queue = normalQueues.get(topic);
+        BlockingQueue<Message<?>> queue = normalQueues.get(topic);
         long normalSize = queue != null ? queue.size() : 0;
         long delayedSize = delayedQueue.stream()
                 .filter(w -> w.getMessage().getTopic().equals(topic))
@@ -262,7 +306,7 @@ public class MemoryMessageQueue implements MessageQueue {
 
     @Override
     public void clear(String topic) {
-        ConcurrentLinkedQueue<Message<?>> queue = normalQueues.remove(topic);
+        BlockingQueue<Message<?>> queue = normalQueues.remove(topic);
         if (queue != null) {
             queue.clear();
         }
@@ -293,10 +337,18 @@ public class MemoryMessageQueue implements MessageQueue {
         log.info("MemoryMessageQueue shutdown completed");
     }
 
+    /**
+     * 获取延迟队列大小
+     * @return 延迟队列中的消息数量
+     */
     public long getDelayedQueueSize() {
         return delayedQueue.size();
     }
 
+    /**
+     * 获取队列统计信息
+     * @return 主题 -> 消息计数 的映射
+     */
     public Map<String, Long> getStats() {
         Map<String, Long> stats = new HashMap<>();
         for (Map.Entry<String, AtomicLong> entry : queueStats.entrySet()) {
@@ -305,8 +357,14 @@ public class MemoryMessageQueue implements MessageQueue {
         return stats;
     }
 
+    /**
+     * 延迟消息包装器
+     * 用于延迟队列按时间排序
+     */
     private static class DelayedMessageWrapper {
+        /** 消息可消费时间 */
         private final long readyTime;
+        /** 消息对象 */
         private final Message<?> message;
 
         public DelayedMessageWrapper(long readyTime, Message<?> message) {
@@ -323,11 +381,20 @@ public class MemoryMessageQueue implements MessageQueue {
         }
     }
 
+    /**
+     * 消费者持有者
+     * 封装消费者相关信息
+     */
     private static class ConsumerHolder<T> {
+        /** 消费者ID */
         final String consumerId;
+        /** 订阅主题 */
         final String topic;
+        /** 消费者实例 */
         final MessageConsumer<T> consumer;
+        /** 消费者索引 */
         final int index;
+        /** 消费者总数 */
         final int total;
 
         ConsumerHolder(String consumerId, String topic, MessageConsumer<T> consumer, int index, int total) {
