@@ -225,6 +225,17 @@ plugin:
       # 暂停时的状态检查间隔（毫秒）
       pause-check-interval-ms: 100
 
+# 消息队列配置
+mq:
+  # 是否启用消息队列，默认true
+  enabled: true
+  # 默认队列容量，0表示无限制
+  queue-capacity: 10000
+  # 消费者线程数
+  consumer-threads: 4
+  # 是否启用延迟消息
+  delayed-message-enabled: true
+
 # 日志配置
 logging:
   level:

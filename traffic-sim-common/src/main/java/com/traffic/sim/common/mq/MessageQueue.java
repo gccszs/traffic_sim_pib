@@ -98,6 +98,21 @@ public interface MessageQueue {
          * @param message 消息对象
          */
         void consume(Message<T> message);
+
+        /**
+         * 消费成功回调（可选实现）
+         * @param message 消息对象
+         */
+        default void onSuccess(Message<T> message) {
+        }
+
+        /**
+         * 消费失败回调（可选实现）
+         * @param message 消息对象
+         * @param throwable 异常信息
+         */
+        default void onFailure(Message<T> message, Throwable throwable) {
+        }
     }
 
     /**

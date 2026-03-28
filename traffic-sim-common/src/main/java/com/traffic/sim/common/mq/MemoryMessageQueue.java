@@ -1,7 +1,5 @@
 package com.traffic.sim.common.mq;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -12,7 +10,6 @@ import java.util.function.Consumer;
  * 基于JVM内存的消息队列，支持主题订阅、消息发布、延迟消息、广播等功能
  * 采用BlockingQueue实现消费者阻塞等待，避免CPU空转
  */
-@Slf4j
 public class MemoryMessageQueue implements MessageQueue {
 
     /** 普通消息队列：主题 -> 消息队列 */
@@ -107,10 +104,11 @@ public class MemoryMessageQueue implements MessageQueue {
                 }
 
                 if (processed > 0) {
-                    log.debug("Processed {} delayed messages", processed);
+                    System.out.println("Processed " + processed + " delayed messages");
                 }
             } catch (Exception e) {
-                log.error("Error processing delayed messages", e);
+                System.err.println("Error processing delayed messages");
+                e.printStackTrace();
             }
         }, 10, 10, TimeUnit.MILLISECONDS);
     }
@@ -140,6 +138,11 @@ public class MemoryMessageQueue implements MessageQueue {
             }
         }
 
+        if (message.getType() == Message.MessageType.BROADCAST) {
+            dispatchMessage(topic, message);
+            return;
+        }
+
         BlockingQueue<Message<?>> queue = normalQueues.computeIfAbsent(topic, k -> {
             queueStats.put(k, new AtomicLong(0));
             return new LinkedBlockingQueue<>();
@@ -151,8 +154,6 @@ public class MemoryMessageQueue implements MessageQueue {
 
         queue.offer(message);
         queueStats.get(topic).incrementAndGet();
-
-        dispatchMessage(topic, message);
     }
 
     @Override
@@ -172,6 +173,7 @@ public class MemoryMessageQueue implements MessageQueue {
         if (threads <= 0) {
             threads = 1;
         }
+        final int finalThreads = threads;
 
         consumers.computeIfAbsent(topic, k -> new CopyOnWriteArrayList<>());
 
@@ -188,7 +190,7 @@ public class MemoryMessageQueue implements MessageQueue {
                             return t;
                         }
                     };
-                    return Executors.newFixedThreadPool(threads, factory);
+                    return Executors.newFixedThreadPool(finalThreads, factory);
                 });
 
         for (int i = 0; i < threads; i++) {
@@ -198,26 +200,27 @@ public class MemoryMessageQueue implements MessageQueue {
 
             final int threadIndex = i;
             executor.submit(() -> {
-                while (!Thread.currentThread().isInterrupted() && !isShutdown) {
+                while (!Thread.currentThread().isInterrupted() && !isShutdown && holder.active) {
                     try {
                         BlockingQueue<Message<?>> queue = normalQueues.get(topic);
                         if (queue != null) {
                             Message<?> message = queue.poll(100, TimeUnit.MILLISECONDS);
-                            if (message != null) {
-                                dispatchToConsumer(holder, message);
+                            if (message != null && holder.active) {
+                                dispatchToConsumer((ConsumerHolder<Object>) holder, (Message<Object>) message);
                             }
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
                     } catch (Exception e) {
-                        log.error("Error consuming message from topic: {}", topic, e);
+                        System.err.println("Error consuming message from topic: " + topic);
+                        e.printStackTrace();
                     }
                 }
             });
         }
 
-        log.info("Subscribed {} threads to topic: {}", threads, topic);
+        System.out.println("Subscribed " + threads + " threads to topic: " + topic);
     }
 
     /**
@@ -231,7 +234,8 @@ public class MemoryMessageQueue implements MessageQueue {
             holder.consumer.consume(message);
             holder.consumer.onSuccess(message);
         } catch (Exception e) {
-            log.error("Error in consumer: {}", holder.consumerId, e);
+            System.err.println("Error in consumer: " + holder.consumerId);
+            e.printStackTrace();
             holder.consumer.onFailure(message, e);
         }
     }
@@ -251,25 +255,30 @@ public class MemoryMessageQueue implements MessageQueue {
 
         if (message.getType() == Message.MessageType.BROADCAST) {
             for (ConsumerHolder<?> holder : topicConsumers) {
-                dispatchToConsumer(holder, message);
+                dispatchToConsumer((ConsumerHolder<Object>) holder, (Message<Object>) message);
             }
         } else {
             int size = topicConsumers.size();
             if (size == 1) {
-                dispatchToConsumer(topicConsumers.get(0), message);
+                dispatchToConsumer((ConsumerHolder<Object>) topicConsumers.get(0), (Message<Object>) message);
             } else {
                 int index = message.getId().hashCode() % size;
                 if (index < 0) {
                     index += size;
                 }
-                dispatchToConsumer(topicConsumers.get(index), message);
+                dispatchToConsumer((ConsumerHolder<Object>) topicConsumers.get(index), (Message<Object>) message);
             }
         }
     }
 
     @Override
     public void unsubscribe(String topic) {
-        consumers.remove(topic);
+        List<ConsumerHolder<?>> topicConsumers = consumers.remove(topic);
+        if (topicConsumers != null) {
+            for (ConsumerHolder<?> holder : topicConsumers) {
+                holder.deactivate();
+            }
+        }
         ExecutorService executor = consumerExecutors.remove(topic);
         if (executor != null) {
             executor.shutdownNow();
@@ -281,7 +290,13 @@ public class MemoryMessageQueue implements MessageQueue {
         List<ConsumerHolder<?>> topicConsumers = consumers.get(topic);
         if (topicConsumers != null) {
             String targetId = consumer.getClass().getSimpleName();
-            topicConsumers.removeIf(h -> h.consumerId.startsWith(targetId));
+            topicConsumers.removeIf(h -> {
+                if (h.consumerId.startsWith(targetId)) {
+                    h.deactivate();
+                    return true;
+                }
+                return false;
+            });
         }
     }
 
@@ -334,7 +349,7 @@ public class MemoryMessageQueue implements MessageQueue {
         delayedMessageExecutor.shutdownNow();
         publishExecutor.shutdownNow();
 
-        log.info("MemoryMessageQueue shutdown completed");
+        System.out.println("MemoryMessageQueue shutdown completed");
     }
 
     /**
@@ -396,6 +411,8 @@ public class MemoryMessageQueue implements MessageQueue {
         final int index;
         /** 消费者总数 */
         final int total;
+        /** 是否活跃标志 */
+        volatile boolean active = true;
 
         ConsumerHolder(String consumerId, String topic, MessageConsumer<T> consumer, int index, int total) {
             this.consumerId = consumerId;
@@ -403,6 +420,10 @@ public class MemoryMessageQueue implements MessageQueue {
             this.consumer = consumer;
             this.index = index;
             this.total = total;
+        }
+
+        void deactivate() {
+            this.active = false;
         }
     }
 }

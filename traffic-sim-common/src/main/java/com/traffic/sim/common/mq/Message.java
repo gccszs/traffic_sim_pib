@@ -1,10 +1,5 @@
 package com.traffic.sim.common.mq;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -12,10 +7,6 @@ import java.util.UUID;
  * 消息实体类
  * @param <T> 消息载荷类型
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Message<T> implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -53,6 +44,78 @@ public class Message<T> implements Serializable {
         BROADCAST
     }
 
+    // 无参构造函数
+    public Message() {
+    }
+
+    // 全参构造函数
+    public Message(String id, String topic, T payload, long timestamp, MessageType type, int retryCount, String correlationId) {
+        this.id = id;
+        this.topic = topic;
+        this.payload = payload;
+        this.timestamp = timestamp;
+        this.type = type;
+        this.retryCount = retryCount;
+        this.correlationId = correlationId;
+    }
+
+    // Getter和Setter方法
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public T getPayload() {
+        return payload;
+    }
+
+    public void setPayload(T payload) {
+        this.payload = payload;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public MessageType getType() {
+        return type;
+    }
+
+    public void setType(MessageType type) {
+        this.type = type;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
+    }
+
+    public void setRetryCount(int retryCount) {
+        this.retryCount = retryCount;
+    }
+
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
+    }
+
     /**
      * 创建普通消息
      * @param topic 主题名称
@@ -60,14 +123,14 @@ public class Message<T> implements Serializable {
      * @return 消息对象
      */
     public static <T> Message<T> of(String topic, T payload) {
-        return Message.<T>builder()
-                .id(UUID.randomUUID().toString())
-                .topic(topic)
-                .payload(payload)
-                .timestamp(System.currentTimeMillis())
-                .type(MessageType.NORMAL)
-                .retryCount(0)
-                .build();
+        Message<T> message = new Message<>();
+        message.setId(UUID.randomUUID().toString());
+        message.setTopic(topic);
+        message.setPayload(payload);
+        message.setTimestamp(System.currentTimeMillis());
+        message.setType(MessageType.NORMAL);
+        message.setRetryCount(0);
+        return message;
     }
 
     /**
@@ -78,14 +141,14 @@ public class Message<T> implements Serializable {
      * @return 消息对象
      */
     public static <T> Message<T> delayed(String topic, T payload, long delayMillis) {
-        return Message.<T>builder()
-                .id(UUID.randomUUID().toString())
-                .topic(topic)
-                .payload(payload)
-                .timestamp(System.currentTimeMillis() + delayMillis)
-                .type(MessageType.DELAYED)
-                .retryCount(0)
-                .build();
+        Message<T> message = new Message<>();
+        message.setId(UUID.randomUUID().toString());
+        message.setTopic(topic);
+        message.setPayload(payload);
+        message.setTimestamp(System.currentTimeMillis() + delayMillis);
+        message.setType(MessageType.DELAYED);
+        message.setRetryCount(0);
+        return message;
     }
 
     /**
@@ -95,14 +158,14 @@ public class Message<T> implements Serializable {
      * @return 消息对象
      */
     public static <T> Message<T> broadcast(String topic, T payload) {
-        return Message.<T>builder()
-                .id(UUID.randomUUID().toString())
-                .topic(topic)
-                .payload(payload)
-                .timestamp(System.currentTimeMillis())
-                .type(MessageType.BROADCAST)
-                .retryCount(0)
-                .build();
+        Message<T> message = new Message<>();
+        message.setId(UUID.randomUUID().toString());
+        message.setTopic(topic);
+        message.setPayload(payload);
+        message.setTimestamp(System.currentTimeMillis());
+        message.setType(MessageType.BROADCAST);
+        message.setRetryCount(0);
+        return message;
     }
 
     /**
