@@ -35,7 +35,8 @@ public class AuthPluginAutoConfiguration implements WebMvcConfigurer {
                 "/v3/api-docs/**",
                 "/error",
                 "/ws/frontend/**",   // 排除前端 WebSocket（支持路径参数）
-                "/ws/exe/**"         // 排除引擎 WebSocket
+                "/ws/exe/**",        // 排除引擎 WebSocket
+                "/mq-demo/**"        // 排除 MQ 演示接口
             );
         
         // 注册权限拦截器（在认证拦截器之后执行）
@@ -48,7 +49,8 @@ public class AuthPluginAutoConfiguration implements WebMvcConfigurer {
                 "/v3/api-docs/**",
                 "/error",
                 "/ws/frontend/**",   // 排除前端 WebSocket（支持路径参数）
-                "/ws/exe/**"         // 排除引擎 WebSocket
+                "/ws/exe/**",       // 排除引擎 WebSocket
+                "/mq-demo/**"       // 排除 MQ 演示接口
             );
     }
 }

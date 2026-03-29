@@ -1,7 +1,9 @@
 package com.traffic.sim.plugin.engine.manager.service;
 
+import com.traffic.sim.common.mq.MessageProducer;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,12 +14,25 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 仿真数据收集器
  * 按仿真步收集所有 WebSocket 消息数据
+ * 支持通过MQ异步持久化数据
  * 
  * @author traffic-sim
  */
 @Slf4j
 @Service
 public class SimulationDataCollector {
+    
+    @Autowired(required = false)
+    private MessageProducer messageProducer;
+    
+    @Autowired(required = false)
+    private SimulationDataMessageHandler messageHandler;
+    
+    private boolean mqEnabled = false;
+    
+    private String simulationTaskId;
+    private String userId;
+    private String taskId;
     
     /**
      * 存储每个会话的仿真步数据
@@ -34,7 +49,19 @@ public class SimulationDataCollector {
     private final Map<String, CurrentStepCollector> currentStepMap = new ConcurrentHashMap<>();
     
     /**
+     * 设置仿真任务信息（用于MQ持久化）
+     */
+    public void setSimulationInfo(String simulationTaskId, String userId, String taskId) {
+        this.simulationTaskId = simulationTaskId;
+        this.userId = userId;
+        this.taskId = taskId;
+        this.mqEnabled = (messageProducer != null && messageHandler != null);
+        log.info("SimulationDataCollector configured: mqEnabled={}, simulationTaskId={}", mqEnabled, simulationTaskId);
+    }
+    
+    /**
      * 添加仿真步数据（当仿真步结束时调用）
+     * 如果MQ已启用，数据将通过MQ异步保存
      * 
      * @param sessionId 会话ID
      * @param step 仿真步数
@@ -42,11 +69,17 @@ public class SimulationDataCollector {
      * @param statsData 统计数据
      */
     public void addStepData(String sessionId, Long step, Map<String, Object> simData, Map<String, Object> statsData) {
-        sessionDataMap.computeIfAbsent(sessionId, k -> new ArrayList<>())
-            .add(new StepData(step, System.currentTimeMillis(), simData, statsData));
+        StepData stepData = new StepData(step, System.currentTimeMillis(), simData, statsData);
         
-        log.debug("Added step {} data for session: {}, total steps: {}", 
-            step, sessionId, sessionDataMap.get(sessionId).size());
+        if (mqEnabled) {
+            messageHandler.sendSimulationDataSaveRequest(simulationTaskId, userId, taskId, stepData);
+            log.debug("MQ: Sent step {} data for async save, session: {}", step, sessionId);
+        } else {
+            sessionDataMap.computeIfAbsent(sessionId, k -> new ArrayList<>())
+                .add(stepData);
+            log.debug("Local: Added step {} data for session: {}, total steps: {}", 
+                step, sessionId, sessionDataMap.get(sessionId).size());
+        }
     }
     
     /**

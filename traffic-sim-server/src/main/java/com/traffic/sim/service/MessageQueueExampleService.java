@@ -1,4 +1,4 @@
-package com.traffic.sim.common.service;
+package com.traffic.sim.service;
 
 import com.traffic.sim.common.mq.Message;
 import com.traffic.sim.common.mq.MessageProducer;
