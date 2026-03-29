@@ -45,22 +45,22 @@ public class MQDemoController {
     private void subscribeToDemoTopics() {
         messageQueue.subscribe("demo.test", message -> {
             recordReceivedMessage("demo.test", message);
-            log.info("🎯 MQ Demo [demo.test] Received: {}", message.getPayload());
+            log.info("[RECV] Topic=demo.test, Payload: {}", message.getPayload());
         });
 
         messageQueue.subscribe("demo.delayed", message -> {
             recordReceivedMessage("demo.delayed", message);
-            log.info("⏰ MQ Demo [demo.delayed] Delayed message received: {}", message.getPayload());
+            log.info("[DELAY] Topic=demo.delayed, Payload: {}", message.getPayload());
         });
 
         messageQueue.subscribe("demo.broadcast", message -> {
             recordReceivedMessage("demo.broadcast", message);
-            log.info("📢 MQ Demo [demo.broadcast] Broadcast received: {}", message.getPayload());
+            log.info("[BROAD] Topic=demo.broadcast, Payload: {}", message.getPayload());
         });
 
         messageQueue.subscribe("demo.statistics", message -> {
             recordReceivedMessage("demo.statistics", message);
-            log.info("📊 MQ Demo [demo.statistics] Statistics data received: {}", message.getPayload());
+            log.info("[STATS] Topic=demo.statistics, Payload: {}", message.getPayload());
         });
 
         log.info("Subscribed to demo topics: demo.test, demo.delayed, demo.broadcast, demo.statistics");
@@ -76,7 +76,7 @@ public class MQDemoController {
         
         receivedMessages.computeIfAbsent(topic, k -> new ArrayList<>()).add(received);
         
-        if (receivedMessages.get(topic).size() > 100) {
+        if (receivedMessages.get(topic).size() > 1000) {
             receivedMessages.get(topic).remove(0);
         }
     }
@@ -101,8 +101,78 @@ public class MQDemoController {
         result.put("topic", "demo.test");
         result.put("sendDuration", endTime - startTime + "ms");
         
-        log.info("📤 Sent message: ID={}, Content={}, Time={}", messageId, content, LocalDateTime.now().format(formatter));
-        
+        log.info("[SEND] Message sent - ID={}, Topic=demo.test, Content={}", messageId, content);
+
+        return result;
+    }
+
+    /**
+     * 同步处理对比接口（不使用MQ）
+     * 模拟高负载场景：同步处理所有操作
+     * 用于与MQ异步处理进行性能对比
+     */
+    @PostMapping("/send-sync")
+    public Map<String, Object> sendSyncMessage(@RequestBody Map<String, Object> payload) {
+        String content = payload.getOrDefault("content", "Sync message " + messageCounter.incrementAndGet()).toString();
+        long startTime = System.currentTimeMillis();
+
+        try {
+            Thread.sleep(50);
+            log.debug("[SYNC] Simulated DB save completed");
+            Thread.sleep(50);
+            log.debug("[SYNC] Simulated log processing completed");
+            Thread.sleep(20);
+            log.debug("[SYNC] Simulated notification completed");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        long endTime = System.currentTimeMillis();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("mode", "sync (no MQ)");
+        result.put("content", content);
+        result.put("processingTime", endTime - startTime + "ms");
+        result.put("sendTime", LocalDateTime.now().format(formatter));
+
+        log.info("[SYNC] Message processed synchronously - Content={}, Duration={}ms", content, endTime - startTime);
+
+        return result;
+    }
+
+    /**
+     * 批量同步处理对比接口（不使用MQ）
+     */
+    @PostMapping("/send-batch-sync")
+    public Map<String, Object> sendBatchSyncMessages(@RequestBody Map<String, Object> payload) {
+        int count = Integer.parseInt(payload.getOrDefault("count", "10").toString());
+        String prefix = payload.getOrDefault("prefix", "SyncBatch").toString();
+
+        long startTime = System.currentTimeMillis();
+
+        for (int i = 0; i < count; i++) {
+            try {
+                Thread.sleep(50);
+                Thread.sleep(50);
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("mode", "sync (no MQ)");
+        result.put("count", count);
+        result.put("totalTime", endTime - startTime + "ms");
+        result.put("avgTime", (endTime - startTime) / count + "ms");
+        result.put("sendTime", LocalDateTime.now().format(formatter));
+
+        log.info("[SYNC] Batch messages processed synchronously - Count={}, TotalDuration={}ms", count, endTime - startTime);
+
         return result;
     }
 
@@ -128,7 +198,7 @@ public class MQDemoController {
         result.put("topic", "demo.delayed");
         result.put("sendDuration", endTime - startTime + "ms");
         
-        log.info("📤 Sent delayed message: ID={}, Content={}, Delay={}ms", messageId, content, delayMs);
+        log.info("[SEND] Delayed message sent - ID={}, Topic=demo.delayed, Content={}, Delay={}ms", messageId, content, delayMs);
         
         return result;
     }
@@ -152,7 +222,7 @@ public class MQDemoController {
         result.put("topic", "demo.broadcast");
         result.put("sendDuration", endTime - startTime + "ms");
         
-        log.info("📤 Sent broadcast: Content={}, Time={}", content, LocalDateTime.now().format(formatter));
+        log.info("[SEND] Broadcast sent - Topic=demo.broadcast, Content={}", content);
         
         return result;
     }
@@ -185,7 +255,7 @@ public class MQDemoController {
         result.put("totalDuration", endTime - startTime + "ms");
         result.put("avgDuration", (endTime - startTime) / count + "ms");
         
-        log.info("📤 Sent {} batch messages in {}ms", count, endTime - startTime);
+        log.info("[SEND] Batch messages sent - Count={}, Topic=demo.test, Duration={}ms", count, endTime - startTime);
         
         return result;
     }
@@ -243,7 +313,7 @@ public class MQDemoController {
     @PostMapping("/clear")
     public Map<String, Object> clearMessages() {
         receivedMessages.clear();
-        log.info("🗑️ Cleared all received messages");
+        log.info("[CLEAR] All received messages cleared");
         
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
@@ -280,7 +350,7 @@ public class MQDemoController {
         result.put("topic", "demo.statistics");
         result.put("sendDuration", endTime - startTime + "ms");
         
-        log.info("📤 Sent statistics data: {}", stats);
+        log.info("[SEND] Statistics data sent - Topic=demo.statistics, Data={}", stats);
         
         return result;
     }
