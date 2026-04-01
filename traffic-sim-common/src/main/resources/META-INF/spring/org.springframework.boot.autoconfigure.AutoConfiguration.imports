@@ -1,1 +1,2 @@
 com.traffic.sim.common.mq.config.MessageQueueConfig
+com.traffic.sim.common.wal.config.WalAutoConfiguration
