@@ -166,7 +166,7 @@ public class LogSegment {
                 continue;
             }
 
-            long crc = headerBuffer.getLong();
+            long crc = headerBuffer.getInt() & 0xFFFFFFFFL;
             long recOffset = headerBuffer.getLong();
             long timestamp = headerBuffer.getLong();
             int length = headerBuffer.getInt();
